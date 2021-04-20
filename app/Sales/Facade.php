@@ -1,6 +1,6 @@
 <?php
 
-namespace HDSSolutions\Finpar\Empty;
+namespace HDSSolutions\Finpar\Sales;
 
 class Facade extends \Illuminate\Support\Facades\Facade {
     /**
@@ -10,7 +10,7 @@ class Facade extends \Illuminate\Support\Facades\Facade {
      */
     protected static function getFacadeAccessor() {
         //
-        return 'empty';
+        return 'sales';
     }
 
 }

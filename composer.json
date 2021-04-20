@@ -1,6 +1,6 @@
 {
-    "name": "finpar/empty-module",
-    "description": "Empty module",
+    "name": "finpar/sales-module",
+    "description": "Sales module",
     "type": "laravel-module",
     "license": "GNU GPLv3",
     "authors": [
@@ -26,10 +26,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "HDSSolutions\\Finpar\\EmptyModuleServiceProvider"
+                "HDSSolutions\\Finpar\\SalesModuleServiceProvider"
             ],
             "aliases": {
-                "Empty": "HDSSolutions\\Finpar\\Empty\\Facade"
+                "Sales": "HDSSolutions\\Finpar\\Sales\\Facade"
             }
         }
     }

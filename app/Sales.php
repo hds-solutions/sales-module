@@ -2,7 +2,7 @@
 
 namespace HDSSolutions\Finpar;
 
-class Empty {
+class Sales {
 
     //
 

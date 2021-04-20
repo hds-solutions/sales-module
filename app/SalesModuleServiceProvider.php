@@ -4,10 +4,10 @@ namespace HDSSolutions\Finpar;
 
 use HDSSolutions\Laravel\Modules\ModuleServiceProvider;
 
-class EmptyModuleServiceProvider extends ModuleServiceProvider {
+class SalesModuleServiceProvider extends ModuleServiceProvider {
 
     protected array $middlewares = [
-        \HDSSolutions\Finpar\Http\Middleware\EmptyMenu::class,
+        \HDSSolutions\Finpar\Http\Middleware\SalesMenu::class,
     ];
 
     private $commands = [
@@ -17,15 +17,15 @@ class EmptyModuleServiceProvider extends ModuleServiceProvider {
     public function bootEnv():void {
         // enable config override
         $this->publishes([
-            module_path('config/empty.php') => config_path('empty.php'),
-        ], 'empty.config');
+            module_path('config/sales.php') => config_path('sales.php'),
+        ], 'sales.config');
 
         // load routes
-        $this->loadRoutesFrom( module_path('routes/empty.php') );
+        $this->loadRoutesFrom( module_path('routes/sales.php') );
         // load views
-        $this->loadViewsFrom( module_path('resources/views'), 'empty' );
+        $this->loadViewsFrom( module_path('resources/views'), 'sales' );
         // load translations
-        $this->loadTranslationsFrom( module_path('resources/lang'), 'empty' );
+        $this->loadTranslationsFrom( module_path('resources/lang'), 'sales' );
         // load migrations
         $this->loadMigrationsFrom( module_path('database/migrations') );
         // load seeders
@@ -38,11 +38,11 @@ class EmptyModuleServiceProvider extends ModuleServiceProvider {
             //
             require_once $helpers;
         // register singleton
-        app()->singleton(Empty::class, fn() => new Empty);
+        app()->singleton(Sales::class, fn() => new Sales);
         // register commands
         $this->commands( $this->commands );
         // merge configuration
-        $this->mergeConfigFrom( module_path('config/empty.php'), 'empty' );
+        $this->mergeConfigFrom( module_path('config/sales.php'), 'sales' );
     }
 
 }
