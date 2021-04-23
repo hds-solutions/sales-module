@@ -45,9 +45,21 @@ class OrderController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function create() {
+    public function create(Request $request) {
         // load cash_books
-        $cash_books = CashBook::all();
+        $customers = Customer::with([
+            'identity',
+            // 'addresses',
+        ])->get();
+        //
+        $products = Product::with([
+            'prices',
+            'variants.prices',
+        ])->all();
+        //
+        $branches = backend()->company()->branches;
+        //
+        $currencies = Currency::all();
         // show create form
         return view('sales::orders.create', compact('cash_books'));
     }
