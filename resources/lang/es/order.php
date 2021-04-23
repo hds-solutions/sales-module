@@ -1,5 +1,5 @@
-<?php
+<?php return [
 
-return [
-    'nav'   => 'Ordenes',
+    'nav'   => 'Órdenes',
+
 ];

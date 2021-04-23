@@ -1,18 +1,4 @@
-<?php
-
-return [
-    'nav'   => 'Orders',
-    'title' => 'Orders',
-    'description' => 'Orders description',
-
-    'index' => 'Orders List',
-    'create' => 'Create new Order',
-    'add' => 'Add new Order ...',
-    'show' => 'Order Details',
-    'edit' => 'Edit Order',
-
-    'save' => 'Save',
-    'cancel' => 'Cancel',
+<?php return [
 
     'id' => [
         'Id',
@@ -20,15 +6,38 @@ return [
         '?' => 'ID',
     ],
 
-    'customer_id' => [
-        'Customer',
-        '_' => 'Customer',
-        '?' => 'Customer help text',
+    'partnerable_id' => [
+        'Partner',
+        '_' => 'Partner',
+        '?' => 'Partner help text',
     ],
 
     'currency_id' => [
         'Currency',
         '_' => 'Currency',
         '?' => 'Currency help text',
-    ]
+    ],
+
+    'lines' => [
+        'Lines',
+
+        'quantity'  => [
+            'Quantity',
+            '_' => 'Quantity',
+            '?' => 'Quantity help text',
+        ],
+
+        'price'  => [
+            'Price',
+            '_' => 'Price',
+            '?' => 'Price help text',
+        ],
+
+        'total'  => [
+            'Total',
+            '_' => 'Total',
+            '?' => 'Total help text',
+        ],
+    ],
+
 ];

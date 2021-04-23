@@ -1,6 +1,6 @@
 @extends('backend::layouts.master')
 
-@section('page-name', __('sales::order.title'))
+@section('page-name', __('sales::orders.title'))
 
 @section('content')
 
@@ -9,11 +9,11 @@
             <div class="row">
                 <div class="col-6">
                     <i class="fas fa-company-plus"></i>
-                    @lang('sales::order.edit')
+                    @lang('sales::orders.edit')
                 </div>
                 <div class="col-6 d-flex justify-content-end">
                      <a href="{{ route('backend.orders.create') }}"
-                        class="btn btn-sm btn-primary">@lang('sales::orders.add')</a>
+                        class="btn btn-sm btn-primary">@lang('sales::orders.create')</a>
                 </div>
             </div>
         </div>

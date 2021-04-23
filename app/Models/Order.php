@@ -9,28 +9,23 @@ use Illuminate\Database\Eloquent\Builder;
 class Order extends X_Order implements Document {
     use HasDocumentActions;
 
-    public function prepareIt():?string
-    {
+    public function prepareIt():?string {
 
     }
 
-    public function completeIt():?string
-    {
+    public function completeIt():?string {
 
     }
 
-    public function lines()
-    {
+    public function lines() {
         return $this->hasMany(OrderLine::class);
     }
 
-    public function partnertable()
-    {
+    public function partnerable() {
         return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id');
     }
 
-    public function currency()
-    {
+    public function currency() {
         return $this->belongsTo(Currency::class);
     }
 
