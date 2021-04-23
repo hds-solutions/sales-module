@@ -55,8 +55,6 @@ class OrderController extends Controller {
         $customers = Customer::all();
         // // load current company branches
         // $branches = backend()->company()->branches;
-        // load currencies
-        $currencies = Currency::all();
         // load products
         $products = Product::with([
             'images',
@@ -64,7 +62,7 @@ class OrderController extends Controller {
         ])->get();
 
         // show create form
-        return view('sales::orders.create', compact('customers', 'products', 'currencies'));
+        return view('sales::orders.create', compact('customers', 'products'));
     }
 
     /**
@@ -157,8 +155,6 @@ class OrderController extends Controller {
         $customers = Customer::all();
         // // load current company branches
         // $branches = backend()->company()->branches;
-        // load currencies
-        $currencies = Currency::all();
         // load products
         $products = Product::with([
             'images',
@@ -166,7 +162,7 @@ class OrderController extends Controller {
         ])->get();
 
         // show edit form
-        return view('sales::orders.edit', compact('customers', 'products', 'currencies', 'resource'));
+        return view('sales::orders.edit', compact('customers', 'products', 'resource'));
     }
 
     /**

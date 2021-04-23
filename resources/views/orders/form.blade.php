@@ -18,8 +18,8 @@
 {{--    --}}{{-- helper="{{ __('sales::product.warehouse_id.?') }}" --}}{{-- />--}}
 
 <x-backend-form-foreign :resource="$resource ?? null" name="currency_id" required
-    foreign="currencies" :values="$currencies" foreign-add-label="{{ __('sales::currencies.add') }}"
-    append="decimals"
+    foreign="currencies" :values="backend()->currencies()" foreign-add-label="{{ __('sales::currencies.add') }}"
+    append="decimals" default="{{ backend()->currency()->id }}"
 
     label="{{ __('sales::order.currency_id.0') }}"
     placeholder="{{ __('sales::order.currency_id._') }}"
