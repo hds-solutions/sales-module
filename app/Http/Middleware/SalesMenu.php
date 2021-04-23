@@ -16,22 +16,22 @@ class SalesMenu {
     public function handle($request, Closure $next) {
         // create a submenu
         $sub = backend()->menu()
-            ->add(__('sales::empties.nav'), [
+            ->add(__('sales::order.nav'), [
                 'icon'  => 'cogs',
             ])->data('priority', 700);
 
         $this
             // append items to submenu
-            ->empties($sub);
+            ->index($sub);
 
         // continue witn next middleware
         return $next($request);
     }
 
-    private function empties(&$menu) {
-        if (Route::has('backend.empties'))
-            $menu->add(__('sales::empties.nav'), [
-                'route'     => 'backend.empties',
+    private function index(&$menu) {
+        if (Route::has('backend.orders'))
+            $menu->add(__('sales::order.nav'), [
+                'route'     => 'backend.orders',
                 'icon'      => 'empties'
             ]);
 

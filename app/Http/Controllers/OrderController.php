@@ -3,21 +3,41 @@
 namespace HDSSolutions\Finpar\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use HDSSolutions\Finpar\DataTables\EmptyDataTable as DataTable;
+use HDSSolutions\Finpar\DataTables\CashDataTable as DataTable;
 use HDSSolutions\Finpar\Http\Request;
-use HDSSolutions\Finpar\Models\Empty as Resource;
+use HDSSolutions\Finpar\Models\Cash as Resource;
+use HDSSolutions\Finpar\Models\CashBook;
+use HDSSolutions\Finpar\Traits\CanProcessDocument;
 
-class EmptyController extends Controller {
+class OrderController extends Controller {
+    use CanProcessDocument;
+
+    protected function documentClass():string {
+        // return class
+        return Resource::class;
+    }
+
+    protected function redirectTo():string {
+        // go to resource view
+        return 'backend.orders.show';
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request, DataTable $dataTable) {
+        // check only-form flag
+        if ($request->has('only-form'))
+            // redirect to popup callback
+            return view('sales::components.popup-callback', [ 'resource' => new Resource ]);
+
         // load resources
         if ($request->ajax()) return $dataTable->ajax();
+
         // return view with dataTable
-        return $dataTable->render('empties::empties.index', [ 'count' => Resource::count() ]);
+        return $dataTable->render('sales::orders.index', [ 'count' => Resource::count() ]);
     }
 
     /**
@@ -26,8 +46,10 @@ class EmptyController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
+        // load cash_books
+        $cash_books = CashBook::all();
         // show create form
-        return view('empties::empties.create');
+        return view('sales::orders.create', compact('cash_books'));
     }
 
     /**
@@ -37,6 +59,9 @@ class EmptyController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        // cast to boolean
+        // $request->merge([ 'show_home' => $request->show_home == 'on' ]);
+
         // create resource
         $resource = new Resource( $request->input() );
 
@@ -47,8 +72,12 @@ class EmptyController extends Controller {
                 ->withErrors( $resource->errors() )
                 ->withInput();
 
-        // redirect to list
-        return redirect()->route('backend.empties');
+        // check return type
+        return $request->has('only-form') ?
+            // redirect to popup callback
+            view('sales::components.popup-callback', compact('resource')) :
+            // redirect to resources list
+            redirect()->route('backend.orders');
     }
 
     /**
@@ -58,8 +87,13 @@ class EmptyController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function show(Resource $resource) {
+        // load inventory data
+        $resource->load([
+            'cashBook.currency',
+            'lines',
+        ]);
         // redirect to list
-        return redirect()->route('backend.empties');
+        return view('sales::orders.show', compact('resource'));
     }
 
     /**
@@ -69,8 +103,15 @@ class EmptyController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit(Resource $resource) {
+        // check if document is already approved or processed
+        if ($resource->isApproved() || $resource->isProcessed())
+            // redirect to show route
+            return redirect()->route('backend.orders.show', $resource);
+
+        // load cash_books
+        $cash_books = CashBook::all();
         // show edit form
-        return view('empties::empties.edit', compact('resource'));
+        return view('sales::orders.edit', compact('cash_books', 'resource'));
     }
 
     /**
@@ -81,6 +122,9 @@ class EmptyController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
+        // cast show_home to boolean
+        // $request->merge([ 'show_home' => $request->show_home == 'on' ]);
+
         // find resource
         $resource = Resource::findOrFail($id);
 
@@ -92,7 +136,7 @@ class EmptyController extends Controller {
                 ->withInput();
 
         // redirect to list
-        return redirect()->route('backend.empties');
+        return redirect()->route('backend.orders');
     }
 
     /**
@@ -109,7 +153,7 @@ class EmptyController extends Controller {
             // redirect with errors
             return back();
         // redirect to list
-        return redirect()->route('backend.empties');
+        return redirect()->route('backend.orders');
     }
 
 }
