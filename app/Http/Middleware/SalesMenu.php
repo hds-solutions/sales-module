@@ -16,7 +16,7 @@ class SalesMenu {
     public function handle($request, Closure $next) {
         // create a submenu
         $sub = backend()->menu()
-            ->add(__('sales::order.nav'), [
+            ->add(__('sales::sales.nav'), [
                 'icon'  => 'cogs',
             ])->data('priority', 700);
 
@@ -30,7 +30,7 @@ class SalesMenu {
 
     private function index(&$menu) {
         if (Route::has('backend.orders'))
-            $menu->add(__('sales::order.nav'), [
+            $menu->add(__('sales::orders.nav'), [
                 'route'     => 'backend.orders',
                 'icon'      => 'empties'
             ]);
