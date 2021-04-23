@@ -28,6 +28,12 @@
         '?' => 'Date help text',
     ],
 
+    'total' => [
+        'Total',
+        '_' => 'Total',
+        '?' => 'Total help text',
+    ],
+
     'document_status'  => [
         'Document Status',
         '_' => 'Document Status',
