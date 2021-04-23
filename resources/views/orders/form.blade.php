@@ -1,7 +1,7 @@
 @include('backend::components.errors')
 
 <x-backend-form-foreign :resource="$resource ?? null" name="customer_id" required
-    option-title="business_name"
+    show="business_name"
     foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"
 
     label="{{ __('sales::order.customer_id.0') }}"
