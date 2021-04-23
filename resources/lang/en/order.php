@@ -12,5 +12,23 @@ return [
     'edit' => 'Edit Order',
 
     'save' => 'Save',
-    'cancel' => 'Cancel'
+    'cancel' => 'Cancel',
+
+    'id' => [
+        'Id',
+        '_' => 'ID',
+        '?' => 'ID',
+    ],
+
+    'customer_id' => [
+        'Customer',
+        '_' => 'Customer',
+        '?' => 'Customer help text',
+    ],
+
+    'currency_id' => [
+        'Currency',
+        '_' => 'Currency',
+        '?' => 'Currency help text',
+    ]
 ];

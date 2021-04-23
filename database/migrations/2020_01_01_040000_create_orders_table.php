@@ -31,6 +31,9 @@ class CreateOrdersTable extends Migration {
             $table->string('invoice_number')->nullable();
             $table->string('stamping')->nullable();
             $table->boolean('is_purchase')->default(false);
+
+            $table->asDocument();
+
         });
 
         $schema->create('order_lines', function (Blueprint $table) {
@@ -38,6 +41,7 @@ class CreateOrdersTable extends Migration {
             $table->foreignTo('Order');
             $table->foreignTo('Product');
             $table->foreignTo('Variant')->nullable();
+            $table->amount('original_price');
             $table->amount('price');
             $table->integer('quantity');
             $table->amount('total');

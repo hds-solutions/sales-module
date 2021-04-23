@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use HDSSolutions\Finpar\Http\Controllers\
-    {OrderController};
+    {OrderController, PriceChangeController};
 
 Route::group([
     'prefix'        => config('backend.prefix'),
@@ -15,4 +15,8 @@ Route::group([
          ->parameters([ 'orders' => 'resource' ])
          ->name('index', 'backend.orders');
 
+    Route::post('orders/price',                       [ PriceChangeController::class, 'price' ])
+        ->name('backend.orders.price');
+    Route::post('orders/{resource}/process',          [ OrderController::class, 'processIt'])
+        ->name('backend.orders.process');
 });

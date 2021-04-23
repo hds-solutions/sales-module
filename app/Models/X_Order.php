@@ -5,9 +5,11 @@ namespace HDSSolutions\Finpar\Models;
 use HDSSolutions\Finpar\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 
-class Order extends Base\Model
+class X_Order extends Base\Model
 {
     use BelongsToCompany;
+
+    protected $attributes = ['total' => 0];
 
     protected $fillable = [
         'company_id',
@@ -22,10 +24,5 @@ class Order extends Base\Model
         'invoice_number',
         'stamping'
     ];
-
-    public function details()
-    {
-        return $this->hasMany(X_OrderLine::class);
-    }
 
 }

@@ -2,19 +2,20 @@
 
 namespace HDSSolutions\Finpar\Models;
 
-use HDSSolutions\Finpar\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 
-class OrderLine extends Base\Model{
-    use BelongsToCompany;
+class X_OrderLine extends Base\Model{
 
     protected $fillable = [
         'order_id',
+        'original_price',
         'price',
         'quantity',
         'total',
         'currency_id',
         'conversion_rate',
+        'product_id',
+        'variant_id'
     ];
 
 
