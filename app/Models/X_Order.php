@@ -5,11 +5,12 @@ namespace HDSSolutions\Finpar\Models;
 use HDSSolutions\Finpar\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 
-class X_Order extends Base\Model
-{
+class X_Order extends Base\Model {
     use BelongsToCompany;
 
-    protected $attributes = ['total' => 0];
+    protected $attributes = [
+        'total' => 0
+    ];
 
     protected $fillable = [
         'company_id',
@@ -19,7 +20,7 @@ class X_Order extends Base\Model
         'currency_id',
         'address_id',
         'conversion_rate',
-        'transaction_date',
+        'transacted_at',
         'total',
         'invoice_number',
         'stamping'

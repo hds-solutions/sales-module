@@ -9,16 +9,8 @@ use Illuminate\Database\Eloquent\Builder;
 class Order extends X_Order implements Document {
     use HasDocumentActions;
 
-    public function prepareIt():?string {
-
-    }
-
-    public function completeIt():?string {
-
-    }
-
-    public function lines() {
-        return $this->hasMany(OrderLine::class);
+    public function branch() {
+        return $this->belongsTo(Branch::class);
     }
 
     public function partnerable() {
@@ -27,6 +19,18 @@ class Order extends X_Order implements Document {
 
     public function currency() {
         return $this->belongsTo(Currency::class);
+    }
+
+    public function lines() {
+        return $this->hasMany(OrderLine::class);
+    }
+
+    public function prepareIt():?string {
+        return null;
+    }
+
+    public function completeIt():?string {
+        return null;
     }
 
 }

@@ -118,10 +118,16 @@ class OrderController extends Controller {
     public function show(Resource $resource) {
         // load inventory data
         $resource->load([
+            'branch',
+            'partnerable',
             'currency',
             'lines' => fn($line) => $line->with([
-                'product.prices',
-                'variant.prices',
+                'currency',
+                'product.images',
+                'variant' => fn($variant) => $variant->with([
+                    'images',
+                    'values',
+                ]),
             ]),
         ]);
 
