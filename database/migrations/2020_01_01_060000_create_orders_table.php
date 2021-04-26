@@ -26,7 +26,7 @@ class CreateOrdersTable extends Migration {
             $table->foreignTo('Currency');
             $table->integer('address_id')->nullable();
             $table->integer('conversion_rate')->default(1);
-            $table->timestamp('transacted_at');
+            $table->timestamp('transacted_at')->useCurrent();
             $table->amount('total');
             $table->string('invoice_number')->nullable();
             $table->string('stamping')->nullable();
