@@ -5,7 +5,7 @@ namespace HDSSolutions\Finpar\Models;
 use HDSSolutions\Finpar\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 
-class X_Order extends Base\Model {
+class X_Invoice extends Base\Model {
     use BelongsToCompany;
 
     protected $fillable = [
@@ -16,26 +16,21 @@ class X_Order extends Base\Model {
         'partnerable_type',
         'address_id',
         'transacted_at',
+        'stamping',
         'document_number',
         'is_purchase',
-        'is_invoiced',
+        'is_credit',
         'total',
+        'is_paid',
+        'paid_amount',
     ];
 
     public function isPurchase():bool {
         return $this->is_purchase;
     }
 
-    public function getIsSaleAttribute():bool {
-        return !$this->is_purchase;
-    }
-
-    public function isSale():bool {
-        return $this->is_sale;
-    }
-
-    public function isInvoiced():bool {
-        return $this->is_invoiced;
+    public function isPaid():bool {
+        return $this->is_paid;
     }
 
 }

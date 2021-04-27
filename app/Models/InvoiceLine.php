@@ -5,10 +5,10 @@ namespace HDSSolutions\Finpar\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Validator;
 
-class OrderLine extends X_OrderLine {
+class InvoiceLine extends X_InvoiceLine {
 
-    public function order() {
-        return $this->belongsTo(Order::class);
+    public function invoice() {
+        return $this->belongsTo(Invoice::class);
     }
 
     public function currency() {
@@ -17,6 +17,10 @@ class OrderLine extends X_OrderLine {
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function orderLine() {
+        return $this->belongsTo(OrderLine::class);
     }
 
     public function product() {
@@ -28,14 +32,10 @@ class OrderLine extends X_OrderLine {
     }
 
     public function beforeSave(Validator $validator) {
-        // TODO: check if there is drafted Inventories of Variant|Product
-        // TODO: check if order already has a line with current Variant|Product
-        // TODO: check available stock of Variant|Product
-
         // copy currency from head if not set
-        if (!$this->currency) $this->currency()->associate( $this->order->currency );
+        if (!$this->currency) $this->currency()->associate( $this->invoice->currency );
         // copy employee from head if not set
-        if (!$this->employee) $this->employee()->associate( $this->order->employee );
+        if (!$this->employee) $this->employee()->associate( $this->invoice->employee );
 
         // set original price from product|variant
         if (!$this->exists) $this->price_reference =
@@ -45,12 +45,12 @@ class OrderLine extends X_OrderLine {
             $this->product?->price($this->currency)?->pivot?->price ?? 0;
 
         // calculate line total amount
-        $this->total = $this->price_ordered * $this->quantity_ordered;
+        $this->total = $this->price_invoiced * $this->quantity_invoiced;
     }
 
     public function afterSave() {
-        // update order total amount
-        $this->order->update([ 'total' => $this->order->lines()->sum('total') ]);
+        // update invoice total amount
+        $this->invoice->update([ 'total' => $this->invoice->lines()->sum('total') ]);
     }
 
 }

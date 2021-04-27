@@ -7,7 +7,7 @@ use HDSSolutions\Finpar\Traits\HasDocumentActions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Validator;
 
-class Order extends X_Order implements Document {
+class Invoice extends X_Invoice implements Document {
     use HasDocumentActions;
 
     public function branch() {
@@ -35,25 +35,32 @@ class Order extends X_Order implements Document {
     }
 
     public function prepareIt():?string {
-        // TODO: check lines count
         // TODO: if isSale=true
             // TODO: for each line
-                // TODO: check if product is sold
-                // TODO: check available stock
-                // TODO: check drafted inventories
+                // TODO: Check invoiced quantity <= ordered quantity
+            // TODO: if isCredit=true
+                // TODO: Check Partner enabled for credit
+                // TODO: Check Partner overdue invoices
+                // TODO: Check Partner available credit
+
         return null;
     }
 
     public function completeIt():?string {
-        // TODO: if isSale=true
-            // TODO: for each line:
-                // TODO: reserve stock of Variant|Product
-        // TODO: create InOut document
+        // TODO: for each line
+            // TODO: update orderLine.quantity_invoiced
+            // TODO: if ordered == invoiced set orderline.invoiced=true
+            // TODO: if isPurchase=true
+                // TODO: update pending stock for Variant|Product
+
         return null;
     }
 
     public function beforeSave(Validator $validator) {
-        // TODO: Check drafted order from more than XX days
+        // TODO: when isCredit=true
+            // TODO: Check Partner enabled for credit
+            // TODO: Check Partner overdue invoices
+            // TODO: Check Partner available credit
 
         // TODO: set employee from session
         if (!$this->exists) $this->employee()->associate( auth()->user() );

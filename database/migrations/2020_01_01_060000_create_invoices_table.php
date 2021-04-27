@@ -4,7 +4,7 @@ use HDSSolutions\Finpar\Blueprints\BaseBlueprint as Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrdersTable extends Migration {
+class CreateInvoicesTable extends Migration {
     /**
      * Run the migrations.
      *
@@ -18,7 +18,7 @@ class CreateOrdersTable extends Migration {
         $schema->blueprintResolver(fn($table, $callback) => new Blueprint($table, $callback));
 
         // create table
-        $schema->create('orders', function(Blueprint $table) {
+        $schema->create('invoices', function(Blueprint $table) {
             $table->id();
             $table->foreignTo('Company');
             $table->foreignTo('Branch');
@@ -27,28 +27,33 @@ class CreateOrdersTable extends Migration {
             $table->morphable('partner');
             $table->integer('address_id')->nullable(); // TODO: Link to Partner.address
             $table->timestamp('transacted_at')->useCurrent();
+            $table->string('stamping')->nullable();
             $table->string('document_number');
             $table->boolean('is_purchase')->default(false);
-            $table->boolean('is_invoiced')->default(false);
+            $table->boolean('is_credit')->default(false);
             $table->amount('total')->default(0);
+            $table->boolean('is_paid')->default(false);
+            $table->amount('paid_amount')->default(0);
             // use table as document
             $table->asDocument();
         });
 
-        $schema->create('order_lines', function(Blueprint $table) {
+        $schema->create('invoice_lines', function(Blueprint $table) {
             $table->id();
-            $table->foreignTo('Order');
+            $table->foreignTo('Invoice');
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
+            $table->foreignTo('OrderLine');
             $table->foreignTo('Product');
             $table->foreignTo('Variant')->nullable();
-            $table->unique([ 'order_id', 'product_id', 'variant_id' ]);
+            $table->unique([ 'invoice_id', 'product_id', 'variant_id' ]);
             $table->amount('price_reference');
-            $table->amount('price_ordered');
-            $table->unsignedInteger('quantity_ordered');
-            $table->unsignedInteger('quantity_invoiced')->nullable();
+            $table->amount('price_ordered')->nullable();
+            $table->amount('price_invoiced');
+            $table->integer('quantity_ordered')->nullable();
+            $table->integer('quantity_invoiced');
+            $table->integer('quantity_received')->nullable();
             $table->amount('total');
-            $table->boolean('is_invoiced')->default(false);
             $table->integer('conversion_rate')->nullable();
         });
     }
@@ -59,8 +64,8 @@ class CreateOrdersTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('order_lines');
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('invoice_lines');
+        Schema::dropIfExists('invoices');
     }
 
 }
