@@ -31,7 +31,17 @@ class Invoice extends X_Invoice implements Document {
     }
 
     public function lines() {
-        return $this->hasMany(OrderLine::class);
+        return $this->hasMany(InvoiceLine::class);
+    }
+
+    public function beforeSave(Validator $validator) {
+        // TODO: when isCredit=true
+            // TODO: Check Partner enabled for credit
+            // TODO: Check Partner overdue invoices
+            // TODO: Check Partner available credit
+
+        // TODO: set employee from session
+        if (!$this->exists) $this->employee()->associate( auth()->user() );
     }
 
     public function prepareIt():?string {
@@ -54,16 +64,6 @@ class Invoice extends X_Invoice implements Document {
                 // TODO: update pending stock for Variant|Product
 
         return null;
-    }
-
-    public function beforeSave(Validator $validator) {
-        // TODO: when isCredit=true
-            // TODO: Check Partner enabled for credit
-            // TODO: Check Partner overdue invoices
-            // TODO: Check Partner available credit
-
-        // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
     }
 
 }

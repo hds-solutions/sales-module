@@ -9,7 +9,6 @@ class X_InvoiceLine extends Base\Model {
     protected $fillable = [
         'invoice_id',
         'currency_id',
-        'employee_id',
         'order_line_id',
         'product_id',
         'variant_id',

@@ -25,7 +25,7 @@ class CreateOrdersTable extends Migration {
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
             $table->morphable('partner');
-            $table->integer('address_id')->nullable(); // TODO: Link to Partner.address
+            $table->unsignedInteger('address_id')->nullable(); // TODO: Link to Partner.address
             $table->timestamp('transacted_at')->useCurrent();
             $table->string('document_number');
             $table->boolean('is_purchase')->default(false);
@@ -49,7 +49,7 @@ class CreateOrdersTable extends Migration {
             $table->unsignedInteger('quantity_invoiced')->nullable();
             $table->amount('total');
             $table->boolean('is_invoiced')->default(false);
-            $table->integer('conversion_rate')->nullable();
+            $table->unsignedInteger('conversion_rate')->nullable();
         });
     }
 

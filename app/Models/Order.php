@@ -34,6 +34,13 @@ class Order extends X_Order implements Document {
         return $this->hasMany(OrderLine::class);
     }
 
+    public function beforeSave(Validator $validator) {
+        // TODO: Check drafted order from more than XX days
+
+        // TODO: set employee from session
+        if (!$this->exists) $this->employee()->associate( auth()->user() );
+    }
+
     public function prepareIt():?string {
         // TODO: check lines count
         // TODO: if isSale=true
@@ -50,13 +57,6 @@ class Order extends X_Order implements Document {
                 // TODO: reserve stock of Variant|Product
         // TODO: create InOut document
         return null;
-    }
-
-    public function beforeSave(Validator $validator) {
-        // TODO: Check drafted order from more than XX days
-
-        // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
     }
 
 }

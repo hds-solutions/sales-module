@@ -15,10 +15,6 @@ class InvoiceLine extends X_InvoiceLine {
         return $this->belongsTo(Currency::class);
     }
 
-    public function employee() {
-        return $this->belongsTo(Employee::class);
-    }
-
     public function orderLine() {
         return $this->belongsTo(OrderLine::class);
     }
@@ -34,8 +30,6 @@ class InvoiceLine extends X_InvoiceLine {
     public function beforeSave(Validator $validator) {
         // copy currency from head if not set
         if (!$this->currency) $this->currency()->associate( $this->invoice->currency );
-        // copy employee from head if not set
-        if (!$this->employee) $this->employee()->associate( $this->invoice->employee );
 
         // set original price from product|variant
         if (!$this->exists) $this->price_reference =
