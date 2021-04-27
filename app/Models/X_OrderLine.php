@@ -4,7 +4,7 @@ namespace HDSSolutions\Finpar\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class X_OrderLine extends Base\Model {
+abstract class X_OrderLine extends Base\Model {
 
     protected $fillable = [
         'order_id',

@@ -5,7 +5,7 @@ namespace HDSSolutions\Finpar\Models;
 use HDSSolutions\Finpar\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Builder;
 
-class X_Invoice extends Base\Model {
+abstract class X_Invoice extends Base\Model {
     use BelongsToCompany;
 
     protected $fillable = [

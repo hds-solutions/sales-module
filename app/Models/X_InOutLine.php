@@ -4,7 +4,7 @@ namespace HDSSolutions\Finpar\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class X_InOutLine extends Base\Model {
+abstract class X_InOutLine extends Base\Model {
 
     protected $fillable = [
         'in_out_id',
