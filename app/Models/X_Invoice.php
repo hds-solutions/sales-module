@@ -29,8 +29,24 @@ abstract class X_Invoice extends Base\Model {
         return $this->is_purchase;
     }
 
+    public function getIsSaleAttribute():bool {
+        return !$this->is_purchase;
+    }
+
+    public function isSale():bool {
+        return $this->is_sale;
+    }
+
     public function isPaid():bool {
         return $this->is_paid;
+    }
+
+    public function getIsCashAttribute():bool {
+        return !$this->is_credit;
+    }
+
+    public function isCash():bool {
+        return $this->is_cash;
     }
 
 }

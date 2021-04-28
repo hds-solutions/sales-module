@@ -28,12 +28,20 @@ abstract class X_InOut extends Base\Model {
         return $this->is_purchase;
     }
 
+    public function getIsSaleAttribute():bool {
+        return !$this->is_purchase;
+    }
+
+    public function isSale():bool {
+        return $this->is_sale;
+    }
+
     public function isMaterialReturn():bool {
         return $this->is_material_return;
     }
 
     public function isComplete():bool {
-        return $this->is_purchase;
+        return $this->is_complete;
     }
 
 }
