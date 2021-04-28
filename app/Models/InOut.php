@@ -32,6 +32,20 @@ class InOut extends X_InOut implements Document {
         return $this->hasMany(InOutLine::class);
     }
 
+    public function hasProduct(int|Product $product, int|Variant|null $variant = null) {
+        // get order lines
+        $lines = $this->lines();
+
+        // filter product
+        $lines->where('product_id', $product instanceof Product ? $product->id : $product);
+        // filter variant if specified
+        if ($variant !== null) $lines->where('variant_id', $variant instanceof Variant ? $variant->id : $variant);
+        else $lines->whereNull('variant_id');
+
+        // return if there is lines with specified product|variant
+        return $lines->count() > 0;
+    }
+
     public function beforeSave(Validator $validator) {
         // TODO: set employee from session
         if (!$this->exists) $this->employee()->associate( auth()->user() );
@@ -40,54 +54,119 @@ class InOut extends X_InOut implements Document {
         if ($this->isMaterialReturn && $this->invoice === null)
             // reject it, Invoice must be specified when returning
             $validator->errors()->add('invoice_id', __('sales::inout.material-return-invoice'));
-    }
 
-    public function afterSave() {
-        // TODO: if isMaterialReturn=true, create lines from invoice
+        // check if new record and no document number is set
+        if (!$this->exists && !$this->document_number)
+            // set document number incrementing by 10
+            $this->document_number = (int)self::max('document_number') + 10;
     }
 
     public function prepareIt():?string {
-        // TODO: if isMaterialReturn=true
-            // TODO: InOut of order must be completed to return items
+        // validations where isMaterialReturn
+        if ($this->isMaterialReturn &&
+            // InOut of Order must be completed in order to return items
+            self::ofOrder( $this->order )->completed()->count() == 0)
 
-        // TODO: if isSale=true
-            // TODO: for each line
-                // TODO: if isMaterialReturn=true && line.quantity_movement == 0, reject since can't return empty lines
+            // return process error
+            return $this->documentError('sales::in_out.order-not-completed', [
+                'order' => $this->order,
+            ]);
 
-        return null;
+        // isSale=true and
+        if ($this->is_sale && $this->is_material_return) foreach ($this->lines as $line) {
+            // TODO: if isMaterialReturn=true && line.quantity_movement == 0, reject since can't return empty lines
+        }
+
+        // return status InProgress
+        return Document::STATUS_InProgress;
     }
 
     public function completeIt():?string {
-        // TODO: let isComplete = true
-        // TODO: for each line
-            // TODO: if line.ordered !== movement, isComplete=false
+        // process lines, updating stock based on document type
+        foreach ($this->lines as $line) {
             // TODO: if isMaterialReturn=true
                 // TODO: check if returned quantity is greater than invoiced quantity and reject it
 
-            // TODO: let quantityToMove = line.quantity_movement
-            // TODO: for each line.product.locators
-                // TODO: let availableOnStorage = Storage.qty( locator )
+            // save total quantity to move
+            $quantityToMove = $line->quantity_movement;
+            // get Variant|Product locators
+            foreach (($line->variant ?? $line->product)->locators as $locator) {
+                // ignore storage if hasn't available stock
+                if (($storage = Storage::getFromProductOnLocator($line->product, $line->variant, $locator))->available == 0) continue;
 
-                // TODO: if isMaterialReturn=true
-                    // TODO: add storage.onHand
-                    // TODO: quantityToMove=0
-                // TODO: if isSale=true
-                    // TODO: substract availableOnStorage from storage.onHand
-                    // TODO: substract availableOnStorage from storage.reserved
-                    // TODO: quantityToMove -= availableOnStorage
-                // TODO: if isPurchase=true
-                    // TODO: add storage.onHand
-                    // TODO: substract storage.pending
-                    // TODO: quantityToMove=0
-                // TODO: if quantityToMove == 0, exit loop
+                // save available stock on current storage
+                $availableOnStorage = $storage->available;
 
-            // TODO: if quantityToMove != 0, reject it, can't substract stock
+                // if document isSale, substract stock from Storage
+                if ($this->isSale) {
+                    // update stock on storage
+                    $storage->fill([
+                        // substract available from storage.onHand
+                        'on_hand'   => $storage->on_hand - $availableOnStorage,
+                        // substract available from storage.reserved
+                        'reserved'  => $storage->reserved - $availableOnStorage,
+                    ]);
 
-        // TODO: set this.isComplete( isComplete )
+                    // substract available from total quantity to move
+                    $quantityToMove -= $availableOnStorage;
+                }
 
-        // TODO: if isMaterialReturn, create creditNote
+                // if document isPurchase, add available stock on Storage
+                if ($this->isPurchase) {
+                    // update stock on storage
+                    $storage->fill([
+                        // add movement quantity to storage.onHand
+                        'on_hand'   => $storage->on_hand + $quantityToMove,
+                        // substract movement quantity from storage.pending
+                        'pending'   => $storage->pending - $quantityToMove,
+                    ]);
 
-        return null;
+                    // set quantity to move to 0 (zero), all movement when to first location found
+                    $quantityToMove = 0;
+                }
+
+                // if document isMaterialReturn, add available stock on Storage
+                if ($this->isMaterialReturn) {
+                    // update stock on storage
+                    $storage->fill([
+                        // add movement quantity to storage.onHand
+                        'on_hand'   => $storage->on_hand + $quantityToMove,
+                    ]);
+
+                    // set quantity to move to 0 (zero), all movement when to first location found
+                    $quantityToMove = 0;
+                }
+
+                // save storage changes
+                if (!$storage->save())
+                    // return document error
+                    return $this->documentError( $storage->errors()->first() );
+
+                // check if all movement quantity was already moved and exit loop
+                if ($quantityToMove == 0) break;
+            }
+
+            // if not all movement quantity can be moved, reject process
+            if ($quantityToMove > 0)
+                // return document error
+                return $this->documentError('sales::in_out.lines.no-storage-found', [
+                    'product'   => $line->product->name,
+                    'variant'   => $line->variant?->sku,
+                ]);
+        }
+
+        // if document isMaterialReturn, create a CreditNote for the returning amount
+        if ($this->isMaterialReturn) {
+            // TODO: create CreditNote
+        }
+
+        // return completed status
+        return Document::STATUS_Completed;
+    }
+
+    public function scopeOfOrder(Builder $query, int|Order $order) {
+        // return InOut's from order
+        return $query->where('order_id', $order instanceof Order ? $order->id : $order);
     }
 
     public static function createFromOrder(Order $order):self {
