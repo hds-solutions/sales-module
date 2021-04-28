@@ -14,6 +14,7 @@ abstract class X_InOut extends Base\Model {
         'employee_id',
         'partnerable_id',
         'partnerable_type',
+        'order_id',
         'invoice_id',
         'transacted_at',
         'stamping',

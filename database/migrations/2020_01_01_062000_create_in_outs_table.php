@@ -25,6 +25,7 @@ class CreateInOutsTable extends Migration {
             $table->foreignTo('Warehouse');
             $table->foreignTo('Employee');
             $table->morphable('partner');
+            $table->foreignTo('Order')->nullable();
             $table->foreignTo('Invoice')->nullable();
             $table->timestamp('transacted_at')->useCurrent();
             $table->string('stamping')->nullable();

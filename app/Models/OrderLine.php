@@ -28,9 +28,36 @@ class OrderLine extends X_OrderLine {
     }
 
     public function beforeSave(Validator $validator) {
-        // TODO: check if there is drafted Inventories of Variant|Product
-        // TODO: check if order already has a line with current Variant|Product
-        // TODO: check available stock of Variant|Product
+        // check if there are drafted Inventories of Variant|Product
+        if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.pending-inventories', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
+
+        // check if order already has a line with current Variant|Product
+        if ($this->order->hasProduct( $this->product, $this->variant ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.already-has-product', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
+
+        // check available stock of Variant|Product
+        if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.no-enough-stock', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                    'available' => $available,
+                ])
+            ]);
 
         // copy currency from head if not set
         if (!$this->currency) $this->currency()->associate( $this->order->currency );

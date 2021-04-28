@@ -92,4 +92,42 @@ class InOut extends X_InOut implements Document {
         return null;
     }
 
+    public static function createFromOrder(Order $order):self {
+        // create new document
+        $inOut = new self([
+            'branch_id'         => $order->branch_id,
+            'warehouse_id'      => $order->warehouse_id,
+            'employee_id'       => $order->employee_id,
+            'partnerable_type'  => $order->partnerable_type,
+            'partnerable_id'    => $order->partnerable_id,
+            'transacted_at'     => $order->transacted_at,
+            'is_purchase'       => $order->is_purchase,
+        ]);
+        // save header
+        if (!$inOut->save())
+            // save error message and return instance
+            return tap($inOut, fn($inOut) => $inOut->documentError( $inOut->errors()->first() ));
+
+        // copy Order lines to InOut
+        foreach ($order->lines as $orderLine) {
+            // create new InOutLine
+            $inOutLine = $inOut->lines()->make([
+                'order_line_id'     => $orderLine->id,
+                'product_id'        => $orderLine->product_id,
+                'variant_id'        => $orderLine->variant_id,
+                'quantity_ordered'  => $orderLine->quantity_ordered,
+                'quantity_movement' => $orderLine->quantity_movement,
+            ]);
+            // set first locator of Product|Variant
+            $inOutLine->locator()->associate( ($orderLine->variant ?? $orderLine->product)->locators()->first() );
+            // save line
+            if (!$inOutLine->save())
+                // save error message and return instance
+                return tap($inOutLine, fn($inOutLine) => $inOut->documentError( $inOutLine->errors()->first() ));
+        }
+
+        // return created document
+        return $inOut;
+    }
+
 }

@@ -22,6 +22,7 @@ class CreateOrdersTable extends Migration {
             $table->id();
             $table->foreignTo('Company');
             $table->foreignTo('Branch');
+            $table->foreignTo('Warehouse');
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
             $table->morphable('partner');

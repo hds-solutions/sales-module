@@ -10,6 +10,7 @@ abstract class X_Order extends Base\Model {
 
     protected $fillable = [
         'branch_id',
+        'warehouse_id',
         'currency_id',
         'employee_id',
         'partnerable_id',
