@@ -4,11 +4,13 @@ namespace HDSSolutions\Finpar\Models;
 
 use HDSSolutions\Finpar\Interfaces\Document;
 use HDSSolutions\Finpar\Traits\HasDocumentActions;
+use HDSSolutions\Finpar\Traits\HasPartnerable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Validator;
 
 class Invoice extends X_Invoice implements Document {
-    use HasDocumentActions;
+    use HasDocumentActions,
+        HasPartnerable;
 
     public function branch() {
         return $this->belongsTo(Branch::class);
@@ -20,10 +22,6 @@ class Invoice extends X_Invoice implements Document {
 
     public function employee() {
         return $this->belongsTo(Employee::class);
-    }
-
-    public function partnerable() {
-        return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id');
     }
 
     public function address() {
