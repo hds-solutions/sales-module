@@ -32,7 +32,6 @@ class CreateInvoicesTable extends Migration {
             $table->boolean('is_purchase')->default(false);
             $table->boolean('is_credit')->default(false);
             $table->amount('total')->default(0);
-            $table->boolean('is_paid')->default(false);
             $table->amount('paid_amount')->default(0);
             // use table as document
             $table->asDocument();
@@ -47,9 +46,9 @@ class CreateInvoicesTable extends Migration {
             $table->foreignTo('Variant')->nullable();
             $table->unique([ 'invoice_id', 'product_id', 'variant_id' ]);
             $table->amount('price_reference');
-            $table->amount('price_ordered')->nullable();
+            $table->amount('price_ordered');
             $table->amount('price_invoiced');
-            $table->unsignedInteger('quantity_ordered')->nullable();
+            $table->unsignedInteger('quantity_ordered');
             $table->unsignedInteger('quantity_invoiced');
             $table->unsignedInteger('quantity_received')->nullable();
             $table->amount('total');

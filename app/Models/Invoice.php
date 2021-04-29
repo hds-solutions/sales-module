@@ -12,6 +12,22 @@ class Invoice extends X_Invoice implements Document {
     use HasDocumentActions,
         HasPartnerable;
 
+    public function __construct(array|Order $attributes = []) {
+        // check if is instance of Order
+        if (($order = $attributes) instanceof Order)
+            // copy attributes from Order
+            $attributes = [
+                'branch_id'         => $order->branch_id,
+                'currency_id'       => $order->currency_id,
+                'employee_id'       => $order->employee_id,
+                'partnerable_type'  => $order->partnerable_type,
+                'partnerable_id'    => $order->partnerable_id,
+                'is_purchase'       => $order->is_purchase,
+            ];
+        // redirect attributes to parent
+        parent::__construct(is_array($attributes) ? $attributes : []);
+    }
+
     public function branch() {
         return $this->belongsTo(Branch::class);
     }
@@ -41,7 +57,7 @@ class Invoice extends X_Invoice implements Document {
 
     public function scopeOverGrace(Builder $query, AsPerson $partnerable) {
         // return invoices that are overDue including Partnerable.graceDays
-        return self::overDue( $partnerable->grace_days ));
+        return self::overDue( $partnerable->grace_days );
     }
 
     public function scopePaid(Builder $query, bool $paid = true) {
@@ -51,7 +67,7 @@ class Invoice extends X_Invoice implements Document {
 
     public function beforeSave(Validator $validator) {
         // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
+        if (!$this->exists && $this->employee === null) $this->employee()->associate( auth()->user() );
 
         // validations when document isCredit
         if ($this->is_credit && ($error = $this->creditValidations()) !== null)
@@ -136,6 +152,37 @@ class Invoice extends X_Invoice implements Document {
 
         // return completed status
         return Document::STATUS_Completed;
+    }
+
+    public static function createFromOrder(int|Order $order, array $attributes = []):Invoice {
+        // make and save invoice
+        return tap(self::makeFromOrder($order, $attributes), function($invoice) {
+            // save invoice
+            $invoice->save();
+            // save Invoice.lines
+            $invoice->lines->each(function($invoiceLine) use ($invoice) {
+                // link with parent
+                $invoiceLine->invoice()->associate($invoice);
+                // save InvoiceLine
+                $invoiceLine->save();
+            });
+        });
+    }
+
+    public static function makeFromOrder(int|Order $order, array $attributes = []):Invoice {
+        // load order if isn't instance
+        if (!$order instanceof Order) $order = Order::findOrFail($order);
+        // create new Invoice from Order
+        $invoice = new self($order);
+        // append extra attributes
+        $invoice->fill( $attributes );
+        // create InvoiceLines from OrderLines
+        $order->lines->each(function($orderLine) use ($invoice) {
+            // create a new InvoiceLine from OrderLine
+            $invoice->lines->push( $invoiceLine = new InvoiceLine($orderLine) );
+        });
+        // return Invoice
+        return $invoice;
     }
 
     private function creditValidations():?string {

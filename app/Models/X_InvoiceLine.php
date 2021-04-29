@@ -22,5 +22,20 @@ abstract class X_InvoiceLine extends Base\Model {
         'conversion_rate',
     ];
 
+    protected static array $rules = [
+        'invoice_id'        => [ 'required' ],
+        'currency_id'       => [ 'required' ],
+        'order_line_id'     => [ 'required' ],
+        'product_id'        => [ 'required' ],
+        'variant_id'        => [ 'sometimes', 'nullable' ],
+        'price_reference'   => [ 'required', 'min:0' ],
+        'price_ordered'     => [ 'required', 'min:0' ],
+        'price_invoiced'    => [ 'required', 'min:0' ],
+        'quantity_ordered'  => [ 'required', 'min:0' ],
+        'quantity_invoiced' => [ 'required', 'min:0' ],
+        'quantity_received' => [ 'sometimes', 'nullable', 'min:0' ],
+        'total'             => [ 'sometimes' ],
+        'conversion_rate'   => [ 'sometimes', 'nullable', 'min:0' ],
+    ];
 
 }

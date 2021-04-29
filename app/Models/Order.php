@@ -52,7 +52,7 @@ class Order extends X_Order implements Document {
 
     public function beforeSave(Validator $validator) {
         // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
+        if (!$this->exists && $this->employee === null) $this->employee()->associate( auth()->user() );
 
         // check if document age validations are enabled
         if (config('settings.validate-orders-age')) {

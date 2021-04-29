@@ -7,6 +7,25 @@ use Illuminate\Validation\Validator;
 
 class InvoiceLine extends X_InvoiceLine {
 
+    public function __construct(array|OrderLine $attributes = []) {
+        // check if is instance of OrderLine
+        if (($orderLine = $attributes) instanceof OrderLine)
+            // copy attributes from OrderLine
+            $attributes = [
+                'currency_id'       => $orderLine->currency_id,
+                'order_line_id'     => $orderLine->id,
+                'product_id'        => $orderLine->product_id,
+                'variant_id'        => $orderLine->variant_id,
+                'price_reference'   => $orderLine->price_reference,
+                'price_ordered'     => $orderLine->price_ordered,
+                'price_invoiced'    => $orderLine->price_ordered,
+                'quantity_ordered'  => $orderLine->quantity_ordered,
+                'quantity_invoiced' => $orderLine->quantity_ordered,
+            ];
+        // redirect attributes to parent
+        parent::__construct($attributes);
+    }
+
     public function invoice() {
         return $this->belongsTo(Invoice::class);
     }
