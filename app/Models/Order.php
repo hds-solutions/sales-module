@@ -4,11 +4,13 @@ namespace HDSSolutions\Finpar\Models;
 
 use HDSSolutions\Finpar\Interfaces\Document;
 use HDSSolutions\Finpar\Traits\HasDocumentActions;
+use HDSSolutions\Finpar\Traits\HasPartnerable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Validator;
 
 class Order extends X_Order implements Document {
-    use HasDocumentActions;
+    use HasDocumentActions,
+        HasPartnerable;
 
     public function branch() {
         return $this->belongsTo(Branch::class);
@@ -24,10 +26,6 @@ class Order extends X_Order implements Document {
 
     public function employee() {
         return $this->belongsTo(Employee::class);
-    }
-
-    public function partnerable() {
-        return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id');
     }
 
     public function address() {
@@ -53,6 +51,9 @@ class Order extends X_Order implements Document {
     }
 
     public function beforeSave(Validator $validator) {
+        // TODO: set employee from session
+        if (!$this->exists && $this->employee === null) $this->employee()->associate( auth()->user() );
+
         // check if document age validations are enabled
         if (config('settings.validate-orders-age')) {
             // check drafted order from more than XX days ago
@@ -61,7 +62,7 @@ class Order extends X_Order implements Document {
                 return $validator->errors()->add([
                     'id'    => __('sales::orders.drafted-created-ago', [
                         'days'  => config('settings.pending-documents-age'),
-                    ]);
+                    ])
                 ]);
 
             // check if there is orders pending for invoiceIt from more than XX days ago
@@ -70,12 +71,9 @@ class Order extends X_Order implements Document {
                 return $validator->errors()->add([
                     'id'    => __('sales::orders.not-invoiced-created-ago', [
                         'days'  => config('settings.pending-documents-age'),
-                    ]);
+                    ])
                 ]);
         }
-
-        // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
     }
 
     public function prepareIt():?string {
@@ -136,7 +134,7 @@ class Order extends X_Order implements Document {
                 }
 
             // if there is pending quantity, reject document process
-            if ($pendingToReserve > 0) return $this->documentError('sales::order.lines.pending-to-reserve', [
+            if ($pendingToReserve > 0) return $this->documentError('sales::order.lines.pending-to-reserve-failed', [
                 'product'   => $line->product->name,
                 'variant'   => $line->variant?->sku,
             ]);

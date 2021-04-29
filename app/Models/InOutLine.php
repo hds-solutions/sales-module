@@ -24,8 +24,25 @@ class InOutLine extends X_InOutLine {
     }
 
     public function beforeSave(Validator $validator) {
-        // TODO: check if there is drafted Inventories of Variant|Product
-        // TODO: check if inOut already has a line with current Variant|Product
+        // check if there are drafted Inventories of Variant|Product
+        if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->inOut->branch ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::in_out.lines.pending-inventories', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
+
+        // check if InOut already has a line with current Variant|Product
+        if ($this->inOut->hasProduct( $this->product, $this->variant ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::in_out.lines.already-has-product', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
     }
 
 }

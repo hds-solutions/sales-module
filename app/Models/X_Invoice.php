@@ -21,16 +21,35 @@ abstract class X_Invoice extends Base\Model {
         'is_purchase',
         'is_credit',
         'total',
-        'is_paid',
         'paid_amount',
     ];
 
-    public function isPurchase():bool {
-        return $this->is_purchase;
+    protected static array $rules = [
+        'branch_id'         => [ 'required' ],
+        'currency_id'       => [ 'required' ],
+        'employee_id'       => [ 'required' ],
+        'partnerable_type'  => [ 'required' ],
+        'partnerable_id'    => [ 'required' ],
+        'address_id'        => [ 'sometimes' ],
+        'transacted_at'     => [ 'sometimes' ],
+        'stamping'          => [ 'sometimes' ],
+        'document_number'   => [ 'required' ],
+        'is_purchase'       => [ 'required', 'boolean' ],
+        'is_credit'         => [ 'required', 'boolean' ],
+        'total'             => [ 'sometimes' ],
+        'paid_amount'       => [ 'sometimes' ],
+    ];
+
+    public function getIsSaleAttribute():bool {
+        return !$this->is_purchase;
     }
 
-    public function isPaid():bool {
-        return $this->is_paid;
+    public function getIsPaidAttribute():bool {
+        return $this->total - $this->paid_amount === 0;
+    }
+
+    public function getIsCashAttribute():bool {
+        return !$this->is_credit;
     }
 
 }
