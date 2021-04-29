@@ -1,4 +1,21 @@
 @include('backend::components.errors')
+{{--<x-backend-form-foreign :resource="$resource ?? null" name="cash_id" required--}}
+{{--                        foreign="payments" :values="$payments"  default="123"--}}
+{{--                        request="payment"--}}
+
+{{--                        foreign-add-label="cash::cashes.add"--}}
+{{--                        show="cashBook.name"--}}
+
+{{--                        label="cash::cash_line.cash_id.0"--}}
+{{--                        placeholder="cash::cash_line.cash_id._"--}}
+{{--     helper="{{ __('cash::cash_line.cash_id.?') }}"  />--}}
+
+<x-backend-form-select :resource="$resource ?? null" name="cash_type" required
+                       :values="\HDSSolutions\Finpar\Models\Payment::PAYMENT_TYPES"  default="123"
+
+                       label="{{ __('payment::payment.0') }}"
+                       placeholder="{{ __('payment::payment._') }}"
+     helper="{{ __('payment::payment.?') }}"  />
 
 <x-backend-form-foreign :resource="$resource ?? null" name="customer_id" required field="business_name"
                         foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"

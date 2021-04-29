@@ -7,6 +7,7 @@ use HDSSolutions\Finpar\DataTables\OrderDataTable as DataTable;
 use HDSSolutions\Finpar\Http\Request;
 use HDSSolutions\Finpar\Models\Branch;
 use HDSSolutions\Finpar\Models\OrderLine;
+use HDSSolutions\Finpar\Models\Payment;
 use HDSSolutions\Finpar\Models\Variant;
 use HDSSolutions\Finpar\Traits\CanProcessDocument;
 use HDSSolutions\Finpar\Models\Currency;
@@ -53,8 +54,10 @@ class TdvController extends Controller
         //
         $currencies = Currency::all();
 
+        $payments = Payment::all();
+
         // show create form
-        return view('sales::tdv.create', compact('customers', 'products', 'branches', 'currencies'));
+        return view('sales::tdv.create', compact('customers', 'products', 'branches', 'currencies', 'payments'));
     }
 
     /**
