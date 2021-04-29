@@ -1,10 +1,11 @@
 @include('backend::components.errors')
 
-<x-backend-form-foreign :resource="$resource ?? null" name="customer_id" required field="business_name"
-                        foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"
+<x-backend-form-foreign :resource="$resource ?? null" name="partnerable_id" required
+    show="business_name"
+    foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"
 
-                        label="{{ __('sales::order.customer_id.0') }}"
-                        placeholder="{{ __('sales::order.customer_id._') }}"
+    label="{{ __('sales::order.partnerable_id.0') }}"
+    placeholder="{{ __('sales::order.partnerable_id._') }}"
     {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
 
 {{-- TODO ADDRESSES--}}
@@ -17,15 +18,16 @@
 {{--    --}}{{-- helper="{{ __('sales::product.warehouse_id.?') }}" --}}{{-- />--}}
 
 <x-backend-form-foreign :resource="$resource ?? null" name="currency_id" required
-                        foreign="currencies" :values="$currencies" foreign-add-label="{{ __('sales::currencies.add') }}"
+    foreign="currencies" :values="backend()->currencies()" foreign-add-label="{{ __('sales::currencies.add') }}"
+    append="decimals" default="{{ backend()->currency()->id }}"
 
-                        label="{{ __('sales::order.currency_id.0') }}"
-                        placeholder="{{ __('sales::order.currency_id._') }}"
+    label="{{ __('sales::order.currency_id.0') }}"
+    placeholder="{{ __('sales::order.currency_id._') }}"
     {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
 
 <div class="form-row form-group mb-0">
-    <label class="col-12 col-md-3 control-label mt-2 mb-3">@lang('sales::inventory.lines.0')</label>
-    <div class="col-9" data-multiple=".order-line-container" data-template="#new">
+    <label class="col-12 col-md-3 col-lg-2 control-label mt-2 mb-3">@lang('sales::order.lines.0')</label>
+    <div class="col-12 col-md-9 col-lg-10" data-multiple=".order-line-container" data-template="#new">
         @php $old = old('lines') ?? []; @endphp
         {{-- add product current lines --}}
         @if (isset($resource)) @foreach($resource->lines as $idx => $selected)
@@ -56,5 +58,5 @@
 </div>
 
 <x-backend-form-controls
-    submit="sales::inventories.save"
-    cancel="sales::inventories.cancel" cancel-route="backend.inventories" />
+    submit="sales::orders.save"
+    cancel="sales::orders.cancel" cancel-route="backend.orders" />

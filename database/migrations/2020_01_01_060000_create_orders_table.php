@@ -20,33 +20,37 @@ class CreateOrdersTable extends Migration {
         // create table
         $schema->create('orders', function(Blueprint $table) {
             $table->id();
-            $table->morphable('partner');
             $table->foreignTo('Company');
             $table->foreignTo('Branch');
+            $table->foreignTo('Warehouse');
             $table->foreignTo('Currency');
-            $table->integer('address_id')->nullable();
-            $table->integer('conversion_rate')->default(1);
-            $table->date('transaction_date');
-            $table->amount('total');
-            $table->string('invoice_number')->nullable();
-            $table->string('stamping')->nullable();
+            $table->foreignTo('Employee');
+            $table->morphable('partner');
+            $table->unsignedInteger('address_id')->nullable(); // TODO: Link to Partner.address
+            $table->timestamp('transacted_at')->useCurrent();
+            $table->string('document_number');
             $table->boolean('is_purchase')->default(false);
-
+            $table->boolean('is_invoiced')->default(false);
+            $table->amount('total')->default(0);
+            // use table as document
             $table->asDocument();
-
         });
 
-        $schema->create('order_lines', function (Blueprint $table) {
+        $schema->create('order_lines', function(Blueprint $table) {
             $table->id();
             $table->foreignTo('Order');
+            $table->foreignTo('Currency');
+            $table->foreignTo('Employee');
             $table->foreignTo('Product');
             $table->foreignTo('Variant')->nullable();
-            $table->amount('original_price');
-            $table->amount('price');
-            $table->integer('quantity');
+            $table->unique([ 'order_id', 'product_id', 'variant_id' ]);
+            $table->amount('price_reference');
+            $table->amount('price_ordered');
+            $table->unsignedInteger('quantity_ordered');
+            $table->unsignedInteger('quantity_invoiced')->nullable();
             $table->amount('total');
-            $table->foreignTo('Currency');
-            $table->integer('conversion_rate')->default(1);
+            $table->boolean('is_invoiced')->default(false);
+            $table->unsignedInteger('conversion_rate')->nullable();
         });
     }
 

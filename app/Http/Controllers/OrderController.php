@@ -6,29 +6,23 @@ use App\Http\Controllers\Controller;
 use HDSSolutions\Finpar\DataTables\OrderDataTable as DataTable;
 use HDSSolutions\Finpar\Http\Request;
 use HDSSolutions\Finpar\Models\Order as Resource;
-use HDSSolutions\Finpar\Models\CashBook;
 use HDSSolutions\Finpar\Models\Currency;
 use HDSSolutions\Finpar\Models\Customer;
-use HDSSolutions\Finpar\Models\InventoryLine;
-use HDSSolutions\Finpar\Models\Locator;
 use HDSSolutions\Finpar\Models\OrderLine;
 use HDSSolutions\Finpar\Models\Product;
 use HDSSolutions\Finpar\Models\Variant;
 use HDSSolutions\Finpar\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
 
-class OrderController extends Controller
-{
+class OrderController extends Controller {
     use CanProcessDocument;
 
-    protected function documentClass(): string
-    {
+    protected function documentClass():string {
         // return class
         return Resource::class;
     }
 
-    protected function redirectTo(): string
-    {
+    protected function redirectTo():string {
         // go to resource view
         return 'backend.orders.show';
     }
@@ -38,17 +32,17 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, DataTable $dataTable)
-    {
+    public function index(Request $request, DataTable $dataTable) {
         // check only-form flag
         if ($request->has('only-form'))
             // redirect to popup callback
-            return view('sales::components.popup-callback', ['resource' => new Resource]);
+            return view('sales::components.popup-callback', [ 'resource' => new Resource ]);
 
         // load resources
         if ($request->ajax()) return $dataTable->ajax();
+
         // return view with dataTable
-        return $dataTable->render('sales::orders.index', ['count' => Resource::count()]);
+        return $dataTable->render('sales::orders.index', [ 'count' => Resource::count() ]);
     }
 
     /**
@@ -56,24 +50,19 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
-    {
+    public function create(Request $request) {
         // load cash_books
-        $customers = Customer::with([
-            'identity',
-            // 'addresses',
-        ])->get();
-        //
+        $customers = Customer::all();
+        // // load current company branches
+        // $branches = backend()->company()->branches;
+        // load products
         $products = Product::with([
-            'prices',
-            'variants.prices',
+            'images',
+            'variants',
         ])->get();
-        //
-        $branches = backend()->company()->branches;
-        //
-        $currencies = Currency::all();
+
         // show create form
-        return view('sales::orders.create', compact('customers', 'products', 'branches', 'currencies'));
+        return view('sales::orders.create', compact('customers', 'products'));
     }
 
     /**
@@ -82,43 +71,40 @@ class OrderController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         // start a transaction
         DB::beginTransaction();
 
         // create resource
-        $resource = Resource::make($request->input());
+        $resource = new Resource( $request->input() );
+
+        // TODO: set real data
         $resource->branch_id = 1;
         $resource->transaction_date = now();
-        $resource->partnertable()->associate(Customer::find($request->get('customer_id')));
+        // associate Partner
+        $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
+
         // save resource
         if (!$resource->save())
             // redirect with errors
             return back()
-                ->withErrors($resource->errors())
+                ->withErrors( $resource->errors() )
                 ->withInput();
-
-
-        // check for errors
-        if (count($resource->errors()) > 0)
-            // redirect with errors
-            return back()
-                ->withInput()
-                ->withErrors($resource->errors());
 
         // sync inventory lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
             // return redirection
             return $redirect;
 
+        // confirm transaction
         DB::commit();
+
         // check return type
         return $request->has('only-form') ?
             // redirect to popup callback
             view('sales::components.popup-callback', compact('resource')) :
-            // redirect to resources list
-            redirect()->route('backend.orders');
+            // redirect to resource details
+            redirect()->route('backend.orders.show', $resource);
     }
 
     /**
@@ -127,13 +113,22 @@ class OrderController extends Controller
      * @param \App\Models\Resource $resource
      * @return \Illuminate\Http\Response
      */
-    public function show(Resource $resource)
-    {
+    public function show(Resource $resource) {
         // load inventory data
         $resource->load([
-            'cashBook.currency',
-            'lines',
+            'branch',
+            'partnerable',
+            'currency',
+            'lines' => fn($line) => $line->with([
+                'currency',
+                'product.images',
+                'variant' => fn($variant) => $variant->with([
+                    'images',
+                    'values',
+                ]),
+            ]),
         ]);
+
         // redirect to list
         return view('sales::orders.show', compact('resource'));
     }
@@ -144,29 +139,30 @@ class OrderController extends Controller
      * @param \App\Models\Resource $resource
      * @return \Illuminate\Http\Response
      */
-    public function edit(Resource $resource)
-    {
+    public function edit(Resource $resource) {
         // check if document is already approved or processed
         if ($resource->isApproved() || $resource->isProcessed())
             // redirect to show route
             return redirect()->route('backend.orders.show', $resource);
 
-        // load cash_books
-        $customers = Customer::with([
-            'identity',
-            // 'addresses',
-        ])->get();
-        //
+        // load resource relations
+        $resource->load([
+            'currency',
+            'lines.product',
+        ]);
+
+        // load customers
+        $customers = Customer::all();
+        // // load current company branches
+        // $branches = backend()->company()->branches;
+        // load products
         $products = Product::with([
-            'prices',
-            'variants.prices',
+            'images',
+            'variants',
         ])->get();
-        //
-        $branches = backend()->company()->branches;
-        //
-        $currencies = Currency::all();
+
         // show edit form
-        return view('sales::orders.edit', compact('customers', 'resource', 'products', 'branches', 'currencies'));
+        return view('sales::orders.edit', compact('customers', 'products', 'resource'));
     }
 
     /**
@@ -176,26 +172,33 @@ class OrderController extends Controller
      * @param \App\Models\Resource $resource
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
+    public function update(Request $request, $id) {
         // find resource
         $resource = Resource::findOrFail($id);
+
+        // start a transaction
         DB::beginTransaction();
 
+        // associate Partner
+        $resource->partnerable()->associate( Customer::findOrFail($request->get('partnerable_id')) );
+
         // save resource
-        if (!$resource->update($request->input()))
+        if (!$resource->update( $request->input() ))
             // redirect with errors
             return back()
-                ->withErrors($resource->errors())
+                ->withErrors( $resource->errors() )
                 ->withInput();
 
         // sync inventory lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
             // return redirection
             return $redirect;
+
+        // confirm transaction
         DB::commit();
-        // redirect to list
-        return redirect()->route('backend.orders');
+
+        // redirect to resource details
+        return redirect()->route('backend.orders.show', $resource);
     }
 
     /**
@@ -204,20 +207,19 @@ class OrderController extends Controller
      * @param \App\Models\Resource $resource
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
+    public function destroy($id) {
         // find resource
         $resource = Resource::findOrFail($id);
         // delete resource
         if (!$resource->delete())
             // redirect with errors
-            return back();
+            return back()
+                ->withErrors($resource->errors()->any() ? $resource->errors() : [ $resource->getDocumentError() ]);
         // redirect to list
         return redirect()->route('backend.orders');
     }
 
-    public function price(Request $request)
-    {
+    public function price(Request $request) {
         // get resources
         $product = $request->has('product') ? Product::findOrFail($request->product) : null;
         $variant = $request->has('variant') ? Variant::findOrFail($request->variant) : null;
@@ -226,46 +228,42 @@ class OrderController extends Controller
         return response()->json($variant?->price($currency)?->pivot ?? $product?->price($currency)?->pivot);
     }
 
-    private function syncLines(Resource $resource, array $lines)
-    {
+    private function syncLines(Resource $resource, array $lines) {
         // load inventory lines
         $resource->load(['lines']);
 
         // foreach new/updated lines
-        foreach (($lines = array_group($lines)) as $line) {
+        foreach (($lines = array_group( $lines )) as $line) {
             // ignore line if product wasn't specified
-            if (!isset($line['product_id']) || is_null($line['quantity'])) continue;
+            if (!isset($line['product_id']) || is_null($line['price']) || is_null($line['quantity'])) continue;
             // load product
             $product = Product::find($line['product_id']);
             // load variant, if was specified
             $variant = isset($line['variant_id']) ? $product->variants->firstWhere('id', $line['variant_id']) : null;
 
             // find existing line
-            $orderLine = $resource->lines->first(function ($iLine) use ($product, $variant) {
-                    return $iLine->product_id == $product->id &&
-                        $iLine->variant_id == ($variant->id ?? null);
-                    // create a new line
-                }) ?? OrderLine::make([
-                    'order_id' => $resource->id,
-                    'product_id' => $product->id,
-                    'variant_id' => $variant->id ?? null,
-                    'currency_id' => $resource->currency_id
-                ]);
+            $orderLine = $resource->lines->first(function($iLine) use ($product, $variant) {
+                return $iLine->product_id == $product->id &&
+                    $iLine->variant_id == ($variant->id ?? null);
+            // create a new line
+            }) ?? OrderLine::make([
+                'order_id'      => $resource->id,
+                'currency_id'   => $resource->currency_id,
+                'product_id'    => $product->id,
+                'variant_id'    => $variant->id ?? null,
+            ]);
 
             // update line values
             $orderLine->fill([
-                'price' => $line['price'] ?? 0,
-                'quantity' => $line['quantity'] ?? null,
-                'total' => $line['total'] ?? null,
+                'price'     => $line['price'],
+                'quantity'  => $line['quantity'],
+                'total'     => $line['total'],
             ]);
             // save inventory line
-            if (!$orderLine->save()) {
+            if (!$orderLine->save())
                 return back()
                     ->withInput()
-                    ->withErrors($orderLine->errors());
-            }
-
-
+                    ->withErrors( $orderLine->errors() );
         }
 
         // find removed inventory lines

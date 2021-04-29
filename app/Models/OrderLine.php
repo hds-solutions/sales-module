@@ -5,34 +5,79 @@ namespace HDSSolutions\Finpar\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Validator;
 
-class OrderLine extends X_OrderLine
-{
-    public function order()
-    {
+class OrderLine extends X_OrderLine {
+
+    public function order() {
         return $this->belongsTo(Order::class);
     }
 
-    public function variant()
-    {
-        return $this->belongsTo(Variant::class);
+    public function currency() {
+        return $this->belongsTo(Currency::class);
     }
 
-    public function product()
-    {
+    public function employee() {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function product() {
         return $this->belongsTo(Product::class);
     }
 
+    public function variant() {
+        return $this->belongsTo(Variant::class);
+    }
+
     public function beforeSave(Validator $validator) {
-        $this->original_price = $this->variant?->price($this->order->currency)?->pivot?->price ?? $this->product?->price($this->order->currency)?->pivot?->price;
-        $this->total = $this->price * $this->quantity;
+        // check if there are drafted Inventories of Variant|Product
+        if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.pending-inventories', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
+
+        // check if order already has a line with current Variant|Product
+        if ($this->order->hasProduct( $this->product, $this->variant ))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.already-has-product', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ])
+            ]);
+
+        // check available stock of Variant|Product
+        if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
+            // reject line with error
+            return $validator->errors()->add([
+                'product_id'    => __('sales::order.lines.no-enough-stock', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                    'available' => $available,
+                ])
+            ]);
+
+        // copy currency from head if not set
+        if (!$this->currency) $this->currency()->associate( $this->order->currency );
+        // copy employee from head if not set
+        if (!$this->employee) $this->employee()->associate( $this->order->employee );
+
+        // set original price from product|variant
+        if (!$this->exists) $this->price_reference =
+            // set variant price if variant is set
+            $this->variant?->price($this->currency)?->pivot?->price ??
+            // otherwise, set product price without variant
+            $this->product?->price($this->currency)?->pivot?->price ?? 0;
+
+        // calculate line total amount
+        $this->total = $this->price_ordered * $this->quantity_ordered;
     }
 
     public function afterSave() {
-        // update cash ending balande
-        $this->order->update([
-            'total' => $this->order->total
-                // add lines amount
-                + $this->order->lines->sum('total') ]);
+        // update order total amount
+        $this->order->update([ 'total' => $this->order->lines()->sum('total') ]);
     }
 
 }
