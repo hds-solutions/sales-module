@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use HDSSolutions\Finpar\Http\Controllers\
-    {OrderController, PriceChangeController};
+    {OrderController, PriceChangeController, TdvController};
 
 Route::group([
     'prefix'        => config('backend.prefix'),
@@ -19,4 +19,9 @@ Route::group([
         ->name('backend.orders.price');
     Route::post('orders/{resource}/process',          [ OrderController::class, 'processIt'])
         ->name('backend.orders.process');
+
+    Route::resource('tdv', TdvController::class, $name_prefix)
+        ->only(["create", 'store'])
+        ->parameters(['tdv' => 'resource'])
+        ->name('create', 'backend.orders.create');
 });
