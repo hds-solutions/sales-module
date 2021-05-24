@@ -27,31 +27,38 @@ class OrderLine extends X_OrderLine {
         return $this->belongsTo(Variant::class);
     }
 
-    public function beforeSave(Validator $validator) {
-        // check if there are drafted Inventories of Variant|Product
-        if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
-            // reject line with error
-            return $validator->errors()->add('product_id', __('sales::order.lines.pending-inventories', [
-                'product'   => $this->product->name,
-                'variant'   => $this->variant?->sku,
-            ]));
+    public function scopeInvoiced(Builder $query, bool $invoiced = true) {
+        return $query->where('is_invoiced', $invoiced);
+    }
 
+    public function beforeSave(Validator $validator) {
         // check if order already has a line with current Variant|Product
-        if ($this->order->hasProduct( $this->product, $this->variant ))
+        if (!$this->exists && $this->order->hasProduct( $this->product, $this->variant ))
             // reject line with error
             return $validator->errors()->add('product_id', __('sales::order.lines.already-has-product', [
                 'product'   => $this->product->name,
                 'variant'   => $this->variant?->sku,
             ]));
 
-        // check available stock of Variant|Product
-        if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
-            // reject line with error
-            return $validator->errors()->add('product_id', __('sales::order.lines.no-enough-stock', [
-                'product'   => $this->product->name,
-                'variant'   => $this->variant?->sku,
-                'available' => $available,
-            ]));
+        // validations when product is stockable
+        if ($this->product->stockable) {
+            // check if there are drafted Inventories of Variant|Product
+            if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
+                // reject line with error
+                return $validator->errors()->add('product_id', __('sales::order.lines.pending-inventories', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                ]));
+
+            // check available stock of Variant|Product
+            if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
+                // reject line with error
+                return $validator->errors()->add('product_id', __('sales::order.lines.no-enough-stock', [
+                    'product'   => $this->product->name,
+                    'variant'   => $this->variant?->sku,
+                    'available' => $available,
+                ]));
+        }
 
         // copy currency from head if not set
         if (!$this->currency) $this->currency()->associate( $this->order->currency );

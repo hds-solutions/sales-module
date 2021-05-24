@@ -48,10 +48,10 @@ class InOut extends X_InOut implements Document {
 
     public function beforeSave(Validator $validator) {
         // TODO: set employee from session
-        if (!$this->exists) $this->employee()->associate( auth()->user() );
+        if (!$this->exists && $this->employee_id === null) $this->employee()->associate( auth()->user() );
 
         // if document is material return and invoice not set
-        if ($this->isMaterialReturn && $this->invoice === null)
+        if ($this->is_material_return && $this->invoice === null)
             // reject it, Invoice must be specified when returning
             $validator->errors()->add('invoice_id', __('sales::inout.material-return-invoice'));
 
@@ -62,8 +62,8 @@ class InOut extends X_InOut implements Document {
     }
 
     public function prepareIt():?string {
-        // validations where isMaterialReturn
-        if ($this->isMaterialReturn &&
+        // validations where is_material_return
+        if ($this->is_material_return &&
             // InOut of Order must be completed in order to return items
             self::ofOrder( $this->order )->completed()->count() == 0)
 
@@ -74,7 +74,7 @@ class InOut extends X_InOut implements Document {
 
         // isSale=true and
         if ($this->is_sale && $this->is_material_return) foreach ($this->lines as $line) {
-            // TODO: if isMaterialReturn=true && line.quantity_movement == 0, reject since can't return empty lines
+            // TODO: if is_material_return=true && line.quantity_movement == 0, reject since can't return empty lines
         }
 
         // return status InProgress
@@ -84,7 +84,7 @@ class InOut extends X_InOut implements Document {
     public function completeIt():?string {
         // process lines, updating stock based on document type
         foreach ($this->lines as $line) {
-            // TODO: if isMaterialReturn=true
+            // TODO: if is_material_return=true
                 // TODO: check if returned quantity is greater than invoiced quantity and reject it
 
             // save total quantity to move
@@ -125,8 +125,8 @@ class InOut extends X_InOut implements Document {
                     $quantityToMove = 0;
                 }
 
-                // if document isMaterialReturn, add available stock on Storage
-                if ($this->isMaterialReturn) {
+                // if document is_material_return, add available stock on Storage
+                if ($this->is_material_return) {
                     // update stock on storage
                     $storage->fill([
                         // add movement quantity to storage.onHand
@@ -155,8 +155,8 @@ class InOut extends X_InOut implements Document {
                 ]);
         }
 
-        // if document isMaterialReturn, create a CreditNote for the returning amount
-        if ($this->isMaterialReturn) {
+        // if document is_material_return, create a CreditNote for the returning amount
+        if ($this->is_material_return) {
             // TODO: create CreditNote
         }
 
@@ -193,14 +193,16 @@ class InOut extends X_InOut implements Document {
                 'product_id'        => $orderLine->product_id,
                 'variant_id'        => $orderLine->variant_id,
                 'quantity_ordered'  => $orderLine->quantity_ordered,
-                'quantity_movement' => $orderLine->quantity_movement,
+                'quantity_movement' => $orderLine->quantity_ordered,
             ]);
             // set first locator of Product|Variant
             $inOutLine->locator()->associate( ($orderLine->variant ?? $orderLine->product)->locators()->first() );
             // save line
-            if (!$inOutLine->save())
+            if (!$inOutLine->save()) {
                 // save error message and return instance
-                return tap($inOutLine, fn($inOutLine) => $inOut->documentError( $inOutLine->errors()->first() ));
+                $inOut->documentError( $inOutLine->errors()->first() );
+                return $inOut;
+            }
         }
 
         // return created document

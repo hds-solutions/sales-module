@@ -36,6 +36,10 @@ class Order extends X_Order implements Document {
         return $this->hasMany(OrderLine::class);
     }
 
+    public function scopeInvoiced(Builder $query, bool $invoiced = true) {
+        return $query->where('is_invoiced', $invoiced);
+    }
+
     public function hasProduct(int|Product $product, int|Variant|null $variant = null) {
         // get order lines
         $lines = $this->lines();
@@ -90,22 +94,25 @@ class Order extends X_Order implements Document {
                     'variant'   => $line->variant?->sku,
                 ]);
 
-            // check if there are drafted Inventories of Variant|Product
-            if (Inventory::hasOpenForProduct( $line->product, $line->variant, $this->branch ))
-                // reject line with error
-                return $this->documentError('sales::order.lines.pending-inventories', [
-                    'product'   => $line->product->name,
-                    'variant'   => $line->variant?->sku,
-                ]);
+            // validations for products that has stock
+            if ($line->product->stockable) {
+                // check if there are drafted Inventories of Variant|Product
+                if (Inventory::hasOpenForProduct( $line->product, $line->variant, $this->branch ))
+                    // reject line with error
+                    return $this->documentError('sales::order.lines.pending-inventories', [
+                        'product'   => $line->product->name,
+                        'variant'   => $line->variant?->sku,
+                    ]);
 
-            // check available stock of Variant|Product
-            if ($line->quantity_ordered > ($available = Storage::getQtyAvailable( $line->product, $line->variant, $this->branch )))
-                // reject line with error
-                return $this->documentError('sales::order.lines.no-enough-stock', [
-                    'product'   => $line->product->name,
-                    'variant'   => $line->variant?->sku,
-                    'available' => $available,
-                ]);
+                // check available stock of Variant|Product
+                if ($line->quantity_ordered > ($available = Storage::getQtyAvailable( $line->product, $line->variant, $this->branch )))
+                    // reject line with error
+                    return $this->documentError('sales::order.lines.no-enough-stock', [
+                        'product'   => $line->product->name,
+                        'variant'   => $line->variant?->sku,
+                        'available' => $available,
+                    ]);
+            }
         }
 
         // return status InProgress
@@ -115,6 +122,9 @@ class Order extends X_Order implements Document {
     public function completeIt():?string {
         // reserve stock of Variants|Products (only when document is sale)
         if ($this->is_sale) foreach ($this->lines as $line) {
+            // ignore line if product.type isn't stockable
+            if (!$line->product->stockable) continue;
+
             // total quantity to reserve
             $pendingToReserve = $line->quantity_ordered;
             // get Variant|Product locators
@@ -141,7 +151,7 @@ class Order extends X_Order implements Document {
         }
 
         // create InOut document
-        if (!($inOut = InOut::createFromOrder( $this ))->exists)
+        if (!($inOut = InOut::createFromOrder( $this ))->exists || $inOut->getDocumentError() !== null)
             // redirect inOut document error
             return $this->documentError( $inOut->getDocumentError() );
 

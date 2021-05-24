@@ -33,6 +33,7 @@ class CreateInvoicesTable extends Migration {
             $table->boolean('is_credit')->default(false);
             $table->amount('total')->default(0);
             $table->amount('paid_amount')->default(0);
+            $table->boolean('is_paid')->default(false);
             // use table as document
             $table->asDocument();
         });

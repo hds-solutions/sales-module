@@ -72,29 +72,27 @@ class Invoice extends X_Invoice implements Document {
         // validations when document isCredit
         if ($this->is_credit && ($error = $this->creditValidations()) !== null)
             // reject invoice with error
-            return $validator->errors()->add([
-                'partnerable_id'    => __($error, [
-                    'partner'   => $this->partnerable->full_name,
-                ])
-            ]);
+            return $validator->errors()->add('partnerable_id', __($error, [
+                'partner'   => $this->partnerable->full_name,
+            ]));
     }
 
     public function prepareIt():?string {
-        // when document isSale, validate invoiced qty <= ordered qty and credit available of Partnerable
-        if ($this->is_sale) {
-            // check that invoiced quantity of products isn't greater than ordered quantity
-            foreach ($this->lines as $line) {
-                // get pending quantity to invoice
-                $quantity_pending = $line->orderLine->quantity_ordered - $line->orderLine->quantity_invoiced;
-                // check if quantity invoiced > quantity pending
-                if ($line->quantity_invoiced > $quantity_pending)
-                    // reject document with error
-                    return $this->documentError('sales::invoices.lines.invoiced-gt-pending', [
-                        'product'   => $line->product->name,
-                        'variant'   => $line->variant?->sku,
-                    ]);
-            }
+        // check that invoiced quantity of products isn't greater than ordered quantity
+        foreach ($this->lines as $line) {
+            // get pending quantity to invoice
+            $quantity_pending = $line->orderLine->quantity_ordered - $line->orderLine->quantity_invoiced;
+            // check if quantity invoiced > quantity pending
+            if ($line->quantity_invoiced > $quantity_pending)
+                // reject document with error
+                return $this->documentError('sales::invoices.lines.invoiced-gt-pending', [
+                    'product'   => $line->product->name,
+                    'variant'   => $line->variant?->sku,
+                ]);
+        }
 
+        // when document isSale, validate credit available of Partnerable
+        if ($this->is_sale) {
             // when document isCredit, validate that Partnerable has enabled and available credit
             if ($this->is_credit && ($error = $this->creditValidations()) !== null)
                 // return document error
@@ -120,9 +118,15 @@ class Invoice extends X_Invoice implements Document {
             if (!$line->orderLine->save())
                 // redirect error
                 return $this->documentError( $line->orderLine->errors()->first() );
+            // check if all lines of order where invoiced
+            if ($line->orderLine->order->lines()->invoiced(false)->count() === 0)
+                // mark order as invoiced
+                if (!$line->orderLine->order->update([ 'is_invoiced' => true ]))
+                    // return order saving error
+                    return $this->documentError( $line->orderLine->order->errors()->first() );
 
-            // when isPurchase, add invoiced quantity to pending stock
-            if ($this->is_purchase) {
+            // when isPurchase, add invoiced quantity to pending stock (only for products that are stockables)
+            if ($this->is_purchase && $line->product->stockable) {
                 // total quantity to set as pending
                 $invoicedToPending = $line->quantity_invoiced;
                 // get Variant|Product locators

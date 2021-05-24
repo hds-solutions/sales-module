@@ -42,20 +42,8 @@ abstract class X_Order extends Base\Model {
         'total'             => [ 'sometimes' ],
     ];
 
-    public function isPurchase():bool {
-        return $this->is_purchase;
-    }
-
     public function getIsSaleAttribute():bool {
         return !$this->is_purchase;
-    }
-
-    public function isSale():bool {
-        return $this->is_sale;
-    }
-
-    public function isInvoiced():bool {
-        return $this->is_invoiced;
     }
 
 }

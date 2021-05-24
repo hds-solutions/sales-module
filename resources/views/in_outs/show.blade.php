@@ -1,7 +1,7 @@
 @extends('backend::layouts.master')
 
-@section('page-name', __('sales::orders.title'))
-@section('description', __('sales::orders.description'))
+@section('page-name', __('sales::in_outs.title'))
+@section('description', __('sales::in_outs.description'))
 
 @section('content')
 
@@ -10,15 +10,15 @@
         <div class="row">
             <div class="col-6">
                 <i class="fas fa-user-plus"></i>
-                @lang('sales::orders.show')
+                @lang('sales::in_outs.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
                 @if (!$resource->isCompleted())
-                <a href="{{ route('backend.orders.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-info">@lang('sales::orders.edit')</a>
+                <a href="{{ route('backend.in_outs.edit', $resource) }}"
+                    class="btn btn-sm ml-2 btn-info">@lang('sales::in_outs.edit')</a>
                 @endif
-                <a href="{{ route('backend.orders.create') }}"
-                    class="btn btn-sm ml-2 btn-primary">@lang('sales::orders.create')</a>
+                <a href="{{ route('backend.in_outs.create') }}"
+                    class="btn btn-sm ml-2 btn-primary">@lang('sales::in_outs.create')</a>
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
 
         <div class="row">
             <div class="col">
-                <h2>@lang('sales::order.details.0')</h2>
+                <h2>@lang('sales::in_out.details.0')</h2>
             </div>
         </div>
 
@@ -36,32 +36,27 @@
             <div class="col-12">
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.branch_id.0'):</div>
+                    <div class="col-4 col-lg-4">@lang('sales::in_out.branch_id.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ $resource->branch->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.partnerable_id.0'):</div>
+                    <div class="col-4 col-lg-4">@lang('sales::in_out.partnerable_id.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }}</div>
                 </div>
 
-                <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.currency_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->currency->name }}</div>
-                </div>
-
                 {{-- <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.description.0'):</div>
+                    <div class="col-4 col-lg-4">@lang('sales::in_out.description.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ $resource->description }}</div>
                 </div> --}}
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.transacted_at.0'):</div>
+                    <div class="col-4 col-lg-4">@lang('sales::in_out.transacted_at.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.document_status.0'):</div>
+                    <div class="col-4 col-lg-4">@lang('sales::in_out.document_status.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ Document::__($resource->document_status) }}</div>
                 </div>
 
@@ -70,7 +65,7 @@
 
         <div class="row">
             <div class="col">
-                <h2>@lang('sales::order.lines.0')</h2>
+                <h2>@lang('sales::in_out.lines.0')</h2>
             </div>
         </div>
 
@@ -81,12 +76,10 @@
                     <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
                         <thead>
                             <tr>
-                                <th class="w-150px">@lang('sales::order.lines.image.0')</th>
-                                <th>@lang('sales::order.lines.product_id.0')</th>
-                                <th>@lang('sales::order.lines.variant_id.0')</th>
-                                <th class="w-150px text-center">@lang('sales::order.lines.price_ordered.0')</th>
-                                <th class="w-150px text-center">@lang('sales::order.lines.quantity_ordered.0')</th>
-                                <th class="w-150px text-center">@lang('sales::order.lines.total.0')</th>
+                                <th class="w-150px">@lang('sales::in_out.lines.image.0')</th>
+                                <th>@lang('sales::in_out.lines.product_id.0')</th>
+                                <th>@lang('sales::in_out.lines.variant_id.0')</th>
+                                <th class="w-150px text-center">@lang('sales::in_out.lines.quantity_movement.0')</th>
                             </tr>
                         </thead>
 
@@ -117,9 +110,7 @@
                                         </div>
                                         @endif
                                     </td>
-                                    <td class="align-middle text-center h6">{{ $line->currency->code }} <b>{{ number($line->price_ordered, $line->currency->decimals) }}</b></td>
-                                    <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_ordered }}</td>
-                                    <td class="align-middle text-center h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
+                                    <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_movement }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -130,7 +121,7 @@
         </div>
 
         @include('backend::components.document-actions', [
-            'route'     => 'backend.orders.process',
+            'route'     => 'backend.in_outs.process',
             'resource'  => $resource,
         ])
 

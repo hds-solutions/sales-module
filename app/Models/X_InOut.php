@@ -24,6 +24,12 @@ abstract class X_InOut extends Base\Model {
         'is_complete',
     ];
 
+    protected $attributes = [
+        'is_purchase'           => false,
+        'is_material_return'    => false,
+        'is_complete'           => false,
+    ];
+
     public function isPurchase():bool {
         return $this->is_purchase;
     }
