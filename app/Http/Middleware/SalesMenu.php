@@ -5,15 +5,8 @@ namespace HDSSolutions\Finpar\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Route;
 
-class SalesMenu {
+class SalesMenu extends Base\Menu {
 
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle($request, Closure $next) {
         // create a submenu
         $sub = backend()->menu()
@@ -35,7 +28,7 @@ class SalesMenu {
     }
 
     private function orders(&$menu) {
-        if (Route::has('backend.orders'))
+        if (Route::has('backend.orders') && $this->can('orders'))
             $menu->add(__('sales::orders.nav'), [
                 'route'     => 'backend.orders',
                 'icon'      => 'orders'
@@ -45,7 +38,7 @@ class SalesMenu {
     }
 
     private function invoices(&$menu) {
-        if (Route::has('backend.invoices'))
+        if (Route::has('backend.invoices') && $this->can('invoices'))
             $menu->add(__('sales::invoices.nav'), [
                 'route'     => 'backend.invoices',
                 'icon'      => 'invoices'
@@ -55,7 +48,7 @@ class SalesMenu {
     }
 
     private function in_outs(&$menu) {
-        if (Route::has('backend.in_outs'))
+        if (Route::has('backend.in_outs') && $this->can('in_outs'))
             $menu->add(__('sales::in_outs.nav'), [
                 'route'     => 'backend.in_outs',
                 'icon'      => 'in_outs'
@@ -65,7 +58,7 @@ class SalesMenu {
     }
 
     private function receipments(&$menu) {
-        if (Route::has('backend.receipments'))
+        if (Route::has('backend.receipments') && $this->can('receipments'))
             $menu->add(__('sales::receipments.nav'), [
                 'route'     => 'backend.receipments',
                 'icon'      => 'receipments'
