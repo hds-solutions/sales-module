@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\DB;
 class OrderController extends Controller {
     use CanProcessDocument;
 
+    public function __construct() {
+        // check resource Policy
+        $this->authorizeResource(Resource::class, 'resource');
+    }
+
     protected function documentClass():string {
         // return class
         return Resource::class;
