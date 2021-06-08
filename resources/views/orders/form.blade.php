@@ -28,28 +28,36 @@
 <div class="form-row form-group mb-0">
     <label class="col-12 col-md-3 col-lg-2 control-label mt-2 mb-3">@lang('sales::order.lines.0')</label>
     <div class="col-12 col-md-9 col-lg-10" data-multiple=".order-line-container" data-template="#new">
-        @php $old = old('lines') ?? []; @endphp
+        <?php $old_lines = array_group(old('lines') ?? []); ?>
         {{-- add product current lines --}}
         @if (isset($resource)) @foreach($resource->lines as $idx => $selected)
-            @include('sales::orders.line', [
+            @include('sales::orders.form.line', [
                 'products'  => $products,
                 'selected'  => $selected,
-                'old'       => $old[$idx] ?? null,
+                'old'       => $old_lines[$idx] ?? null,
             ])
-            @php unset($old[$idx]); @endphp
+            <?php unset($old_lines[$idx]); ?>
         @endforeach @endif
 
         {{-- add new added --}}
-        @foreach($old as $selected)
-            @include('sales::orders.line', [
+        @foreach($old_lines as $old)
+            {{-- ignore empty --}}
+            @if ( ($old['product_id'] ?? null) === null &&
+                ($old['variant_id'] ?? null) === null &&
+                ($old['price'] ?? null) === null &&
+                ($old['quantity'] ?? null) === null &&
+                ($old['total'] ?? null) === null)
+                @continue
+            @endif
+            @include('sales::orders.form.line', [
                 'products'  => $products,
-                'selected'  => 0,
-                'old'       => $selected,
+                'selected'  => null,
+                'old'       => $old,
             ])
         @endforeach
 
         {{-- add empty for adding new lines --}}
-        @include('sales::orders.line', [
+        @include('sales::orders.form.line', [
             'products'  => $products,
             'selected'  => null,
             'old'       => null,
