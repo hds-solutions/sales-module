@@ -19,7 +19,7 @@ Route::group([
     Route::resource('orders',                   OrderController::class,     $name_prefix)
         ->parameters([ 'orders' => 'resource' ])
         ->name('index', 'backend.orders');
-    Route::post('orders/price',                 [ PriceChangeController::class, 'price' ])
+    Route::post('orders/price',                 [ OrderController::class, 'price' ])
         ->name('backend.orders.price');
     Route::post('orders/{resource}/process',    [ OrderController::class, 'processIt'])
         ->name('backend.orders.process');
