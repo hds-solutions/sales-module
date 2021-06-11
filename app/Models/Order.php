@@ -127,8 +127,9 @@ class Order extends X_Order implements Document {
 
             // total quantity to reserve
             $pendingToReserve = $line->quantity_ordered;
-            // get Variant|Product locators
-            foreach (($line->variant ?? $line->product)->locators as $locator)
+
+            // reserve stock for Variant|Product on configured locators
+            foreach (($line->variant ?? $line->product)->locators as $locator) {
                 // check if storage has available stock
                 if (($storage = Storage::getFromProductOnLocator($line->product, $line->variant, $locator))->available > 0) {
                     // calculate available stock to reserver on current storage
@@ -142,6 +143,24 @@ class Order extends X_Order implements Document {
                     // if all pending quantity was already reserved, exit loop
                     if ($pendingToReserve === 0) break;
                 }
+            }
+
+            // reserve stock for Variant|Product on existing Storages
+            foreach (Storage::getFromProduct($line->product, $line->variant, $this->branch) as $storage) {
+                // check if storage has available stock
+                if ($storage->available > 0) {
+                    // calculate available stock to reserver on current storage
+                    $reserved = $storage->available > $pendingToReserve ? $pendingToReserve : $storage->available;
+                    // reserve stock on storage
+                    if (!$storage->update([ 'reserved' => $storage->reserved + $reserved ]))
+                        // return document error
+                        return $this->documentError( $storage->errors()->first() );
+                    // reduce pending quantity to reserver
+                    $pendingToReserve -= $reserved;
+                    // if all pending quantity was already reserved, exit loop
+                    if ($pendingToReserve === 0) break;
+                }
+            }
 
             // if there is pending quantity, reject document process
             if ($pendingToReserve > 0) return $this->documentError('sales::order.lines.pending-to-reserve-failed', [
