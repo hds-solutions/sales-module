@@ -187,6 +187,9 @@ class InOut extends X_InOut implements Document {
 
         // copy Order lines to InOut
         foreach ($order->lines as $orderLine) {
+            // ignore line if product.type isn't stockable
+            if (!$orderLine->product->stockable) continue;
+
             // create new InOutLine
             $inOutLine = $inOut->lines()->make([
                 'order_line_id'     => $orderLine->id,
