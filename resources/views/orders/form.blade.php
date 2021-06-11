@@ -1,29 +1,85 @@
 @include('backend::components.errors')
 
-<x-backend-form-foreign :resource="$resource ?? null" name="partnerable_id" required
-    show="business_name"
-    foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"
+<x-backend-form-boolean name="is_purchase"
+    :resource="$resource ?? null"
 
-    label="{{ __('sales::order.partnerable_id.0') }}"
-    placeholder="{{ __('sales::order.partnerable_id._') }}"
-    {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
+    label="sales::order.is_purchase.0"
+    placeholder="sales::order.is_purchase._"
+    {{-- helper="sales::order.is_purchase.?" --}} />
 
-{{-- TODO ADDRESSES--}}
-{{--<x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required--}}
-{{--                        filtered-by="[name=branch_id]" filtered-using="branch"--}}
-{{--                        foreign="warehouses" :values="$branches->pluck('warehouses')->flatten()" foreign-add-label="{{ __('sales::warehouses.add') }}"--}}
+<x-backend-form-text name="document_number" required
+    :resource="$resource ?? null"
 
-{{--                        label="{{ __('sales::inventory.warehouse_id.0') }}"--}}
-{{--                        placeholder="{{ __('sales::inventory.warehouse_id._') }}"--}}
-{{--    --}}{{-- helper="{{ __('sales::product.warehouse_id.?') }}" --}}{{-- />--}}
+    label="sales::order.document_number.0"
+    placeholder="sales::order.document_number._"
+    {{-- helper="sales::order.document_number.?" --}} />
 
-<x-backend-form-foreign :resource="$resource ?? null" name="currency_id" required
+<x-backend-form-datetime name="transacted_at" required
+    :resource="$resource ?? null"
+
+    label="sales::order.transacted_at.0"
+    placeholder="sales::order.transacted_at._"
+    {{-- helper="sales::order.transacted_at.?" --}} />
+
+<x-backend-form-foreign name="branch_id" required
+    :values="$branches" :resource="$resource ?? null"
+
+    foreign="branches" foreign-add-label="sales::branches.add"
+
+    label="sales::order.branch_id.0"
+    placeholder="sales::order.branch_id._"
+    {{-- helper="sales::product.branch_id.?" --}}>
+
+    <x-backend-form-foreign name="warehouse_id" required secondary
+        :values="$branches->pluck('warehouses')->flatten()" :resource="$resource ?? null"
+
+        foreign="warehouses" foreign-add-label="sales::warehouses.add"
+        filtered-by="[name=branch_id]" filtered-using="branch"
+        append="branch:branch_id"
+
+        label="sales::order.warehouse_id.0"
+        placeholder="sales::order.warehouse_id._"
+        {{-- helper="sales::product.warehouse_id.?" --}} />
+
+</x-backend-form-foreign>
+
+<x-backend-form-foreign name="employee_id" required
+    :values="$employees" :resource="$resource ?? null" show="full_name"
+
+    foreign="employees" foreign-add-label="sales::employees.add"
+
+    label="sales::order.employee_id.0"
+    placeholder="sales::order.employee_id._"
+    {{-- helper="sales::order.employee_id.?" --}} />
+
+<x-backend-form-foreign name="partnerable_id" required
+    :values="$customers" :resource="$resource ?? null" show="business_name"
+
+    foreign="customers" foreign-add-label="sales::customers.add"
+
+    label="sales::order.partnerable_id.0"
+    placeholder="sales::order.partnerable_id._"
+    {{-- helper="sales::order.partnerable_id.?" --}} />
+
+{{-- TODO: Customer.addresses --}} {{--
+<x-backend-form-foreign name="address_id" required
+    :values="$customers->pluck('addresses')->flatten()" :resource="$resource ?? null"
+
+    foreign="addresses" foreign-add-label="sales::addresses.add"
+    filtered-by="[name=partnerable_id]" filtered-using="customer"
+    append="customer:customer_id"
+
+    label="sales::order.address_id.0"
+    placeholder="sales::order.address_id._"
+    helper="sales::product.address_id.?" /> --}}
+
+<x-backend-form-foreign name="currency_id" :resource="$resource ?? null" required
     foreign="currencies" :values="backend()->currencies()" foreign-add-label="{{ __('sales::currencies.add') }}"
     append="decimals" default="{{ backend()->currency()->id }}"
 
     label="{{ __('sales::order.currency_id.0') }}"
     placeholder="{{ __('sales::order.currency_id._') }}"
-    {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
+    {{-- helper="{{ __('sales::order.branch_id.?') }}" --}} />
 {{--
 <div class="form-row form-group mb-0">
     <label class="col-12 col-md-3 col-lg-2 control-label mt-2 mb-3">@lang('sales::order.lines.0')</label>
@@ -82,7 +138,7 @@
                                 <span class="input-group-text font-weight-bold px-3">Total:</span>
                             </div>
                             <input name="total" type="number" min="0" thousand readonly
-                                value="{{ old('total') }}" tabindex="-1"
+                                value="{{ old('total', $resource !== null ? number($resource->total, $resource->currency->decimals) : null) }}" tabindex="-1"
                                 data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
                                 class="form-control form-control-lg text-right font-weight-bold"
                                 placeholder="@lang('sales::order.lines.total.0')">

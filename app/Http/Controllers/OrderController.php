@@ -8,6 +8,7 @@ use HDSSolutions\Finpar\Http\Request;
 use HDSSolutions\Finpar\Models\Order as Resource;
 use HDSSolutions\Finpar\Models\Currency;
 use HDSSolutions\Finpar\Models\Customer;
+use HDSSolutions\Finpar\Models\Employee;
 use HDSSolutions\Finpar\Models\OrderLine;
 use HDSSolutions\Finpar\Models\Product;
 use HDSSolutions\Finpar\Models\Variant;
@@ -57,9 +58,15 @@ class OrderController extends Controller {
      */
     public function create(Request $request) {
         // load cash_books
-        $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+        ])->get();
+        // load current company branches with warehouses
+        $branches = backend()->company()->branches()->with([
+            'warehouses',
+        ])->get();
+        // load employees
+        $employees = Employee::all();
         // load products
         $products = Product::with([
             'images',
@@ -67,7 +74,7 @@ class OrderController extends Controller {
         ])->get();
 
         // show create form
-        return view('sales::orders.create', compact('customers', 'products'));
+        return view('sales::orders.create', compact('customers', 'branches', 'employees', 'products'));
     }
 
     /**
@@ -80,13 +87,13 @@ class OrderController extends Controller {
         // start a transaction
         DB::beginTransaction();
 
+        // cast values to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+
         // create resource
         $resource = new Resource( $request->input() );
 
-        // TODO: set real data
-        $resource->branch_id = 1;
-        $resource->transaction_date = now();
-        // associate Partner
+        // set Customer through associate() to set partnerable_type
         $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
 
         // save resource
@@ -158,8 +165,12 @@ class OrderController extends Controller {
 
         // load customers
         $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
+        // load current company branches with warehouses
+        $branches = backend()->company()->branches()->with([
+            'warehouses',
+        ])->get();
+        // load employees
+        $employees = Employee::all();
         // load products
         $products = Product::with([
             'images',
@@ -167,7 +178,7 @@ class OrderController extends Controller {
         ])->get();
 
         // show edit form
-        return view('sales::orders.edit', compact('customers', 'products', 'resource'));
+        return view('sales::orders.edit', compact('customers', 'branches', 'employees', 'products', 'resource'));
     }
 
     /**
@@ -180,6 +191,9 @@ class OrderController extends Controller {
     public function update(Request $request, $id) {
         // find resource
         $resource = Resource::findOrFail($id);
+
+        // cast values to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
 
         // start a transaction
         DB::beginTransaction();
@@ -254,15 +268,17 @@ class OrderController extends Controller {
             }) ?? OrderLine::make([
                 'order_id'      => $resource->id,
                 'currency_id'   => $resource->currency_id,
+                'employee_id'   => $resource->employee_id,
                 'product_id'    => $product->id,
                 'variant_id'    => $variant->id ?? null,
             ]);
 
             // update line values
             $orderLine->fill([
-                'price'     => $line['price'],
-                'quantity'  => $line['quantity'],
-                'total'     => $line['total'],
+                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price,
+                'price_ordered'     => $line['price'],
+                'quantity_ordered'  => $line['quantity'],
+                'total'             => $line['total'],
             ]);
             // save inventory line
             if (!$orderLine->save())

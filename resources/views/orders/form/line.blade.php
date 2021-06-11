@@ -1,7 +1,7 @@
 {{-- <div class="form-row mb-3 order-line-container" @if ($selected === null && $old === null) id="new" @else data-used="true" @endif> --}}
     <div class="col-1 d-flex justify-content-center">
-        <div class="position-relative d-flex align-items-center">
-            <img src="" class="img-fluid h-50px" id="line_preview">
+        <div class="position-relative d-flex align-items-center h-50px">
+            <img src="" class="img-fluid mh-50px" id="line_preview">
         </div>
     </div>
     <div class="col-9 col-xl-10 d-flex align-items-center">
@@ -28,10 +28,9 @@
                         @endforeach
                     </select>
 --}}
-                    <x-form-foreign name="lines[product_id][]" id="f{{ $id = Str::random(16) }}"
+                    <x-form-foreign name="lines[product_id][]" :required="$selected !== null"
                         :values="$products" data-live-search="true"
                         default="{{ $old['product_id'] ?? $selected?->product_id }}"
-                        :required="$selected !== null"
 
                         {{-- show="code name" title="code" --}}
                         append="url:images.0.url??backend-module/assets/images/default.jpg"
@@ -64,10 +63,9 @@
                         @endforeach
                     </select>
  --}}
-                    <x-form-foreign name="lines[variant_id][]"
+                    <x-form-foreign name="lines[variant_id][]" {{-- :required="$selected !== null" --}}
                         :values="$products->pluck('variants')->flatten()" data-live-search="true"
                         default="{{ $old['variant_id'] ?? $selected?->variant_id }}"
-                        :required="$selected !== null"
 
                         filtered-by='[name="lines[product_id][]"]' filtered-using="product"
                         data-filtered-init="false"
@@ -93,8 +91,8 @@
 --}}
                         <x-form-amount name="lines[price][]" min="1"
                             :required="$selected !== null"
-                            :data-currency-by="$selected !== null ? '#f'.$id : '[name=\'currency_id\']'" data-keep-id="true"
-                            value="{{ $old['price'] ?? ($selected !== null ? number($selected->variant?->price ?? $selected->product->price, $selected->currency->decimals) : null) }}"
+                            data-currency-by="[name='currency_id']" data-keep-id="true"
+                            value="{{ $old['price'] ?? ($selected !== null ? number($selected->price_ordered, $selected->currency->decimals) : null) }}"
                             placeholder="sales::order.lines.price._" />
 {{--
                         <input name="lines[quantity][]" type="number" min="1"
@@ -104,7 +102,7 @@
  --}}
                         <x-form-input type="number" name="lines[quantity][]" min="1"
                             :required="$selected !== null"
-                            value="{{ $old['quantity'] ?? $selected?->quantity }}"
+                            value="{{ $old['quantity'] ?? $selected?->quantity_ordered }}"
                             class="text-center"
                             placeholder="sales::order.lines.quantity._" />
 {{--
@@ -114,8 +112,8 @@
                            placeholder="@lang('sales::order.lines.total.0')">
  --}}
                         <x-form-amount name="lines[total][]" min="1" readonly tabindex="-1"
-                            :data-currency-by="$selected !== null ? '#f'.$id : '[name=\'currency_id\']'" data-keep-id="true"
-                            value="{{ $old['total'] ?? null }}"
+                            data-currency-by="[name='currency_id']" data-keep-id="true"
+                            value="{{ $old['total'] ?? ($selected !== null ? number($selected->total, $selected->currency->decimals) : null) }}"
                             class="text-right font-weight-bold"
                             placeholder="sales::order.lines.total._" />
                     </div>
