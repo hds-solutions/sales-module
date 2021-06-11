@@ -93,6 +93,7 @@
                             :required="$selected !== null"
                             data-currency-by="[name='currency_id']" data-keep-id="true"
                             value="{{ $old['price'] ?? ($selected !== null ? number($selected->price_ordered, $selected->currency->decimals) : null) }}"
+                            class="text-right"
                             placeholder="sales::order.lines.price._" />
 {{--
                         <input name="lines[quantity][]" type="number" min="1"

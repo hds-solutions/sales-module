@@ -74,12 +74,14 @@
     helper="sales::product.address_id.?" /> --}}
 
 <x-backend-form-foreign name="currency_id" :resource="$resource ?? null" required
-    foreign="currencies" :values="backend()->currencies()" foreign-add-label="{{ __('sales::currencies.add') }}"
+    :values="backend()->currencies()"
+
+    foreign="currencies" foreign-add-label="cash::currencies.add"
     append="decimals" default="{{ backend()->currency()->id }}"
 
-    label="{{ __('sales::order.currency_id.0') }}"
-    placeholder="{{ __('sales::order.currency_id._') }}"
-    {{-- helper="{{ __('sales::order.branch_id.?') }}" --}} />
+    label="sales::order.currency_id.0"
+    placeholder="sales::order.currency_id._"
+    {{-- helper="sales::order.branch_id.?" --}} />
 {{--
 <div class="form-row form-group mb-0">
     <label class="col-12 col-md-3 col-lg-2 control-label mt-2 mb-3">@lang('sales::order.lines.0')</label>
@@ -138,7 +140,7 @@
                                 <span class="input-group-text font-weight-bold px-3">Total:</span>
                             </div>
                             <input name="total" type="number" min="0" thousand readonly
-                                value="{{ old('total', $resource !== null ? number($resource->total, $resource->currency->decimals) : null) }}" tabindex="-1"
+                                value="{{ old('total', isset($resource) ? number($resource->total, $resource->currency->decimals) : null) }}" tabindex="-1"
                                 data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
                                 class="form-control form-control-lg text-right font-weight-bold"
                                 placeholder="@lang('sales::order.lines.total.0')">
