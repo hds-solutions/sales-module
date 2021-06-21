@@ -1,61 +1,118 @@
 @include('backend::components.errors')
 
-<x-backend-form-foreign :resource="$resource ?? null" name="partnerable_id" required
-    show="business_name"
-    foreign="customers" :values="$customers" foreign-add-label="{{ __('sales::customers.add') }}"
+<x-backend-form-boolean name="is_purchase"
+    :resource="$resource ?? null"
 
-    label="{{ __('sales::invoice.partnerable_id.0') }}"
-    placeholder="{{ __('sales::invoice.partnerable_id._') }}"
-    {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
+    label="sales::invoice.is_purchase.0"
+    placeholder="sales::invoice.is_purchase._"
+    {{-- helper="sales::invoice.is_purchase.?" --}} />
 
-{{-- TODO ADDRESSES--}}
-{{--<x-backend-form-foreign :resource="$resource ?? null" name="warehouse_id" required--}}
-{{--                        filtered-by="[name=branch_id]" filtered-using="branch"--}}
-{{--                        foreign="warehouses" :values="$branches->pluck('warehouses')->flatten()" foreign-add-label="{{ __('sales::warehouses.add') }}"--}}
+<x-backend-form-text name="stamping" required
+    :resource="$resource ?? null"
 
-{{--                        label="{{ __('sales::inventory.warehouse_id.0') }}"--}}
-{{--                        placeholder="{{ __('sales::inventory.warehouse_id._') }}"--}}
-{{--    --}}{{-- helper="{{ __('sales::product.warehouse_id.?') }}" --}}{{-- />--}}
+    label="sales::invoice.stamping.0"
+    placeholder="sales::invoice.stamping._"
+    {{-- helper="sales::invoice.stamping.?" --}} />
 
-<x-backend-form-foreign :resource="$resource ?? null" name="currency_id" required
-    foreign="currencies" :values="backend()->currencies()" foreign-add-label="{{ __('sales::currencies.add') }}"
+<x-backend-form-text name="document_number" required
+    :resource="$resource ?? null"
+
+    label="sales::invoice.document_number.0"
+    placeholder="sales::invoice.document_number._"
+    {{-- helper="sales::invoice.document_number.?" --}} />
+
+<x-backend-form-datetime name="transacted_at" required
+    :resource="$resource ?? null" default="{{ now() }}"
+
+    label="sales::invoice.transacted_at.0"
+    placeholder="sales::invoice.transacted_at._"
+    {{-- helper="sales::invoice.transacted_at.?" --}} />
+
+<x-backend-form-foreign name="branch_id" required
+    :values="$branches" :resource="$resource ?? null"
+
+    foreign="branches" foreign-add-label="sales::branches.add"
+
+    label="sales::invoice.branch_id.0"
+    placeholder="sales::invoice.branch_id._"
+    {{-- helper="sales::invoice.branch_id.?" --}} />
+
+<x-backend-form-foreign name="employee_id" required
+    :values="$employees" :resource="$resource ?? null" show="full_name"
+
+    foreign="employees" foreign-add-label="sales::employees.add"
+
+    label="sales::invoice.employee_id.0"
+    placeholder="sales::invoice.employee_id._"
+    {{-- helper="sales::invoice.employee_id.?" --}} />
+
+<x-backend-form-foreign name="partnerable_id" required
+    :values="$customers" :resource="$resource ?? null" show="business_name"
+
+    foreign="customers" foreign-add-label="sales::customers.add"
+
+    label="sales::invoice.partnerable_id.0"
+    placeholder="sales::invoice.partnerable_id._"
+    {{-- helper="sales::invoice.partnerable_id.?" --}} />
+
+{{-- TODO: Customer.addresses --}} {{--
+<x-backend-form-foreign name="address_id" required
+    :values="$customers->pluck('addresses')->flatten()" :resource="$resource ?? null"
+
+    foreign="addresses" foreign-add-label="sales::addresses.add"
+    filtered-by="[name=partnerable_id]" filtered-using="customer"
+    append="customer:customer_id"
+
+    label="sales::invoice.address_id.0"
+    placeholder="sales::invoice.address_id._"
+    helper="sales::invoice.address_id.?" /> --}}
+
+<x-backend-form-boolean name="is_credit"
+    :resource="$resource ?? null"
+
+    label="sales::invoice.is_credit.0"
+    placeholder="sales::invoice.is_credit._"
+    {{-- helper="sales::invoice.is_credit.?" --}} />
+
+<x-backend-form-foreign name="currency_id" :resource="$resource ?? null" required
+    :values="backend()->currencies()"
+
+    foreign="currencies" foreign-add-label="cash::currencies.add"
     append="decimals" default="{{ backend()->currency()->id }}"
 
-    label="{{ __('sales::invoice.currency_id.0') }}"
-    placeholder="{{ __('sales::invoice.currency_id._') }}"
-    {{-- helper="{{ __('sales::inventory.branch_id.?') }}" --}} />
+    label="sales::invoice.currency_id.0"
+    placeholder="sales::invoice.currency_id._"
+    {{-- helper="sales::invoice.currency_id.?" --}} />
 
-<div class="form-row form-group mb-0">
-    <label class="col-12 col-md-3 col-lg-2 control-label mt-2 mb-3">@lang('sales::invoice.lines.0')</label>
-    <div class="col-12 col-md-9 col-lg-10" data-multiple=".invoice-line-container" data-template="#new">
-        @php $old = old('lines') ?? []; @endphp
-        {{-- add product current lines --}}
-        @if (isset($resource)) @foreach($resource->lines as $idx => $selected)
-            @include('sales::invoices.line', [
-                'products'  => $products,
-                'selected'  => $selected,
-                'old'       => $old[$idx] ?? null,
-            ])
-            @php unset($old[$idx]); @endphp
-        @endforeach @endif
+<x-backend-form-multiple name="lines" values-as="products"
+    :values="$products" :selecteds="isset($resource) ? $resource->lines : []" grouped old-filter-fields="product_id,quantity"
+    contents-size="xxl" contents-view="sales::invoices.form.line" class="my-2" data-type="invoice"
+    card="bg-light"
 
-        {{-- add new added --}}
-        @foreach($old as $selected)
-            @include('sales::invoices.line', [
-                'products'  => $products,
-                'selected'  => 0,
-                'old'       => $selected,
-            ])
-        @endforeach
+    label="sales::invoice.lines.0">
 
-        {{-- add empty for adding new lines --}}
-        @include('sales::invoices.line', [
-            'products'  => $products,
-            'selected'  => null,
-            'old'       => null,
-        ])
-    </div>
-</div>
+    <x-slot name="card-footer">
+        <div class="row">
+            <div class="col-9 col-xl-10 offset-1">
+                <div class="row">
+                    <div class="col-3 offset-9">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text font-weight-bold px-3">Total:</span>
+                            </div>
+                            <input name="total" type="number" min="0" thousand readonly
+                                value="{{ old('total', isset($resource) ? number($resource->total, $resource->currency->decimals) : null) }}" tabindex="-1"
+                                data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
+                                class="form-control form-control-lg text-right font-weight-bold"
+                                placeholder="@lang('sales::invoice.lines.total.0')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </x-slot>
+
+</x-backend-form-multiple>
 
 <x-backend-form-controls
     submit="sales::invoices.save"

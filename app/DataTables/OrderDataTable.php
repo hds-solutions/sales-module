@@ -25,6 +25,9 @@ class OrderDataTable extends Base\DataTable {
                 ->title( __('sales::order.id.0') )
                 ->hidden(),
 
+            Column::make('document_number')
+                ->title( __('sales::order.document_number.0') ),
+
             Column::computed('transacted_at')
                 ->title( __('sales::order.transacted_at.0') )
                 ->renderRaw('datetime:transacted_at;F j, Y H:i'),

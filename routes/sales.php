@@ -27,6 +27,8 @@ Route::group([
     Route::resource('invoices',                 InvoiceController::class,   $name_prefix)
         ->parameters([ 'invoices' => 'resource' ])
         ->name('index', 'backend.invoices');
+    Route::post('invoices/price',               [ InvoiceController::class, 'price' ])
+        ->name('backend.invoices.price');
     Route::post('invoices/{resource}/process',  [ InvoiceController::class, 'processIt'])
         ->name('backend.invoices.process');
 

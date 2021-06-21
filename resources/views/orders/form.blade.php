@@ -15,7 +15,7 @@
     {{-- helper="sales::order.document_number.?" --}} />
 
 <x-backend-form-datetime name="transacted_at" required
-    :resource="$resource ?? null"
+    :resource="$resource ?? null" default="{{ now() }}"
 
     label="sales::order.transacted_at.0"
     placeholder="sales::order.transacted_at._"
@@ -28,7 +28,7 @@
 
     label="sales::order.branch_id.0"
     placeholder="sales::order.branch_id._"
-    {{-- helper="sales::product.branch_id.?" --}}>
+    {{-- helper="sales::order.branch_id.?" --}}>
 
     <x-backend-form-foreign name="warehouse_id" required secondary
         :values="$branches->pluck('warehouses')->flatten()" :resource="$resource ?? null"
@@ -39,7 +39,7 @@
 
         label="sales::order.warehouse_id.0"
         placeholder="sales::order.warehouse_id._"
-        {{-- helper="sales::product.warehouse_id.?" --}} />
+        {{-- helper="sales::order.warehouse_id.?" --}} />
 
 </x-backend-form-foreign>
 
@@ -71,7 +71,7 @@
 
     label="sales::order.address_id.0"
     placeholder="sales::order.address_id._"
-    helper="sales::product.address_id.?" /> --}}
+    helper="sales::order.address_id.?" /> --}}
 
 <x-backend-form-foreign name="currency_id" :resource="$resource ?? null" required
     :values="backend()->currencies()"

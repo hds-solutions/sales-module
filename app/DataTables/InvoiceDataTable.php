@@ -44,7 +44,7 @@ class InvoiceDataTable extends Base\DataTable {
                 ->data( view('sales::invoices.datatable.is_credit')->render() ),
 
             Column::make('document_status_pretty')
-                ->title( __('inventory::inventory.document_status.0') ),
+                ->title( __('sales::invoice.document_status.0') ),
 
             Column::make('total')
                 ->title( __('sales::invoice.total.0') )

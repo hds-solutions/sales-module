@@ -1,4 +1,4 @@
-@extends('backend::layouts.master')
+@extends('sales::layouts.master')
 
 @section('page-name', __('sales::invoices.title'))
 

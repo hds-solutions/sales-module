@@ -8,6 +8,7 @@ use HDSSolutions\Finpar\Http\Request;
 use HDSSolutions\Finpar\Models\Invoice as Resource;
 use HDSSolutions\Finpar\Models\Currency;
 use HDSSolutions\Finpar\Models\Customer;
+use HDSSolutions\Finpar\Models\Employee;
 use HDSSolutions\Finpar\Models\InvoiceLine;
 use HDSSolutions\Finpar\Models\Product;
 use HDSSolutions\Finpar\Models\Variant;
@@ -57,9 +58,15 @@ class InvoiceController extends Controller {
      */
     public function create(Request $request) {
         // load cash_books
-        $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+        ])->get();
+        // load current company branches with warehouses
+        $branches = backend()->company()->branches()->with([
+            'warehouses',
+        ])->get();
+        // load employees
+        $employees = Employee::all();
         // load products
         $products = Product::with([
             'images',
@@ -67,7 +74,7 @@ class InvoiceController extends Controller {
         ])->get();
 
         // show create form
-        return view('sales::invoices.create', compact('customers', 'products'));
+        return view('sales::invoices.create', compact('customers', 'branches', 'employees', 'products'));
     }
 
     /**
@@ -77,15 +84,16 @@ class InvoiceController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        // cast values to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+        if ($request->has('is_credit'))     $request->merge([ 'is_credit' => $request->is_credit == 'true' ]);
+
         // start a transaction
         DB::beginTransaction();
 
         // create resource
         $resource = new Resource( $request->input() );
 
-        // TODO: set real data
-        $resource->branch_id = 1;
-        $resource->transaction_date = now();
         // associate Partner
         $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
 
@@ -158,8 +166,12 @@ class InvoiceController extends Controller {
 
         // load customers
         $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
+        // load current company branches with warehouses
+        $branches = backend()->company()->branches()->with([
+            'warehouses',
+        ])->get();
+        // load employees
+        $employees = Employee::all();
         // load products
         $products = Product::with([
             'images',
@@ -167,7 +179,7 @@ class InvoiceController extends Controller {
         ])->get();
 
         // show edit form
-        return view('sales::invoices.edit', compact('customers', 'products', 'resource'));
+        return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'resource'));
     }
 
     /**
@@ -180,6 +192,10 @@ class InvoiceController extends Controller {
     public function update(Request $request, $id) {
         // find resource
         $resource = Resource::findOrFail($id);
+
+        // cast values to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+        if ($request->has('is_credit'))     $request->merge([ 'is_credit' => $request->is_credit == 'true' ]);
 
         // start a transaction
         DB::beginTransaction();
@@ -252,7 +268,7 @@ class InvoiceController extends Controller {
                     $iLine->variant_id == ($variant->id ?? null);
             // create a new line
             }) ?? InvoiceLine::make([
-                'order_id'      => $resource->id,
+                'invoice_id'    => $resource->id,
                 'currency_id'   => $resource->currency_id,
                 'product_id'    => $product->id,
                 'variant_id'    => $variant->id ?? null,
@@ -260,9 +276,10 @@ class InvoiceController extends Controller {
 
             // update line values
             $orderLine->fill([
-                'price'     => $line['price'],
-                'quantity'  => $line['quantity'],
-                'total'     => $line['total'],
+                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price,
+                'price_invoiced'    => $line['price'],
+                'quantity_invoiced' => $line['quantity'],
+                // 'total'             => $line['total'],
             ]);
             // save inventory line
             if (!$orderLine->save())

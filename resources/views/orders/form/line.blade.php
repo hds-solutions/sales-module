@@ -94,7 +94,7 @@
                             data-currency-by="[name='currency_id']" data-keep-id="true"
                             value="{{ $old['price'] ?? ($selected !== null ? number($selected->price_ordered, $selected->currency->decimals) : null) }}"
                             class="text-right"
-                            placeholder="sales::order.lines.price._" />
+                            placeholder="sales::order.lines.price_ordered._" />
 {{--
                         <input name="lines[quantity][]" type="number" min="1"
                            value="{{ $selected->quantity ?? '' }}"
@@ -105,7 +105,7 @@
                             :required="$selected !== null"
                             value="{{ $old['quantity'] ?? $selected?->quantity_ordered }}"
                             class="text-center"
-                            placeholder="sales::order.lines.quantity._" />
+                            placeholder="sales::order.lines.quantity_ordered._" />
 {{--
                         <input name="lines[total][]" type="number" min="0" thousand readonly
                            value="{{ $selected->total ?? '' }}" data-decimals="{{ isset($resource) ? $resource->currency->decimals : 0 }}"

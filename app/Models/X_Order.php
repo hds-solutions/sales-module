@@ -35,7 +35,7 @@ abstract class X_Order extends Base\Model {
         'partnerable_type'  => [ 'required' ],
         'partnerable_id'    => [ 'required' ],
         'address_id'        => [ 'sometimes' ],
-        'transacted_at'     => [ 'sometimes', 'date', 'before:now' ],
+        'transacted_at'     => [ 'required', 'date', 'before:now' ],
         'document_number'   => [ 'required' ],
         'is_purchase'       => [ 'required', 'boolean' ],
         'is_invoiced'       => [ 'required', 'boolean' ],

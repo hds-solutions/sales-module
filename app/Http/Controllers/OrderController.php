@@ -84,11 +84,11 @@ class OrderController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        // start a transaction
-        DB::beginTransaction();
-
         // cast values to boolean
         if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+
+        // start a transaction
+        DB::beginTransaction();
 
         // create resource
         $resource = new Resource( $request->input() );
@@ -278,7 +278,7 @@ class OrderController extends Controller {
                 'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price,
                 'price_ordered'     => $line['price'],
                 'quantity_ordered'  => $line['quantity'],
-                'total'             => $line['total'],
+                // 'total'             => $line['total'],
             ]);
             // save inventory line
             if (!$orderLine->save())

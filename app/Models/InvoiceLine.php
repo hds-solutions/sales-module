@@ -34,6 +34,10 @@ class InvoiceLine extends X_InvoiceLine {
         return $this->belongsTo(Currency::class);
     }
 
+    public function employee() {
+        return $this->belongsTo(Employee::class);
+    }
+
     public function orderLine() {
         return $this->belongsTo(OrderLine::class);
     }
@@ -47,8 +51,18 @@ class InvoiceLine extends X_InvoiceLine {
     }
 
     public function beforeSave(Validator $validator) {
+        // check if invoice already has a line with current Variant|Product
+        if (!$this->exists && $this->invoice->hasProduct( $this->product, $this->variant ))
+            // reject line with error
+            return $validator->errors()->add('product_id', __('sales::invoice.lines.already-has-product', [
+                'product'   => $this->product->name,
+                'variant'   => $this->variant?->sku,
+            ]));
+
         // copy currency from head if not set
         if (!$this->currency) $this->currency()->associate( $this->invoice->currency );
+        // copy employee from head if not set
+        if (!$this->employee) $this->employee()->associate( $this->invoice->employee );
 
         // set original price from product|variant
         if (!$this->exists) $this->price_reference =

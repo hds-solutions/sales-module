@@ -65,6 +65,20 @@ class Invoice extends X_Invoice implements Document {
         return $query->where('is_paid', $paid);
     }
 
+    public function hasProduct(int|Product $product, int|Variant|null $variant = null) {
+        // get invoice lines
+        $lines = $this->lines();
+
+        // filter product
+        $lines->where('product_id', $product instanceof Product ? $product->id : $product);
+        // filter variant if specified
+        if ($variant !== null) $lines->where('variant_id', $variant instanceof Variant ? $variant->id : $variant);
+        else $lines->whereNull('variant_id');
+
+        // return if there is lines with specified product|variant
+        return $lines->count() > 0;
+    }
+
     public function beforeSave(Validator $validator) {
         // TODO: set employee from session
         if (!$this->exists && $this->employee === null) $this->employee()->associate( auth()->user() );
@@ -78,6 +92,9 @@ class Invoice extends X_Invoice implements Document {
     }
 
     public function prepareIt():?string {
+        // check if document has lines
+        if (!$this->lines()->count()) return $this->documentError('sales::invoice.no-lines');
+
         // check that invoiced quantity of products isn't greater than ordered quantity
         foreach ($this->lines as $line) {
             // get pending quantity to invoice
