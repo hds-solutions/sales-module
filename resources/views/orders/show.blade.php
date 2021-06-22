@@ -98,7 +98,7 @@
 
                         <tbody>
                             @foreach ($resource->lines as $line)
-                                <tr>
+                                <tr data-toggle="collapse" data-target=".line-{{ $line->id }}-details">
                                     <td>
                                         <div class="d-flex justify-content-center">
                                             <img src="{{ asset(
@@ -138,6 +138,19 @@
                                     <td class="align-middle text-center h5">{{ $line->quantity_invoiced ?? '--' }}</td>
                                     <td class="align-middle text-right h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
                                 </tr>
+                                @foreach ($line->invoiceLines as $invoiceLine)
+                                <tr class="d-none"></tr>
+                                <tr class="collapse line-{{ $line->id }}-details">
+                                    <td class="py-0"></td>
+                                    <td class="py-0 pl-3" colspan="3">
+                                        <a href="{{ route('backend.invoices.show', $invoiceLine->invoice) }}"
+                                            class="text-secondary text-decoration-none">{{ $invoiceLine->invoice->document_number }}</a> <small class="ml-1">{{ $invoiceLine->invoice->transacted_at_pretty }}</small>
+                                    </td>
+                                    <td class="py-0"></td>
+                                    <td class="py-0 text-center">{{ $invoiceLine->pivot->quantity_invoiced }}</td>
+                                    <td class="py-0"></td>
+                                </tr>
+                                @endforeach
                             @endforeach
                         </tbody>
                     </table>

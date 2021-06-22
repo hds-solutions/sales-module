@@ -14,4 +14,8 @@
     'save'          => 'Save',
     'cancel'        => 'Cancel',
 
+    'lines'     => [
+        'invoiced-gt-pending'   => 'Quantity to invoice of :product :variant can\'t be greater than ordered',
+    ],
+
 ];

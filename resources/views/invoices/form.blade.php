@@ -8,14 +8,14 @@
     {{-- helper="sales::invoice.is_purchase.?" --}} />
 
 <x-backend-form-text name="stamping" required
-    :resource="$resource ?? null"
+    :resource="$resource ?? null" :default="$highs['stamping'] ?? null"
 
     label="sales::invoice.stamping.0"
     placeholder="sales::invoice.stamping._"
     {{-- helper="sales::invoice.stamping.?" --}} />
 
 <x-backend-form-text name="document_number" required
-    :resource="$resource ?? null"
+    :resource="$resource ?? null" :default="$highs['document_number'] ?? null"
 
     label="sales::invoice.document_number.0"
     placeholder="sales::invoice.document_number._"
@@ -114,7 +114,7 @@
                                 <span class="input-group-text font-weight-bold px-3">Total:</span>
                             </div>
                             <input name="total" type="number" min="0" thousand readonly
-                                value="{{ old('total', isset($resource) ? number($resource->total, $resource->currency->decimals) : null) }}" tabindex="-1"
+                                value="{{ old('total', isset($resource) ? number($resource->total, backend()->currencies()->firstWhere('id', $resource->currency_id)->decimals) : null) }}" tabindex="-1"
                                 data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
                                 class="form-control form-control-lg text-right font-weight-bold"
                                 placeholder="@lang('sales::invoice.lines.total.0')">
@@ -129,4 +129,7 @@
 
 <x-backend-form-controls
     submit="sales::invoices.save"
-    cancel="sales::invoices.cancel" cancel-route="backend.invoices" />
+    cancel="sales::invoices.cancel"
+        cancel-route="{{ isset($resource)
+            ? 'backend.invoices.show:'.$resource->id
+            : 'backend.invoices' }}" />

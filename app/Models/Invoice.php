@@ -101,11 +101,9 @@ class Invoice extends X_Invoice implements Document {
         // check that invoiced quantity of products isn't greater than ordered quantity
         foreach ($this->lines as $line) {
             // ignore line if wasn't created from Order
-            if ($line->orderLine === null) continue;
-            // get pending quantity to invoice
-            $quantity_pending = $line->orderLine->quantity_ordered - $line->orderLine->quantity_invoiced;
-            // check if quantity invoiced > quantity pending
-            if ($line->quantity_invoiced > $quantity_pending)
+            if (!$line->orderLines->count()) continue;
+            // check if quantity invoiced > ordered quantity
+            if ($line->quantity_invoiced > $line->orderLines->sum('pivot.quantity_ordered'))
                 // reject document with error
                 return $this->documentError('sales::invoices.lines.invoiced-gt-pending', [
                     'product'   => $line->product->name,
@@ -130,24 +128,47 @@ class Invoice extends X_Invoice implements Document {
     public function completeIt():?string {
         // update OrderLines with invoiced quantity. When isPurchase add invoiced to pending stock
         foreach ($this->lines as $line) {
-            // check if line is linked to an OrderLine
-            if ($line->orderLine !== null) {
-                // update orderLine.quantity_invoiced
-                $line->orderLine->quantity_invoiced += $line->quantity_invoiced;
-                // check if ordered == invoiced and set orderline.invoiced=true
-                if ($line->orderLine->quantity_invoiced == $line->orderLine->quantity_ordered)
-                    // change invoiced flag on line
-                    $line->orderLine->is_invoiced = true;
-                // save orderLine changes
-                if (!$line->orderLine->save())
-                    // redirect error
-                    return $this->documentError( $line->orderLine->errors()->first() );
-                // check if all lines of order where invoiced
-                if ($line->orderLine->order->lines()->invoiced(false)->count() === 0)
-                    // mark order as invoiced
-                    if (!$line->orderLine->order->update([ 'is_invoiced' => true ]))
-                        // return order saving error
-                        return $this->documentError( $line->orderLine->order->errors()->first() );
+            // check if line is linked to OrderLine
+            // is so, update OrderLine.quantity_invoiced
+            if ($line->orderLines->count()) {
+                // save invoiced quantoty for later validations
+                $quantity_pending = $line->quantity_invoiced;
+                // update every OrderLine.quantity_invoiced
+                foreach ($line->orderLines as $orderLine) {
+                    // calculate available quantity for current OrderLine
+                    $quantity_to_invoice = $orderLine->pivot->quantity_ordered < $quantity_pending
+                        ? $orderLine->pivot->quantity_ordered
+                        : $quantity_pending;
+                    // add available invoiced quantity to OrderLine
+                    $orderLine->quantity_invoiced += $quantity_to_invoice;
+                    // change invoiced flag if ordered == invoiced
+                    $orderLine->is_invoiced = $orderLine->quantity_ordered == $orderLine->quantity_invoiced;
+                    // save orderLine changes
+                    if (!$orderLine->save())
+                        // redirect error
+                        return $this->documentError( $orderLine->errors()->first() );
+                    // check if all lines of order where invoiced
+                    if ($orderLine->order->lines()->invoiced(false)->count() === 0)
+                        // mark order as invoiced
+                        if (!$orderLine->order->update([ 'is_invoiced' => true ]))
+                            // return order saving error
+                            return $this->documentError( $orderLine->order->errors()->first() );
+                    // update invoiced quantity on pivot
+                    $line->orderLines()->updateExistingPivot($orderLine->id, [
+                        'quantity_invoiced' => $quantity_to_invoice,
+                    ]);
+                    // substract invoiced from pendint
+                    $quantity_pending -= $quantity_to_invoice;
+                    // check if already invoiced all pending quantity and exit loop
+                    if ($quantity_pending == 0) break;
+                }
+                // check if there is remaining quantity to invoice
+                if ($quantity_pending > 0)
+                    // reject with error
+                    return $this->documentError('sales::invoices.lines.invoiced-to-orderlines-failed', [
+                        'product'   => $line->product->name,
+                        'variant'   => $line->variant?->sku,
+                    ]);
             }
 
             // when isPurchase, add invoiced quantity to pending stock (only for products that are stockables)
@@ -194,6 +215,13 @@ class Invoice extends X_Invoice implements Document {
                 $invoiceLine->invoice()->associate($invoice);
                 // save InvoiceLine
                 $invoiceLine->save();
+                // check if has orderLine
+                if (isset($invoiceLine->orderLine))
+                    // link OrderLine with InvoiceLine
+                    $invoiceLine->orderLines()->attach($invoiceLine->orderLine, [
+                        'invoice_line_id'   => $invoiceLine->id,
+                        'quantity_ordered'  => $invoiceLine->orderLine->quantity_ordered - $invoiceLine->orderLine->quantity_invoiced,
+                    ]);
             });
         });
     }
@@ -209,6 +237,8 @@ class Invoice extends X_Invoice implements Document {
         $order->lines->each(function($orderLine) use ($invoice) {
             // create a new InvoiceLine from OrderLine
             $invoice->lines->push( $invoiceLine = new InvoiceLine($orderLine) );
+            // set temporal orderLine value
+            $invoiceLine->orderLine = $orderLine;
         });
         // return Invoice
         return $invoice;

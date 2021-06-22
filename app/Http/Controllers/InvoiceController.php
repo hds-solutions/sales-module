@@ -72,13 +72,32 @@ class InvoiceController extends Controller {
         $products = Product::with([
             'images',
             'variants',
-        ])->get();
+        ])->get()->transform(fn($product) =>
+            // set Variant.product relation manually to avoid more queries
+            $product->setRelation('variants', $product->variants->transform(fn($variant) =>
+                $variant->setRelation('product', $product)
+            ))
+        );
 
         // get completed orders
-        $orders = Order::completed()->invoiced(false)->get();
+        $orders = Order::with([
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+        ])->completed()->invoiced(false)->get();
+
+        $highs = [
+            'stamping'          => $stamping = Resource::max('stamping') ?? null,
+            'document_number'   => str_increment(Resource::where('stamping', $stamping)->max('document_number') ?? null),
+        ];
 
         // show create form
-        return view('sales::invoices.create', compact('customers', 'branches', 'employees', 'products', 'orders'));
+        return view('sales::invoices.create', compact(
+            'customers',
+            'branches',
+            'employees',
+            'products',
+            'orders',
+            'highs',
+        ));
     }
 
     /**
@@ -139,15 +158,19 @@ class InvoiceController extends Controller {
         // load inventory data
         $resource->load([
             'branch',
-            'partnerable',
-            'currency',
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+            'employee' => fn($employee) => $employee->with([ 'identity' ]),
             'lines' => fn($line) => $line->with([
-                'currency',
                 'product.images',
-                'variant' => fn($variant) => $variant->with([
-                    'images',
-                    'values',
-                ]),
+                'variant' => fn($variant) => $variant
+                    ->with([
+                        'images',
+                        'values',
+                    ]),
+                'orderLines' => fn($orderLine) => $orderLine
+                    ->with([
+                        'order',
+                    ]),
             ]),
         ]);
 
@@ -169,8 +192,13 @@ class InvoiceController extends Controller {
 
         // load resource relations
         $resource->load([
-            'currency',
-            'lines.product',
+            'lines' => fn($line) => $line->with([
+                'product',
+                'orderLines' => fn($orderLine) => $orderLine
+                    ->with([
+                        'order',
+                    ]),
+            ]),
         ]);
 
         // load customers
@@ -185,10 +213,17 @@ class InvoiceController extends Controller {
         $products = Product::with([
             'images',
             'variants',
-        ])->get();
+        ])->get()->transform(fn($product) =>
+            // set Variant.product relation manually to avoid more queries
+            $product->setRelation('variants', $product->variants->transform(fn($variant) =>
+                $variant->setRelation('product', $product)
+            ))
+        );
 
         // get completed orders
-        $orders = Order::completed()->invoiced(false)->get();
+        $orders = Order::with([
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+        ])->completed()->invoiced(false)->get();
 
         // show edit form
         return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'orders', 'resource'));
@@ -293,7 +328,7 @@ class InvoiceController extends Controller {
 
             // update line values
             $orderLine->fill([
-                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price,
+                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price ?? $line['price'],
                 'price_invoiced'    => $line['price'],
                 'quantity_invoiced' => $line['quantity'],
                 // 'total'             => $line['total'],
@@ -349,13 +384,15 @@ class InvoiceController extends Controller {
 
                 // associate to current resource
                 $invoiceLine->invoice()->associate($resource);
-                // link with OrderLine
-                $invoiceLine->orderLine()->associate($orderLine);
                 $invoiceLine->fill([
                     'price_ordered'     => $orderLine->price_ordered,
                     'price_invoiced'    => $orderLine->price_ordered,
-                    'quantity_ordered'  => $orderLine->quantity_ordered,
-                    'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
+                    'quantity_ordered'  => $orderLine->quantity_ordered
+                        // sum already existing orderLines
+                        + $invoiceLine->orderLines->sum('pivot.quantity_ordered'),
+                    'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced
+                        // sum already existing orderLines
+                        + $invoiceLine->orderLines->sum(fn($orderLine) => $orderLine->quantity_ordered - $orderLine->quantity_invoiced),
                 ]);
 
                 // save invoiceLine
@@ -363,6 +400,12 @@ class InvoiceController extends Controller {
                     // redirect with errors
                     return back()->withInput()
                         ->withErrors( $invoiceLine->errors() );
+
+                // link OrderLine with InvoiceLine
+                $invoiceLine->orderLines()->attach($orderLine, [
+                    'invoice_line_id'   => $invoiceLine->id,
+                    'quantity_ordered'  => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
+                ]);
 
                 // untrash if was trashed
                 if ($invoiceLine->trashed()) $invoiceLine->restore();

@@ -50,11 +50,11 @@
                     <x-form-amount name="lines[price][]" min="1"
                         :required="$selected !== null"
                         data-currency-by="[name='currency_id']" data-keep-id="true"
-                        value="{{ $old['price'] ?? ($selected !== null ? number($selected->price_invoiced, $selected->currency->decimals) : null) }}"
+                        value="{{ $old['price'] ?? ($selected !== null ? number($selected->price_invoiced, currency($selected->currency_id)->decimals) : null) }}"
                         class="text-right"
                         placeholder="sales::invoice.lines.price_invoiced._" />
 
-                    <x-form-input type="number" name="lines[quantity][]" min="1"
+                    <x-form-input type="number" name="lines[quantity][]" min="1" max="{{ $selected?->orderLines->count() ? $selected?->orderLines->sum('pivot.quantity_ordered') : null }}"
                         :required="$selected !== null"
                         value="{{ $old['quantity'] ?? $selected?->quantity_invoiced }}"
                         class="text-center"
@@ -62,7 +62,7 @@
 
                     <x-form-amount name="lines[total][]" min="1" readonly tabindex="-1"
                         data-currency-by="[name='currency_id']" data-keep-id="true"
-                        value="{{ $old['total'] ?? ($selected !== null ? number($selected->total, $selected->currency->decimals) : null) }}"
+                        value="{{ $old['total'] ?? ($selected !== null ? number($selected->total, currency($selected->currency_id)->decimals) : null) }}"
                         class="text-right font-weight-bold"
                         placeholder="sales::invoice.lines.total._" />
                 </div>

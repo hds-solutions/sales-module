@@ -73,8 +73,18 @@ class OrderController extends Controller {
             'variants',
         ])->get();
 
+        $highs = [
+            'document_number'   => str_increment(Resource::max('document_number')),
+        ];
+
         // show create form
-        return view('sales::orders.create', compact('customers', 'branches', 'employees', 'products'));
+        return view('sales::orders.create', compact(
+            'customers',
+            'branches',
+            'employees',
+            'products',
+            'highs',
+        ));
     }
 
     /**
@@ -129,15 +139,23 @@ class OrderController extends Controller {
         // load inventory data
         $resource->load([
             'branch',
-            'partnerable',
+            'warehouse',
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+            'employee' => fn($employee) => $employee->with([ 'identity' ]),
             'currency',
             'lines' => fn($line) => $line->with([
                 'currency',
                 'product.images',
-                'variant' => fn($variant) => $variant->with([
-                    'images',
-                    'values',
-                ]),
+                'variant' => fn($variant) => $variant
+                    ->with([
+                        'images',
+                        'values',
+                    ]),
+                'invoiceLines' => fn($invoiceLine) => $invoiceLine
+                    ->whereHas('invoice', fn($invoice) => $invoice->completed())
+                    ->with([
+                        'invoice',
+                    ]),
             ]),
         ]);
 

@@ -9,7 +9,6 @@ abstract class X_InvoiceLine extends Base\Model {
     protected $fillable = [
         'invoice_id',
         'currency_id',
-        'order_line_id',
         'product_id',
         'variant_id',
         'price_reference',
@@ -25,10 +24,9 @@ abstract class X_InvoiceLine extends Base\Model {
     protected static array $rules = [
         'invoice_id'        => [ 'required' ],
         'currency_id'       => [ 'required' ],
-        'order_line_id'     => [ 'sometimes', 'nullable' ],
         'product_id'        => [ 'required' ],
         'variant_id'        => [ 'sometimes', 'nullable' ],
-        'price_reference'   => [ 'required', 'min:0' ],
+        'price_reference'   => [ 'sometimes', 'nullable', 'min:0' ],
         'price_ordered'     => [ 'sometimes', 'nullable', 'min:0' ],
         'price_invoiced'    => [ 'required', 'min:0' ],
         'quantity_ordered'  => [ 'sometimes', 'nullable', 'min:0' ],

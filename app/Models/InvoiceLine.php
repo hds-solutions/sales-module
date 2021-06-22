@@ -13,7 +13,6 @@ class InvoiceLine extends X_InvoiceLine {
             // copy attributes from OrderLine
             $attributes = [
                 'currency_id'       => $orderLine->currency_id,
-                'order_line_id'     => $orderLine->id,
                 'product_id'        => $orderLine->product_id,
                 'variant_id'        => $orderLine->variant_id,
                 'price_reference'   => $orderLine->price_reference,
@@ -38,16 +37,19 @@ class InvoiceLine extends X_InvoiceLine {
         return $this->belongsTo(Employee::class);
     }
 
-    public function orderLine() {
-        return $this->belongsTo(OrderLine::class);
-    }
-
     public function product() {
         return $this->belongsTo(Product::class);
     }
 
     public function variant() {
         return $this->belongsTo(Variant::class);
+    }
+
+    public function orderLines() {
+        return $this->belongsToMany(OrderLine::class)
+            ->using(InvoiceLineOrderLine::class)
+            ->withPivot([ 'quantity_ordered', 'quantity_invoiced' ])
+            ->withTimestamps();
     }
 
     public function beforeSave(Validator $validator) {

@@ -27,6 +27,13 @@ class OrderLine extends X_OrderLine {
         return $this->belongsTo(Variant::class);
     }
 
+    public function invoiceLines() {
+        return $this->belongsToMany(InvoiceLine::class)
+            ->using(InvoiceLineOrderLine::class)
+            ->withPivot([ 'quantity_ordered', 'quantity_invoiced' ])
+            ->withTimestamps();
+    }
+
     public function scopeInvoiced(Builder $query, bool $invoiced = true) {
         return $query->where('is_invoiced', $invoiced);
     }

@@ -52,7 +52,7 @@
 
                 <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::invoice.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
@@ -62,7 +62,7 @@
 
                 <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::invoice.currency_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->currency->name }}</div>
+                    <div class="col-8 col-lg-6 h4">{{ currency($resource->currency_id)->name }}</div>
                 </div>
 
                 {{-- <div class="row">
@@ -108,7 +108,7 @@
 
                         <tbody>
                             @foreach ($resource->lines as $line)
-                                <tr>
+                                <tr data-toggle="collapse" data-target=".line-{{ $line->id }}-details">
                                     <td>
                                         <div class="d-flex justify-content-center">
                                             <img src="{{ asset(
@@ -143,11 +143,23 @@
                                         </div>
                                         @endif
                                     </td>
-                                    <td class="align-middle text-center h6">{{ $line->currency->code }} <b>{{ number($line->price_invoiced, $line->currency->decimals) }}</b></td>
+                                    <td class="align-middle text-right h6">{{ currency($line->currency_id)->code }} <b>{{ number($line->price_invoiced, currency($line->currency_id)->decimals) }}</b></td>
                                     <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_invoiced }}</td>
                                     @if ($resource->is_purchase) <td class="align-middle text-center h5">{{ $line->quantity_received ?? '--' }}</td> @endif
-                                    <td class="align-middle text-center h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
+                                    <td class="align-middle text-right h5 w-100px">{{ currency($line->currency_id)->code }} <b>{{ number($line->total, currency($line->currency_id)->decimals) }}</b></td>
                                 </tr>
+                                @foreach ($line->orderLines as $orderLine)
+                                <tr class="d-none"></tr>
+                                <tr class="collapse line-{{ $line->id }}-details">
+                                    <td class="py-0"></td>
+                                    <td class="py-0 pl-3" colspan="3">
+                                        <a href="{{ route('backend.orders.show', $orderLine->order) }}"
+                                            class="text-secondary text-decoration-none">{{ $orderLine->order->document_number }}</a> <small class="ml-1">{{ $orderLine->order->transacted_at_pretty }}</small>
+                                    </td>
+                                    <td class="py-0 text-center">{{ $orderLine->pivot->quantity_ordered }}</td>
+                                    <td class="py-0"></td>
+                                </tr>
+                                @endforeach
                             @endforeach
                         </tbody>
                     </table>
@@ -159,7 +171,7 @@
         <div class="row">
             <div class="col-2 offset-8 font-weight-bold d-flex align-items-center justify-content-end">Total</div>
             <div class="col-2 text-right">
-                <h3 class="pr-1 m-0">{{ $resource->currency->code }} <b>{{ number($resource->total, $resource->currency->decimals) }}</b></h3>
+                <h3 class="pr-1 m-0">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->total, currency($resource->currency_id)->decimals) }}</b></h3>
             </div>
         </div>
 

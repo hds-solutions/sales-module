@@ -21,7 +21,6 @@ class CreateInvoicesTable extends Migration {
         $schema->create('invoices', function(Blueprint $table) {
             $table->id();
             $table->foreignTo('Company');
-            $table->foreignTo('Order')->nullable();
             $table->foreignTo('Branch');
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
@@ -44,11 +43,10 @@ class CreateInvoicesTable extends Migration {
             $table->foreignTo('Invoice');
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
-            $table->foreignTo('OrderLine')->nullable();
             $table->foreignTo('Product');
             $table->foreignTo('Variant')->nullable();
             $table->unique([ 'invoice_id', 'product_id', 'variant_id' ]);
-            $table->amount('price_reference');
+            $table->amount('price_reference')->nullable();
             $table->amount('price_ordered')->nullable();
             $table->amount('price_invoiced');
             $table->unsignedInteger('quantity_ordered')->nullable();
