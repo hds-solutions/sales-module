@@ -38,6 +38,7 @@ abstract class X_Invoice extends Base\Model {
 
     protected $appends = [
         'payment_rule',
+        'transacted_at_pretty',
     ];
 
     protected static array $rules = [
@@ -49,7 +50,7 @@ abstract class X_Invoice extends Base\Model {
         'address_id'        => [ 'sometimes' ],
         'transacted_at'     => [ 'required', 'date', 'before:now' ],
         'stamping'          => [ 'sometimes' ],
-        'document_number'   => [ 'required' ],
+        'document_number'   => [ 'required', 'unique:invoices,document_number,{id},id,stamping,{stamping}' ],
         'is_purchase'       => [ 'required', 'boolean' ],
         'is_credit'         => [ 'required', 'boolean' ],
         'total'             => [ 'sometimes' ],
@@ -75,6 +76,10 @@ abstract class X_Invoice extends Base\Model {
 
     public function getPaymentRuleAttribute():string {
         return __(self::PAYMENT_RULES[ $this->is_credit ? self::PAYMENT_RULE_Credit : self::PAYMENT_RULE_Cash ]);
+    }
+
+    public function getTransactedAtPrettyAttribute():string {
+        return pretty_date($this->transacted_at, true);
     }
 
 }

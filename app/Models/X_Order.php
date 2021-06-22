@@ -27,6 +27,10 @@ abstract class X_Order extends Base\Model {
         'is_invoiced'   => false,
     ];
 
+    protected $appends = [
+        'transacted_at_pretty',
+    ];
+
     protected static array $rules = [
         'branch_id'         => [ 'required' ],
         'warehouse_id'      => [ 'required' ],
@@ -36,7 +40,7 @@ abstract class X_Order extends Base\Model {
         'partnerable_id'    => [ 'required' ],
         'address_id'        => [ 'sometimes' ],
         'transacted_at'     => [ 'required', 'date', 'before:now' ],
-        'document_number'   => [ 'required' ],
+        'document_number'   => [ 'required', 'unique:orders,document_number,{id}' ],
         'is_purchase'       => [ 'required', 'boolean' ],
         'is_invoiced'       => [ 'required', 'boolean' ],
         'total'             => [ 'sometimes' ],
@@ -44,6 +48,10 @@ abstract class X_Order extends Base\Model {
 
     public function getIsSaleAttribute():bool {
         return !$this->is_purchase;
+    }
+
+    public function getTransactedAtPrettyAttribute():string {
+        return pretty_date($this->transacted_at, true);
     }
 
 }

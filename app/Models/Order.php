@@ -78,6 +78,9 @@ class Order extends X_Order implements Document {
                     ])
                 ]);
         }
+
+        // total must have value
+        $this->total = $this->total ?? 0;
     }
 
     public function prepareIt():?string {

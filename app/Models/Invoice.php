@@ -89,6 +89,9 @@ class Invoice extends X_Invoice implements Document {
             return $validator->errors()->add('partnerable_id', __($error, [
                 'partner'   => $this->partnerable->full_name,
             ]));
+
+        // total must have value
+        $this->total = $this->total ?? 0;
     }
 
     public function prepareIt():?string {
@@ -97,6 +100,8 @@ class Invoice extends X_Invoice implements Document {
 
         // check that invoiced quantity of products isn't greater than ordered quantity
         foreach ($this->lines as $line) {
+            // ignore line if wasn't created from Order
+            if ($line->orderLine === null) continue;
             // get pending quantity to invoice
             $quantity_pending = $line->orderLine->quantity_ordered - $line->orderLine->quantity_invoiced;
             // check if quantity invoiced > quantity pending
@@ -125,22 +130,25 @@ class Invoice extends X_Invoice implements Document {
     public function completeIt():?string {
         // update OrderLines with invoiced quantity. When isPurchase add invoiced to pending stock
         foreach ($this->lines as $line) {
-            // update orderLine.quantity_invoiced
-            $line->orderLine->quantity_invoiced += $line->quantity_invoiced;
-            // check if ordered == invoiced and set orderline.invoiced=true
-            if ($line->orderLine->quantity_invoiced == $line->orderLine->quantity_ordered)
-                // change invoiced flag on line
-                $line->orderLine->is_invoiced = true;
-            // save orderLine changes
-            if (!$line->orderLine->save())
-                // redirect error
-                return $this->documentError( $line->orderLine->errors()->first() );
-            // check if all lines of order where invoiced
-            if ($line->orderLine->order->lines()->invoiced(false)->count() === 0)
-                // mark order as invoiced
-                if (!$line->orderLine->order->update([ 'is_invoiced' => true ]))
-                    // return order saving error
-                    return $this->documentError( $line->orderLine->order->errors()->first() );
+            // check if line is linked to an OrderLine
+            if ($line->orderLine !== null) {
+                // update orderLine.quantity_invoiced
+                $line->orderLine->quantity_invoiced += $line->quantity_invoiced;
+                // check if ordered == invoiced and set orderline.invoiced=true
+                if ($line->orderLine->quantity_invoiced == $line->orderLine->quantity_ordered)
+                    // change invoiced flag on line
+                    $line->orderLine->is_invoiced = true;
+                // save orderLine changes
+                if (!$line->orderLine->save())
+                    // redirect error
+                    return $this->documentError( $line->orderLine->errors()->first() );
+                // check if all lines of order where invoiced
+                if ($line->orderLine->order->lines()->invoiced(false)->count() === 0)
+                    // mark order as invoiced
+                    if (!$line->orderLine->order->update([ 'is_invoiced' => true ]))
+                        // return order saving error
+                        return $this->documentError( $line->orderLine->order->errors()->first() );
+            }
 
             // when isPurchase, add invoiced quantity to pending stock (only for products that are stockables)
             if ($this->is_purchase && $line->product->stockable) {

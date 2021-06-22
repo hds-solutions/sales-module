@@ -20,7 +20,7 @@ class InvoiceLine extends X_InvoiceLine {
                 'price_ordered'     => $orderLine->price_ordered,
                 'price_invoiced'    => $orderLine->price_ordered,
                 'quantity_ordered'  => $orderLine->quantity_ordered,
-                'quantity_invoiced' => $orderLine->quantity_ordered,
+                'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
             ];
         // redirect attributes to parent
         parent::__construct($attributes);
@@ -73,6 +73,9 @@ class InvoiceLine extends X_InvoiceLine {
 
         // calculate line total amount
         $this->total = $this->price_invoiced * $this->quantity_invoiced;
+
+        // update isInvoiced status
+        $this->is_invoiced = $this->quantity_ordered == $this->quantity_invoiced;
     }
 
     public function afterSave() {

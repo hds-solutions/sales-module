@@ -47,7 +47,7 @@
 
                 <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::order.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }}</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
@@ -135,7 +135,7 @@
                                     </td>
                                     <td class="align-middle text-right h6">{{ $line->currency->code }} <b>{{ number($line->price_ordered, $line->currency->decimals) }}</b></td>
                                     <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_ordered }}</td>
-                                    <td class="align-middle text-center h5">{{ $line->quantity_invoiced ?? 0 }}</td>
+                                    <td class="align-middle text-center h5">{{ $line->quantity_invoiced ?? '--' }}</td>
                                     <td class="align-middle text-right h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
                                 </tr>
                             @endforeach

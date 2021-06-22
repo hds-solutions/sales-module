@@ -10,6 +10,7 @@ use HDSSolutions\Finpar\Models\Currency;
 use HDSSolutions\Finpar\Models\Customer;
 use HDSSolutions\Finpar\Models\Employee;
 use HDSSolutions\Finpar\Models\InvoiceLine;
+use HDSSolutions\Finpar\Models\Order;
 use HDSSolutions\Finpar\Models\Product;
 use HDSSolutions\Finpar\Models\Variant;
 use HDSSolutions\Finpar\Traits\CanProcessDocument;
@@ -73,8 +74,11 @@ class InvoiceController extends Controller {
             'variants',
         ])->get();
 
+        // get completed orders
+        $orders = Order::completed()->invoiced(false)->get();
+
         // show create form
-        return view('sales::invoices.create', compact('customers', 'branches', 'employees', 'products'));
+        return view('sales::invoices.create', compact('customers', 'branches', 'employees', 'products', 'orders'));
     }
 
     /**
@@ -104,8 +108,13 @@ class InvoiceController extends Controller {
                 ->withErrors( $resource->errors() )
                 ->withInput();
 
-        // sync inventory lines
+        // sync lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
+            // return redirection
+            return $redirect;
+
+        // process order import
+        if ($request->has('import') && ($redirect = $this->importOrder($resource, $request->order_id)) !== true)
             // return redirection
             return $redirect;
 
@@ -178,8 +187,11 @@ class InvoiceController extends Controller {
             'variants',
         ])->get();
 
+        // get completed orders
+        $orders = Order::completed()->invoiced(false)->get();
+
         // show edit form
-        return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'resource'));
+        return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'orders', 'resource'));
     }
 
     /**
@@ -210,8 +222,13 @@ class InvoiceController extends Controller {
                 ->withErrors( $resource->errors() )
                 ->withInput();
 
-        // sync inventory lines
+        // sync lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
+            // return redirection
+            return $redirect;
+
+        // process order import
+        if ($request->has('import') && ($redirect = $this->importOrder($resource, $request->order_id)) !== true)
             // return redirection
             return $redirect;
 
@@ -304,6 +321,49 @@ class InvoiceController extends Controller {
             }
             // remove line if was deleted
             if ($deleted) $line->delete();
+        }
+
+        // return success
+        return true;
+    }
+
+    private function importOrder(Resource $resource, Order|int|null $order) {
+        // ignore if order was specified
+        if ($order === null) return true;
+
+        // load order
+        $order = $order instanceof Order ? $order : Order::findOrFail($order);
+
+        // foreach order lines
+        foreach ($order->lines as $orderLine) {
+            // ignore line if al ready invoiced
+            if ($orderLine->is_invoiced) continue;
+
+            // create InvoiceLine for current OrderLine
+            $invoiceLine = $resource->lines()->withTrashed()
+                ->where('product_id', $orderLine->product_id)
+                ->where('variant_id', $orderLine->variant_id)
+                ->firstOr(fn() => new InvoiceLine($orderLine));
+
+            // associate to current resource
+            $invoiceLine->invoice()->associate($resource);
+            // link with OrderLine
+            $invoiceLine->orderLine()->associate($orderLine);
+            $invoiceLine->fill([
+                'price_ordered'     => $orderLine->price_ordered,
+                'price_invoiced'    => $orderLine->price_ordered,
+                'quantity_ordered'  => $orderLine->quantity_ordered,
+                'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
+            ]);
+
+            // save invoiceLine
+            if (!$invoiceLine->save())
+                // redirect with errors
+                return back()->withInput()
+                    ->withErrors( $invoiceLine->errors() );
+
+            // untrash if was trashed
+            if ($invoiceLine->trashed()) $invoiceLine->restore();
         }
 
         // return success

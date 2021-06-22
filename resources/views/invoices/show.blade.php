@@ -36,13 +36,28 @@
             <div class="col-12">
 
                 <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.stamping.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->stamping }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.document_number.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
+                </div>
+
+                <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::invoice.branch_id.0'):</div>
                     <div class="col-8 col-lg-6 h4">{{ $resource->branch->name }}</div>
                 </div>
 
                 <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::invoice.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }}</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
                 <div class="row">
@@ -86,6 +101,7 @@
                                 <th>@lang('sales::invoice.lines.variant_id.0')</th>
                                 <th class="w-150px text-center">@lang('sales::invoice.lines.price_invoiced.0')</th>
                                 <th class="w-150px text-center">@lang('sales::invoice.lines.quantity_invoiced.0')</th>
+                                @if ($resource->is_purchase) <th class="w-150px text-center">@lang('sales::invoice.lines.quantity_received.0')</th> @endif
                                 <th class="w-150px text-center">@lang('sales::invoice.lines.total.0')</th>
                             </tr>
                         </thead>
@@ -105,9 +121,19 @@
                                             ) }}" class="img-fluid mh-50px">
                                         </div>
                                     </td>
-                                    <td class="align-middle pl-3">{{ $line->product->name }}</td>
                                     <td class="align-middle pl-3">
-                                        <div>{{ $line->variant->sku ?? '--' }}</div>
+                                        <a href="{{ route('backend.products.edit', $line->product) }}"
+                                            class="text-primary text-decoration-none">{{ $line->product->name }}</a>
+                                    </td>
+                                    <td class="align-middle pl-3">
+                                        <div>
+                                            @if ($line->variant)
+                                            <a href="{{ route('backend.variants.edit', $line->variant) }}"
+                                                class="text-primary text-decoration-none">{{ $line->variant->sku }}</a>
+                                            @else
+                                                --
+                                            @endif
+                                        </div>
                                         @if ($line->variant && $line->variant->values->count())
                                         <div class="small pl-2">
                                             @foreach($line->variant->values as $value)
@@ -119,6 +145,7 @@
                                     </td>
                                     <td class="align-middle text-center h6">{{ $line->currency->code }} <b>{{ number($line->price_invoiced, $line->currency->decimals) }}</b></td>
                                     <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_invoiced }}</td>
+                                    @if ($resource->is_purchase) <td class="align-middle text-center h5">{{ $line->quantity_received ?? '--' }}</td> @endif
                                     <td class="align-middle text-center h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
                                 </tr>
                             @endforeach
@@ -126,6 +153,13 @@
                     </table>
                 </div>
 
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-2 offset-8 font-weight-bold d-flex align-items-center justify-content-end">Total</div>
+            <div class="col-2 text-right">
+                <h3 class="pr-1 m-0">{{ $resource->currency->code }} <b>{{ number($resource->total, $resource->currency->decimals) }}</b></h3>
             </div>
         </div>
 
