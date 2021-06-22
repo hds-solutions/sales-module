@@ -2,7 +2,9 @@
 
 namespace HDSSolutions\Finpar;
 
+use HDSSolutions\Finpar\Models\Invoice;
 use HDSSolutions\Laravel\Modules\ModuleServiceProvider;
+use Illuminate\Foundation\AliasLoader;
 
 class SalesModuleServiceProvider extends ModuleServiceProvider {
 
@@ -43,6 +45,8 @@ class SalesModuleServiceProvider extends ModuleServiceProvider {
         $this->commands( $this->commands );
         // merge configuration
         $this->mergeConfigFrom( module_path('config/sales.php'), 'sales' );
+        //
+        AliasLoader::getInstance()->alias('Invoice', Invoice::class);
     }
 
 }
