@@ -15,11 +15,14 @@ class SalesMenu extends Base\Menu {
                 'icon'      => 'cogs',
             ])->data('priority', 700);
 
+        // get inventory menu group
+        $inventory = backend()->menu()->get('inventory');
+
         $this
             // append items to submenu
             ->orders($sub)
             ->invoices($sub)
-            ->in_outs($sub)
+            ->in_outs($inventory)
             ->receipments($sub)
             ;
 
