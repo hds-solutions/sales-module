@@ -84,27 +84,16 @@
     placeholder="sales::invoice.currency_id._"
     {{-- helper="sales::invoice.currency_id.?" --}} />
 
-<div class="form-row my-2">
+<x-backend-form-multiple name="orders"
+    :values="$orders" :selecteds="[]"
+    contents-view="sales::invoices.form.orders" row-class="mb-1"
+
+    label="sales::invoice.orders.0" />
+
+<div class="form-row mb-3">
     <div class="offset-2 col-4 d-flex justify-content-end align-items-center">
-        <div class="input-group">
-            <x-form-foreign name="order_id"
-                :values="$orders"
-
-                show="document_number - partnerable.full_name | transacted_at_pretty"
-
-                {{-- foreign="orders" foreign-add-label="sales::orders.add" --}}
-                filtered-by="[name=partnerable_id]" filtered-using="partnerable"
-
-
-                label="sales::invoice.order_id.0"
-                placeholder="sales::invoice.order_id._"
-                {{-- helper="sales::invoice.order_id.?" --}} />
-
-            <div class="input-group-append">
-                <button type="submit" formaction-append="import=true"
-                    class="btn btn-success">Importar lineas</button>
-            </div>
-        </div>
+        <button type="submit" formaction-append="import=true"
+            class="btn btn-success">Importar lineas</button>
     </div>
 </div>
 

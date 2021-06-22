@@ -114,7 +114,7 @@ class InvoiceController extends Controller {
             return $redirect;
 
         // process order import
-        if ($request->has('import') && ($redirect = $this->importOrder($resource, $request->order_id)) !== true)
+        if ($request->has('import') && ($redirect = $this->importOrders($resource, $request->input('orders'))) !== true)
             // return redirection
             return $redirect;
 
@@ -228,7 +228,7 @@ class InvoiceController extends Controller {
             return $redirect;
 
         // process order import
-        if ($request->has('import') && ($redirect = $this->importOrder($resource, $request->order_id)) !== true)
+        if ($request->has('import') && ($redirect = $this->importOrders($resource, $request->input('orders'))) !== true)
             // return redirection
             return $redirect;
 
@@ -327,43 +327,46 @@ class InvoiceController extends Controller {
         return true;
     }
 
-    private function importOrder(Resource $resource, Order|int|null $order) {
-        // ignore if order was specified
-        if ($order === null) return true;
+    private function importOrders(Resource $resource, array $orders) {
+        // foreach orders
+        foreach ($orders as $order) {
+            // ignore if order was specified
+            if ($order === null) continue;
 
-        // load order
-        $order = $order instanceof Order ? $order : Order::findOrFail($order);
+            // load order
+            $order = $order instanceof Order ? $order : Order::findOrFail($order);
 
-        // foreach order lines
-        foreach ($order->lines as $orderLine) {
-            // ignore line if al ready invoiced
-            if ($orderLine->is_invoiced) continue;
+            // foreach order lines
+            foreach ($order->lines as $orderLine) {
+                // ignore line if al ready invoiced
+                if ($orderLine->is_invoiced) continue;
 
-            // create InvoiceLine for current OrderLine
-            $invoiceLine = $resource->lines()->withTrashed()
-                ->where('product_id', $orderLine->product_id)
-                ->where('variant_id', $orderLine->variant_id)
-                ->firstOr(fn() => new InvoiceLine($orderLine));
+                // create InvoiceLine for current OrderLine
+                $invoiceLine = $resource->lines()->withTrashed()
+                    ->where('product_id', $orderLine->product_id)
+                    ->where('variant_id', $orderLine->variant_id)
+                    ->firstOr(fn() => new InvoiceLine($orderLine));
 
-            // associate to current resource
-            $invoiceLine->invoice()->associate($resource);
-            // link with OrderLine
-            $invoiceLine->orderLine()->associate($orderLine);
-            $invoiceLine->fill([
-                'price_ordered'     => $orderLine->price_ordered,
-                'price_invoiced'    => $orderLine->price_ordered,
-                'quantity_ordered'  => $orderLine->quantity_ordered,
-                'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
-            ]);
+                // associate to current resource
+                $invoiceLine->invoice()->associate($resource);
+                // link with OrderLine
+                $invoiceLine->orderLine()->associate($orderLine);
+                $invoiceLine->fill([
+                    'price_ordered'     => $orderLine->price_ordered,
+                    'price_invoiced'    => $orderLine->price_ordered,
+                    'quantity_ordered'  => $orderLine->quantity_ordered,
+                    'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
+                ]);
 
-            // save invoiceLine
-            if (!$invoiceLine->save())
-                // redirect with errors
-                return back()->withInput()
-                    ->withErrors( $invoiceLine->errors() );
+                // save invoiceLine
+                if (!$invoiceLine->save())
+                    // redirect with errors
+                    return back()->withInput()
+                        ->withErrors( $invoiceLine->errors() );
 
-            // untrash if was trashed
-            if ($invoiceLine->trashed()) $invoiceLine->restore();
+                // untrash if was trashed
+                if ($invoiceLine->trashed()) $invoiceLine->restore();
+            }
         }
 
         // return success
