@@ -48,7 +48,7 @@ abstract class X_Invoice extends Base\Model {
         'partnerable_type'  => [ 'required' ],
         'partnerable_id'    => [ 'required' ],
         'address_id'        => [ 'sometimes' ],
-        'transacted_at'     => [ 'required', 'date', 'before:now' ],
+        'transacted_at'     => [ 'required', 'date', 'before_or_equal:now' ],
         'stamping'          => [ 'sometimes' ],
         'document_number'   => [ 'required', 'unique:invoices,document_number,{id},id,stamping,{stamping}' ],
         'is_purchase'       => [ 'required', 'boolean' ],

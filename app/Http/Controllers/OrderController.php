@@ -74,7 +74,7 @@ class OrderController extends Controller {
         ])->get();
 
         $highs = [
-            'document_number'   => str_increment(Resource::max('document_number')),
+            'document_number'   => Resource::nextDocumentNumber(),
         ];
 
         // show create form

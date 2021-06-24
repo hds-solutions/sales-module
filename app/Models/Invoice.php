@@ -12,6 +12,16 @@ class Invoice extends X_Invoice implements Document {
     use HasDocumentActions,
         HasPartnerable;
 
+    public static function currentStamping():?string {
+        // return latest stamping number used
+        return self::select('stamping')->orderByDesc('transacted_at')->first()?->stamping ?? null;
+    }
+
+    public static function nextDocumentNumber(string $stamping = null):string {
+        // return next document number for specified stamping
+        return str_increment(self::where('stamping', $stamping)->max('document_number') ?? null);
+    }
+
     public function __construct(array|Order $attributes = []) {
         // check if is instance of Order
         if (($order = $attributes) instanceof Order)
@@ -22,6 +32,7 @@ class Invoice extends X_Invoice implements Document {
                 'employee_id'       => $order->employee_id,
                 'partnerable_type'  => $order->partnerable_type,
                 'partnerable_id'    => $order->partnerable_id,
+                'transacted_at'     => $order->transacted_at,
                 'is_purchase'       => $order->is_purchase,
             ];
         // redirect attributes to parent
@@ -205,25 +216,30 @@ class Invoice extends X_Invoice implements Document {
     }
 
     public static function createFromOrder(int|Order $order, array $attributes = []):Invoice {
-        // make and save invoice
-        return tap(self::makeFromOrder($order, $attributes), function($invoice) {
-            // save invoice
-            $invoice->save();
-            // save Invoice.lines
-            $invoice->lines->each(function($invoiceLine) use ($invoice) {
-                // link with parent
-                $invoiceLine->invoice()->associate($invoice);
-                // save InvoiceLine
-                $invoiceLine->save();
-                // check if has orderLine
-                if (isset($invoiceLine->orderLine))
-                    // link OrderLine with InvoiceLine
-                    $invoiceLine->orderLines()->attach($invoiceLine->orderLine, [
-                        'invoice_line_id'   => $invoiceLine->id,
-                        'quantity_ordered'  => $invoiceLine->orderLine->quantity_ordered - $invoiceLine->orderLine->quantity_invoiced,
-                    ]);
-            });
-        });
+        // make invoice
+        $invoice = self::makeFromOrder($order, $attributes);
+        // stop process if invoice can't be saved
+        if (!$invoice->save()) return $invoice;
+        // foreach lines
+        foreach ($invoice->lines as $invoiceLine) {
+            // link with parent
+            $invoiceLine->invoice()->associate($invoice);
+            // stop process if line can't be saved
+            if (!$invoiceLine->save()) return $invoice;
+            // check if has orderLine
+            if (isset($invoiceLine->orderLine)) {
+                // link OrderLine with InvoiceLine
+                $invoiceLine->orderLines()->attach($invoiceLine->orderLine, [
+                    'invoice_line_id'   => $invoiceLine->id,
+                    'quantity_ordered'  => $invoiceLine->orderLine->quantity_ordered - $invoiceLine->orderLine->quantity_invoiced,
+                ]);
+                // remove temporal relation
+                $invoiceLine->unsetRelation('orderLine');
+            }
+        }
+
+        // return created invoice
+        return $invoice;
     }
 
     public static function makeFromOrder(int|Order $order, array $attributes = []):Invoice {
@@ -237,8 +253,8 @@ class Invoice extends X_Invoice implements Document {
         $order->lines->each(function($orderLine) use ($invoice) {
             // create a new InvoiceLine from OrderLine
             $invoice->lines->push( $invoiceLine = new InvoiceLine($orderLine) );
-            // set temporal orderLine value
-            $invoiceLine->orderLine = $orderLine;
+            // set temporal orderLine on temporal relation
+            $invoiceLine->setRelation('orderLine', $orderLine);
         });
         // return Invoice
         return $invoice;

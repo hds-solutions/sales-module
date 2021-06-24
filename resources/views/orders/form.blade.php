@@ -8,7 +8,7 @@
     {{-- helper="sales::order.is_purchase.?" --}} />
 
 <x-backend-form-text name="document_number" required
-    :resource="$resource ?? null" :default="$highs['document_number']"
+    :resource="$resource ?? null" :default="$highs['document_number'] ?? null"
 
     label="sales::order.document_number.0"
     placeholder="sales::order.document_number._"

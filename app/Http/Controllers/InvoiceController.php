@@ -79,14 +79,14 @@ class InvoiceController extends Controller {
             ))
         );
 
-        // get completed orders
+        // get completed orders that aren't invoiced
         $orders = Order::with([
             'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
         ])->completed()->invoiced(false)->get();
 
         $highs = [
-            'stamping'          => $stamping = Resource::max('stamping') ?? null,
-            'document_number'   => str_increment(Resource::where('stamping', $stamping)->max('document_number') ?? null),
+            'stamping'          => $stamping = Resource::currentStamping(),
+            'document_number'   => Resource::nextDocumentNumber( $stamping ),
         ];
 
         // show create form

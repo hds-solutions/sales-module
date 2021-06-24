@@ -143,7 +143,7 @@
                                         </div>
                                         @endif
                                     </td>
-                                    <td class="align-middle text-right h6">{{ currency($line->currency_id)->code }} <b>{{ number($line->price_invoiced, currency($line->currency_id)->decimals) }}</b></td>
+                                    <td class="align-middle text-right">{{ currency($line->currency_id)->code }} <b>{{ number($line->price_invoiced, currency($line->currency_id)->decimals) }}</b></td>
                                     <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_invoiced }}</td>
                                     @if ($resource->is_purchase) <td class="align-middle text-center h5">{{ $line->quantity_received ?? '--' }}</td> @endif
                                     <td class="align-middle text-right h5 w-100px">{{ currency($line->currency_id)->code }} <b>{{ number($line->total, currency($line->currency_id)->decimals) }}</b></td>

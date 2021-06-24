@@ -12,6 +12,11 @@ class Order extends X_Order implements Document {
     use HasDocumentActions,
         HasPartnerable;
 
+    public static function nextDocumentNumber():string {
+        // return next document number for specified stamping
+        return str_increment(self::max('document_number') ?? null);
+    }
+
     public function branch() {
         return $this->belongsTo(Branch::class);
     }
