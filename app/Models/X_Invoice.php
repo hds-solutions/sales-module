@@ -39,6 +39,7 @@ abstract class X_Invoice extends Base\Model {
     protected $appends = [
         'payment_rule',
         'transacted_at_pretty',
+        'total_pretty',
     ];
 
     protected static array $rules = [
@@ -80,6 +81,10 @@ abstract class X_Invoice extends Base\Model {
 
     public function getTransactedAtPrettyAttribute():string {
         return pretty_date($this->transacted_at, true);
+    }
+
+    public function getTotalPrettyAttribute():string {
+        return amount($this->total, $this->currency_id);
     }
 
 }

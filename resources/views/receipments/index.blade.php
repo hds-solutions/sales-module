@@ -1,4 +1,4 @@
-@extends('backend::layouts.master')
+@extends('sales::layouts.master')
 
 @section('page-name', __('sales::receipments.title'))
 @section('description', __('sales::receipments.description'))
@@ -23,7 +23,7 @@
                 <div class="table-responsive">
                     {{ $dataTable->table() }}
                     @include('backend::components.datatable-actions', [
-                        'actions'   => [ 'show', 'update', 'delete' ],
+                        'actions'   => [ 'show' ],
                         'label'     => '{resource.name}',
                     ])
                 </div>

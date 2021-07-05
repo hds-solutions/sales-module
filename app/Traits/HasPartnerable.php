@@ -2,12 +2,14 @@
 
 namespace HDSSolutions\Finpar\Traits;
 
+use HDSSolutions\Finpar\Contracts\AsPerson;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasPartnerable {
 
     public function partnerable() {
-        return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id');
+        return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id')
+            ->with([ 'identity' ]);
     }
 
     public function scopeOfPartnerable(Builder $query, int|AsPerson $partnerable) {

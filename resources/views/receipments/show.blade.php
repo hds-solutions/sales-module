@@ -1,4 +1,4 @@
-@extends('backend::layouts.master')
+@extends('sales::layouts.master')
 
 @section('page-name', __('sales::receipments.title'))
 @section('description', __('sales::receipments.description'))
@@ -13,10 +13,10 @@
                 @lang('sales::receipments.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
-                @if (!$resource->isCompleted())
+                {{-- @if (!$resource->isCompleted())
                 <a href="{{ route('backend.receipments.edit', $resource) }}"
                     class="btn btn-sm ml-2 btn-info">@lang('sales::receipments.edit')</a>
-                @endif
+                @endif --}}
                 <a href="{{ route('backend.receipments.create') }}"
                     class="btn btn-sm ml-2 btn-primary">@lang('sales::receipments.create')</a>
             </div>
@@ -36,24 +36,24 @@
             <div class="col-12">
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.branch_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->branch->name }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.document_number.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.partnerable_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.currency_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->currency->name }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
-                {{-- <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.description.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->description }}</div>
-                </div> --}}
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.currency_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ currency($resource->currency_id)->name }}</div>
+                </div>
 
                 <div class="row">
                     <div class="col-4 col-lg-4">@lang('sales::receipment.transacted_at.0'):</div>
@@ -68,64 +68,111 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <h2>@lang('sales::receipment.lines.0')</h2>
+        <div class="row pt-5">
+            <div class="col-6 pr-5">
+
+                <div class="row">
+                    <div class="col">
+                        <h2>@lang('sales::receipment.invoices.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('sales::invoice.document_number.0') --}}</th>
+                                        <th class="align-middle text-right">@lang('sales::invoice.total.0')</th>
+                                        <th class="align-middle text-right">@lang('sales::invoice.paid_amount.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($resource->invoices as $invoice)
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.invoices.show', $invoice) }}"
+                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $invoice->document_number }}<small class="ml-2">{{ $invoice->transacted_at_pretty }}</small></a>
+                                            <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->total, currency($invoice->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->receipmentInvoice->imputed_amount, currency($invoice->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-6 pl-0">
+
+                <div class="row">
+                    <div class="col">
+                        <h2>@lang('sales::receipment.payments.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('sales::receipment.payments.payment_type.0') --}}</th>
+                                        <th class="align-middle">{{-- @lang('sales::receipment.payments.description.0') --}}</th>
+                                        <th class="align-middle text-right">@lang('sales::receipment.payments.payment_amount.0')</th>
+                                        <th class="align-middle text-right">@lang('sales::receipment.payments.used_amount.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($resource->payments as $payment)
+                                        <tr>
+                                            <td class="align-middle">{{ __(Payment::PAYMENT_TYPES[$payment->receipmentPayment->payment_type]) }}</td>
+                                            <td class="align-middle">
+                                                <a href="{{ match($payment->receipmentPayment->payment_type) {
+                                                    Payment::PAYMENT_TYPE_Cash          => route('backend.cashes.show', $payment->cash),
+                                                    Payment::PAYMENT_TYPE_Card          => '#',
+                                                    Payment::PAYMENT_TYPE_Credit        => '#',
+                                                    Payment::PAYMENT_TYPE_Check         => route('backend.checks.show', $payment),
+                                                    Payment::PAYMENT_TYPE_CreditNote    => route('backend.credit_notes.show', $payment),
+                                                    Payment::PAYMENT_TYPE_Promissory    => '#',
+                                                    default => null,
+                                                } }}" class="text-secondary text-decoration-none"><b>{!! match($payment->receipmentPayment->payment_type) {
+                                                    Payment::PAYMENT_TYPE_Cash          => $payment->cash->cashBook->name,
+                                                    Payment::PAYMENT_TYPE_Card          => $payment->card_holder.' <small>**** **** **** '.$payment->card_number.'</small>',
+                                                    Payment::PAYMENT_TYPE_Credit        => trans_choice('sales::receipment.payments.dues.0', $payment->dues, [ 'dues' => $payment->dues ]).' <small>'.$payment->interest.'%</small>',
+                                                    Payment::PAYMENT_TYPE_Check         => $payment->document_number.'<small class="ml-2">'.$payment->bank_name.'</small>',
+                                                    Payment::PAYMENT_TYPE_CreditNote    => $payment->document_number.'<small class="ml-2">'.$payment->payment_amount.'</small>',
+                                                    default => null,
+                                                } !!}</b></a>
+                                            </td>
+                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <div class="row">
-            <div class="col">
-
-                <div class="table-responsive">
-                    <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th class="w-150px">@lang('sales::receipment.lines.image.0')</th>
-                                <th>@lang('sales::receipment.lines.product_id.0')</th>
-                                <th>@lang('sales::receipment.lines.variant_id.0')</th>
-                                <th class="w-150px text-center">@lang('sales::receipment.lines.price_receipmented.0')</th>
-                                <th class="w-150px text-center">@lang('sales::receipment.lines.quantity_receipmented.0')</th>
-                                <th class="w-150px text-center">@lang('sales::receipment.lines.total.0')</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @foreach ($resource->lines as $line)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex justify-content-center">
-                                            <img src="{{ asset(
-                                                // has variant and variant has images
-                                                $line->variant !== null && $line->variant->images->count() ?
-                                                // first variant image
-                                                $line->variant->images->first()->url :
-                                                // first product image or default as fallback
-                                                ($line->product->images->first()->url ?? 'backend-module/assets/images/default.jpg')
-                                            ) }}" class="img-fluid mh-50px">
-                                        </div>
-                                    </td>
-                                    <td class="align-middle pl-3">{{ $line->product->name }}</td>
-                                    <td class="align-middle pl-3">
-                                        <div>{{ $line->variant->sku ?? '--' }}</div>
-                                        @if ($line->variant && $line->variant->values->count())
-                                        <div class="small pl-2">
-                                            @foreach($line->variant->values as $value)
-                                                @if ($value->option_value === null) @continue @endif
-                                                <div>{{ $value->option->name }}: <b>{{ $value->option_value->value }}</b></div>
-                                            @endforeach
-                                        </div>
-                                        @endif
-                                    </td>
-                                    <td class="align-middle text-center h6">{{ $line->currency->code }} <b>{{ number($line->price_receipmented, $line->currency->decimals) }}</b></td>
-                                    <td class="align-middle text-center h4 font-weight-bold">{{ $line->quantity_receipmented }}</td>
-                                    <td class="align-middle text-center h5 w-100px">{{ $line->currency->code }} <b>{{ number($line->total, $line->currency->decimals) }}</b></td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
+            <div class="col-6 pr-5 text-right">
+                <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->invoices_amount, currency($resource->currency_id)->decimals) }}</b></h5>
+            </div>
+            <div class="col-6 pl-0 text-right">
+                <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->payments_amount, currency($resource->currency_id)->decimals) }}</b></h5>
             </div>
         </div>
 

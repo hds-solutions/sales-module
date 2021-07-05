@@ -58,7 +58,7 @@ class InvoiceController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create(Request $request) {
-        // load cash_books
+        // load customers
         $customers = Customer::with([
             // 'addresses', // TODO: Customer.addresses
         ])->get();

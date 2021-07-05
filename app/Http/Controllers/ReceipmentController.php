@@ -8,7 +8,10 @@ use HDSSolutions\Finpar\Http\Request;
 use HDSSolutions\Finpar\Models\Receipment as Resource;
 use HDSSolutions\Finpar\Models\Currency;
 use HDSSolutions\Finpar\Models\Customer;
-use HDSSolutions\Finpar\Models\ReceipmentLine;
+use HDSSolutions\Finpar\Models\Employee;
+use HDSSolutions\Finpar\Models\Invoice;
+use HDSSolutions\Finpar\Models\ReceipmentInvoice;
+use HDSSolutions\Finpar\Models\ReceipmentPayment;
 use HDSSolutions\Finpar\Models\Product;
 use HDSSolutions\Finpar\Models\Variant;
 use HDSSolutions\Finpar\Traits\CanProcessDocument;
@@ -56,18 +59,34 @@ class ReceipmentController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create(Request $request) {
-        // load cash_books
-        $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
+        // redirect to payment window
+        return redirect()->route('backend.payment');
+
+        // load employees
+        $employees = Employee::all();
+        // load customers
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+            // load available CreditNotes of Customer
+            'creditNotes' => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
         ])->get();
 
+        // get completed invoices that aren't paid
+        $invoices = Invoice::with([
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+        ])->completed()->paid(false)->get();
+
+        $highs = [
+            'document_number'   => Resource::nextDocumentNumber(),
+        ];
+
         // show create form
-        return view('sales::receipments.create', compact('customers', 'products'));
+        return view('sales::receipments.create', compact(
+            'employees',
+            'customers',
+            'invoices',
+            'highs',
+        ));
     }
 
     /**
@@ -77,16 +96,15 @@ class ReceipmentController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        // cast values to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+
         // start a transaction
         DB::beginTransaction();
+dump($request->input());
 
         // create resource
         $resource = new Resource( $request->input() );
-
-        // TODO: set real data
-        $resource->branch_id = 1;
-        $resource->transaction_date = now();
-        // associate Partner
         $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
 
         // save resource
@@ -96,10 +114,20 @@ class ReceipmentController extends Controller {
                 ->withErrors( $resource->errors() )
                 ->withInput();
 
-        // sync inventory lines
-        if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
+        // sync receipment invoices
+        if (($redirect = $this->syncInvoices($resource, $request->get('invoices'))) !== true)
             // return redirection
             return $redirect;
+
+        // sync receipment payments
+        if (($redirect = $this->syncPayments($resource, $request->get('payments'))) !== true)
+            // return redirection
+            return $redirect;
+
+dump($resource->load([ 'invoices', 'cashLines', 'cards', 'checks' ]));
+dump($resource->invoices_amount);
+dump($resource->payments_amount);
+return;
 
         // confirm transaction
         DB::commit();
@@ -119,19 +147,19 @@ class ReceipmentController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function show(Resource $resource) {
-        // load inventory data
+        // load receipment data
         $resource->load([
-            'branch',
+            'employee',
             'partnerable',
-            'currency',
-            'lines' => fn($line) => $line->with([
-                'currency',
-                'product.images',
-                'variant' => fn($variant) => $variant->with([
-                    'images',
-                    'values',
-                ]),
-            ]),
+
+            'invoices',
+
+            'cashLines',
+            'cards',
+            'credits',
+            'creditNotes',
+            'checks' => fn($check) => $check->with([ 'receipmentPayment.creditNote' ]),
+            'promissoryNotes',
         ]);
 
         // redirect to list
@@ -150,24 +178,33 @@ class ReceipmentController extends Controller {
             // redirect to show route
             return redirect()->route('backend.receipments.show', $resource);
 
+        // load employees
+        $employees = Employee::all();
+        // load customers
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+            // load available CreditNotes of Customer
+            'creditNotes' => fn($creditNote) => $creditNote->available()->with([ 'identity' ]),
+        ])->get();
+
+        // get completed invoices that aren't paid
+        $invoices = Invoice::with([
+            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
+        // ])->completed()->paid(false)->get();
+        ])->completed()->get();
+
         // load resource relations
         $resource->load([
             'currency',
-            'lines.product',
+            // 'lines.product',
         ]);
 
-        // load customers
-        $customers = Customer::all();
-        // // load current company branches
-        // $branches = backend()->company()->branches;
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
-        ])->get();
-
         // show edit form
-        return view('sales::receipments.edit', compact('customers', 'products', 'resource'));
+        return view('sales::receipments.edit', compact('resource',
+            'employees',
+            'customers',
+            'invoices',
+        ));
     }
 
     /**
@@ -194,11 +231,17 @@ class ReceipmentController extends Controller {
                 ->withErrors( $resource->errors() )
                 ->withInput();
 
-        // sync inventory lines
-        if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
+        // sync receipment invoices
+        if (($redirect = $this->syncInvoices($resource, $request->get('invoices'))) !== true)
             // return redirection
             return $redirect;
 
+        // sync receipment payments
+        if (($redirect = $this->syncPayments($resource, $request->get('payments'))) !== true)
+            // return redirection
+            return $redirect;
+dump($resource);
+return;
         // confirm transaction
         DB::commit();
 
@@ -224,69 +267,107 @@ class ReceipmentController extends Controller {
         return redirect()->route('backend.receipments');
     }
 
-    public function price(Request $request) {
-        // get resources
-        $product = $request->has('product') ? Product::findOrFail($request->product) : null;
-        $variant = $request->has('variant') ? Variant::findOrFail($request->variant) : null;
-        $currency = $request->has('currency') ? Currency::findOrFail($request->currency) : null;
-        // return stock for requested product
-        return response()->json($variant?->price($currency)?->pivot ?? $product?->price($currency)?->pivot);
-    }
+    private function syncInvoices(Resource $resource, array $invoices) {
+        // load receipment invoices
+        $resource->load([ 'invoices' ]);
 
-    private function syncLines(Resource $resource, array $lines) {
-        // load inventory lines
-        $resource->load(['lines']);
+        // foreach new/updated invoices
+        foreach (($invoices = array_group( $invoices )) as $invoiceLine) {
+            // ignore line if invoice wasn't specified
+            if (!isset($invoiceLine['invoice_id']) || is_null($invoiceLine['imputed_amount'])) continue;
 
-        // foreach new/updated lines
-        foreach (($lines = array_group( $lines )) as $line) {
-            // ignore line if product wasn't specified
-            if (!isset($line['product_id']) || is_null($line['price']) || is_null($line['quantity'])) continue;
-            // load product
-            $product = Product::find($line['product_id']);
-            // load variant, if was specified
-            $variant = isset($line['variant_id']) ? $product->variants->firstWhere('id', $line['variant_id']) : null;
+            // load invoice
+            $invoice = Invoice::find($invoiceLine['invoice_id']);
 
             // find existing line
-            $orderLine = $resource->lines->first(function($iLine) use ($product, $variant) {
-                return $iLine->product_id == $product->id &&
-                    $iLine->variant_id == ($variant->id ?? null);
+            $receipmentInvoice = $resource->invoices->first(fn($iLine) => $iLine->invoice_id == $invoice->id)
             // create a new line
-            }) ?? ReceipmentLine::make([
-                'order_id'      => $resource->id,
-                'currency_id'   => $resource->currency_id,
-                'product_id'    => $product->id,
-                'variant_id'    => $variant->id ?? null,
+            ?? ReceipmentInvoice::make([
+                'receipment_id'     => $resource->id,
+                'invoice_id'        => $invoice->id,
             ]);
 
             // update line values
-            $orderLine->fill([
-                'price'     => $line['price'],
-                'quantity'  => $line['quantity'],
-                'total'     => $line['total'],
+            $receipmentInvoice->fill([
+                'imputed_amount'    => $invoiceLine['imputed_amount'],
             ]);
-            // save inventory line
-            if (!$orderLine->save())
+
+            // save receipment line
+            if (!$receipmentInvoice->save())
                 return back()
                     ->withInput()
-                    ->withErrors( $orderLine->errors() );
+                    ->withErrors( $receipmentInvoice->errors() );
         }
 
-        // find removed inventory lines
-        foreach ($resource->lines as $line) {
+        // find removed receipment invoices
+        foreach ($resource->invoices as $invoice) {
             // deleted flag
             $deleted = true;
-            // check against $request->lines
-            foreach ($lines as $rLine) {
-                // ignore empty lines
-                if (!isset($rLine['product_id'])) continue;
+            // check against $request->invoices
+            foreach ($invoices as $rLine) {
+                // ignore empty invoices
+                if (!isset($rLine['invoice_id'])) continue;
                 // check if line exists
-                if ($line->product_id == $rLine['product_id'] &&
-                    $line->variant_id == ($rLine['variant_id'] ?? null))
+                if ($invoice->id == $rLine['invoice_id'])
                     // change flag to keep line
                     $deleted = false;
             }
             // remove line if was deleted
-            if ($deleted) $line->delete();
+            if ($deleted) $invoice->delete();
+        }
+
+        // return success
+        return true;
+    }
+
+    private function syncPayments(Resource $resource, array $payments) {
+        // load receipment payments
+        $resource->load([ 'cashLines', 'cards', 'credits', 'creditNotes', 'checks', 'promissoryNotes' ]);
+
+        // foreach new/updated payments
+        foreach (($payments = array_group( $payments )) as $paymentLine) {
+            // ignore line if invoice wasn't specified
+            if (!isset($paymentLine['payment_type']) || is_null($paymentLine['payment_amount'])) continue;
+
+dump($paymentLine);
+continue;
+
+            // find existing line
+            $receipmentPayment = $resource->payments->first(fn($pLine) => $pLine->invoice_id == $invoice->id)
+            // create a new line
+            ?? ReceipmentInvoice::make([
+                'receipment_id'     => $resource->id,
+                'invoice_id'        => $invoice->id,
+            ]);
+
+            // update line values
+            $receipmentPayment->fill([
+                'imputed_amount'    => $paymentLine['imputed_amount'],
+            ]);
+
+            // save receipment line
+            if (!$receipmentPayment->save())
+                return back()
+                    ->withInput()
+                    ->withErrors( $receipmentPayment->errors() );
+        }
+return true;
+
+        // find removed receipment payments
+        foreach ($resource->payments as $invoice) {
+            // deleted flag
+            $deleted = true;
+            // check against $request->payments
+            foreach ($payments as $rLine) {
+                // ignore empty payments
+                if (!isset($rLine['invoice_id'])) continue;
+                // check if line exists
+                if ($invoice->id == $rLine['invoice_id'])
+                    // change flag to keep line
+                    $deleted = false;
+            }
+            // remove line if was deleted
+            if ($deleted) $invoice->delete();
         }
 
         // return success

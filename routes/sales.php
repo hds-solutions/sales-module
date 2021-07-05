@@ -41,6 +41,7 @@ Route::group([
     Route::resource('receipments',                  ReceipmentController::class,   $name_prefix)
         ->parameters([ 'receipments' => 'resource' ])
         ->name('index', 'backend.receipments');
+        // ->only([ 'index', 'show' ]);
     Route::post('receipments/{resource}/process',   [ ReceipmentController::class, 'processIt'])
         ->name('backend.receipments.process');
 
