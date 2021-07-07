@@ -59,6 +59,14 @@ class Invoice extends X_Invoice implements Document {
         return $this->hasMany(InvoiceLine::class);
     }
 
+    public function receipments() {
+        return $this->belongsToMany(Receipment::class, 'receipment_invoice')
+            ->using(ReceipmentInvoice::class)
+            ->withTimestamps()
+            ->withPivot([ 'imputed_amount' ])
+            ->as('receipmentInvoice');
+    }
+
     public function scopeOverDue(Builder $query, int $graceDays = 0) {
         // return invoices that aren't paid
         return self::paid(false)
