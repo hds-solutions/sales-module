@@ -32,15 +32,15 @@ class ReceipmentDataTable extends Base\DataTable {
                 ->title( __('sales::receipment.id.0') )
                 ->hidden(),
 
+            Column::make('document_number')
+                ->title( __('sales::receipment.document_number.0') ),
+
             Column::computed('transacted_at')
                 ->title( __('sales::receipment.transacted_at.0') )
                 ->renderRaw('datetime:transacted_at;F j, Y H:i'),
 
             Column::make('partnerable.full_name')
                 ->title( __('sales::receipment.partnerable_id.0') ),
-
-            // Column::make('currency.name')
-            //     ->title( __('sales::receipment.currency_id.0') ),
 
             Column::make('invoices_amount')
                 ->title( __('sales::receipment.invoices_amount.0') )
