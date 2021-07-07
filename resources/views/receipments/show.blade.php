@@ -27,42 +27,42 @@
         @include('backend::components.errors')
 
         <div class="row">
-            <div class="col">
-                <h2>@lang('sales::receipment.details.0')</h2>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
+            <div class="col-12 col-xl-6">
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::invoice.document_number.0'):</div>
-                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
+                    <div class="col">
+                        <h2>@lang('sales::receipment.details.0')</h2>
+                    </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::invoice.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col">@lang('sales::invoice.document_number.0'):</div>
+                    <div class="col h4 font-weight-bold">{{ $resource->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
+                    <div class="col">@lang('sales::invoice.partnerable_id.0'):</div>
+                    <div class="col h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::invoice.currency_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ currency($resource->currency_id)->name }}</div>
+                    <div class="col">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.transacted_at.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                    <div class="col">@lang('sales::invoice.currency_id.0'):</div>
+                    <div class="col h4">{{ currency($resource->currency_id)->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::receipment.document_status.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ Document::__($resource->document_status) }}</div>
+                    <div class="col">@lang('sales::receipment.transacted_at.0'):</div>
+                    <div class="col h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col">@lang('sales::receipment.document_status.0'):</div>
+                    <div class="col h4 mb-0">{{ Document::__($resource->document_status) }}</div>
                 </div>
 
             </div>
@@ -73,7 +73,7 @@
 
                 <div class="row">
                     <div class="col">
-                        <h2>@lang('sales::receipment.invoices.0')</h2>
+                        <h2 class="mb-0">@lang('sales::receipment.invoices.0')</h2>
                     </div>
                 </div>
 
@@ -107,13 +107,19 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col text-right">
+                        <h5 class="pr-1 mb-0">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->invoices_amount, currency($resource->currency_id)->decimals) }}</b></h5>
+                    </div>
+                </div>
+
             </div>
 
             <div class="col-6 pl-0">
 
                 <div class="row">
                     <div class="col">
-                        <h2>@lang('sales::receipment.payments.0')</h2>
+                        <h2 class="mb-0">@lang('sales::receipment.payments.0')</h2>
                     </div>
                 </div>
 
@@ -164,15 +170,12 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
+                <div class="row">
+                    <div class="col text-right">
+                        <h5 class="pr-1 mb-0">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->payments_amount, currency($resource->currency_id)->decimals) }}</b></h5>
+                    </div>
+                </div>
 
-        <div class="row">
-            <div class="col-6 pr-5 text-right">
-                <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->invoices_amount, currency($resource->currency_id)->decimals) }}</b></h5>
-            </div>
-            <div class="col-6 pl-0 text-right">
-                <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->payments_amount, currency($resource->currency_id)->decimals) }}</b></h5>
             </div>
         </div>
 

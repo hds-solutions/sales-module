@@ -33,47 +33,47 @@
         </div>
 
         <div class="row">
-            <div class="col-12">
+            <div class="col-12 col-xl-6">
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.document_number.0'):</div>
-                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
+                    <div class="col">@lang('sales::order.document_number.0'):</div>
+                    <div class="col h4 font-weight-bold">{{ $resource->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.branch_id.0') / @lang('sales::order.warehouse_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->branch->name }} / {{ $resource->warehouse->name }}</div>
+                    <div class="col">@lang('sales::order.branch_id.0') / @lang('sales::order.warehouse_id.0'):</div>
+                    <div class="col h4">{{ $resource->branch->name }} / {{ $resource->warehouse->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.partnerable_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col">@lang('sales::order.partnerable_id.0'):</div>
+                    <div class="col h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
+                    <div class="col">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.currency_id.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ $resource->currency->name }}</div>
+                    <div class="col">@lang('sales::order.currency_id.0'):</div>
+                    <div class="col h4">{{ $resource->currency->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.transacted_at.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                    <div class="col">@lang('sales::order.transacted_at.0'):</div>
+                    <div class="col h4">{{ pretty_date($resource->transacted_at, true) }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 col-lg-4">@lang('sales::order.document_status.0'):</div>
-                    <div class="col-8 col-lg-6 h4">{{ Document::__($resource->document_status) }}</div>
+                    <div class="col">@lang('sales::order.document_status.0'):</div>
+                    <div class="col h4 mb-0">{{ Document::__($resource->document_status) }}</div>
                 </div>
 
             </div>
         </div>
 
-        <div class="row">
+        <div class="row pt-5">
             <div class="col">
                 <h2>@lang('sales::order.lines.0')</h2>
             </div>
