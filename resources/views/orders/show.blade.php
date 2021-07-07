@@ -41,8 +41,8 @@
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.branch_id.0') / @lang('sales::order.warehouse_id.0'):</div>
-                    <div class="col h4">{{ $resource->branch->name }} / {{ $resource->warehouse->name }}</div>
+                    <div class="col">@lang('sales::order.warehouse_id.0'):</div>
+                    <div class="col h4">{{ $resource->warehouse->name }} <small class="font-weight-light">[{{ $resource->branch->name }}]</small></div>
                 </div>
 
                 <div class="row">

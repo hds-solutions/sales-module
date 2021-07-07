@@ -10,6 +10,12 @@
         '?' => 'Branch help text',
     ],
 
+    'warehouse_id'  => [
+        'Warehouse',
+        '_' => 'Warehouse',
+        '?' => 'Warehouse help text',
+    ],
+
     'currency_id'   => [
         'Currency',
         '_' => 'Currency',
