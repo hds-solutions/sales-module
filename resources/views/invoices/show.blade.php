@@ -81,6 +81,55 @@
                 </div>
 
             </div>
+
+            @if (count($resource->receipments))
+            <div class="col-12 col-xl-6">
+
+                <div class="row">
+                    <div class="col">
+                        <h2 class="mb-0">@lang('sales::invoice.receipments.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('sales::invoice.receipments.document_number.0') --}}</th>
+                                        <th class="align-middle text-right">@lang('sales::invoice.receipments.total.0')</th>
+                                        <th class="align-middle text-right">@lang('sales::invoice.receipments.imputed_amount.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($resource->receipments as $receipment)
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.receipments.show', $receipment) }}"
+                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $receipment->document_number }}<small class="ml-2">{{ $receipment->transacted_at_pretty }}</small></a>
+                                            <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->payments_amount, currency($receipment->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->receipmentInvoice->imputed_amount, currency($receipment->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col pl-0 text-right">
+                        <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->paid_amount, currency($resource->currency_id)->decimals) }}</b></h5>
+                    </div>
+                </div>
+
+            </div>
+            @endif
+
         </div>
 
         <div class="row">

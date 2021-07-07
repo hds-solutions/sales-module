@@ -163,4 +163,22 @@
         ],
     ],
 
+    'receipments'       => [
+        'Receipments',
+        '_' => 'Receipments',
+        '?' => 'Receipments help text',
+
+        'total'             => [
+            'Total',
+            '_' => 'Total',
+            '?' => 'Total help text',
+        ],
+
+        'imputed_amount'    => [
+            'Imputed amount',
+            '_' => 'Imputed amount',
+            '?' => 'Imputed amount help text',
+        ],
+    ]
+
 ];

@@ -172,6 +172,7 @@ class InvoiceController extends Controller {
                         'order',
                     ]),
             ]),
+            'receipments',
         ]);
 
         // redirect to list
