@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use HDSSolutions\Finpar\Http\Controllers\{
     OrderController,
     InvoiceController,
-    InOutController,
     ReceipmentController,
     PriceChangeController,
 };
@@ -31,12 +30,6 @@ Route::group([
         ->name('backend.invoices.price');
     Route::post('invoices/{resource}/process',  [ InvoiceController::class, 'processIt'])
         ->name('backend.invoices.process');
-
-    Route::resource('in_outs',                  InOutController::class,   $name_prefix)
-        ->parameters([ 'in_outs' => 'resource' ])
-        ->name('index', 'backend.in_outs');
-    Route::post('in_outs/{resource}/process',   [ InOutController::class, 'processIt'])
-        ->name('backend.in_outs.process');
 
     Route::resource('receipments',                  ReceipmentController::class,   $name_prefix)
         ->parameters([ 'receipments' => 'resource' ])

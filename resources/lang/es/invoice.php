@@ -87,7 +87,7 @@
         '_' => 'Forma de Pago',
         '?' => 'Forma de Pago help text',
 
-        'CH'    => 'Efectivo',
+        'CH'    => 'Contado',
         'CR'    => 'Crédito',
     ],
 

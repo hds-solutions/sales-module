@@ -14,8 +14,6 @@ class SalesPermissionsSeeder extends Base\PermissionsSeeder {
             $this->document('orders'),
             $this->resource('invoices'),
             $this->document('invoices'),
-            $this->resource('in_outs'),
-            $this->document('in_outs'),
             $this->resource('receipments'),
             $this->document('receipments'),
         ];
@@ -26,7 +24,6 @@ class SalesPermissionsSeeder extends Base\PermissionsSeeder {
         $this->role('Cashier', [
             'orders.*',
             'invoices.*',
-            'in_outs.*',
             'receipments.*',
         ]);
     }

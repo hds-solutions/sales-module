@@ -3,9 +3,12 @@
 namespace HDSSolutions\Finpar\DataTables;
 
 use HDSSolutions\Finpar\Models\Receipment as Resource;
+use HDSSolutions\Finpar\Traits\SearchablePartnerable;
+use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class ReceipmentDataTable extends Base\DataTable {
+    use SearchablePartnerable;
 
     protected array $with = [
         'partnerable',
@@ -17,6 +20,11 @@ class ReceipmentDataTable extends Base\DataTable {
         'creditNotes',
         'promissoryNotes',
         'cards',
+    ];
+
+    protected array $orderBy = [
+        'document_status'   => 'asc',
+        'transacted_at'     => 'desc',
     ];
 
     public function __construct() {
@@ -33,21 +41,22 @@ class ReceipmentDataTable extends Base\DataTable {
                 ->hidden(),
 
             Column::make('document_number')
-                ->title( __('sales::receipment.document_number.0') ),
+                ->title( __('sales::receipment.document_number.0') )
+                ->renderRaw('bold:document_number'),
 
-            Column::computed('transacted_at')
+            Column::make('transacted_at')
                 ->title( __('sales::receipment.transacted_at.0') )
                 ->renderRaw('datetime:transacted_at;F j, Y H:i'),
 
             Column::make('partnerable.full_name')
                 ->title( __('sales::receipment.partnerable_id.0') ),
 
-            Column::make('invoices_amount')
+            Column::computed('invoices_amount')
                 ->title( __('sales::receipment.invoices_amount.0') )
                 ->renderRaw('view:receipment')
                 ->data( view('sales::receipments.datatable.invoices_amount')->render() ),
 
-            Column::make('payments_amount')
+            Column::computed('payments_amount')
                 ->title( __('sales::receipment.payments_amount.0') )
                 ->renderRaw('view:receipment')
                 ->data( view('sales::receipments.datatable.payments_amount')->render() ),
@@ -57,6 +66,15 @@ class ReceipmentDataTable extends Base\DataTable {
 
             Column::make('actions'),
         ];
+    }
+
+    protected function joins(Builder $query):Builder {
+        // add custom JOIN to customers + people for Partnerable
+        return $query
+            // join to partnerable
+            ->leftJoin('customers', 'customers.id', 'receipments.partnerable_id')
+            // join to people
+            ->join('people', 'people.id', 'customers.id');
     }
 
 }

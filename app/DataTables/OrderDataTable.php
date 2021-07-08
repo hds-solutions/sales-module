@@ -3,13 +3,21 @@
 namespace HDSSolutions\Finpar\DataTables;
 
 use HDSSolutions\Finpar\Models\Order as Resource;
+use HDSSolutions\Finpar\Traits\SearchablePartnerable;
+use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class OrderDataTable extends Base\DataTable {
+    use SearchablePartnerable;
 
     protected array $with = [
         'partnerable',
         'currency',
+    ];
+
+    protected array $orderBy = [
+        'document_status'   => 'asc',
+        'transacted_at'     => 'desc',
     ];
 
     public function __construct() {
@@ -26,9 +34,10 @@ class OrderDataTable extends Base\DataTable {
                 ->hidden(),
 
             Column::make('document_number')
-                ->title( __('sales::order.document_number.0') ),
+                ->title( __('sales::order.document_number.0') )
+                ->renderRaw('bold:document_number'),
 
-            Column::computed('transacted_at')
+            Column::make('transacted_at')
                 ->title( __('sales::order.transacted_at.0') )
                 ->renderRaw('datetime:transacted_at;F j, Y H:i'),
 
@@ -48,6 +57,15 @@ class OrderDataTable extends Base\DataTable {
 
             Column::make('actions'),
         ];
+    }
+
+    protected function joins(Builder $query):Builder {
+        // add custom JOIN to customers + people for Partnerable
+        return $query
+            // join to partnerable
+            ->leftJoin('customers', 'customers.id', 'orders.partnerable_id')
+            // join to people
+            ->join('people', 'people.id', 'customers.id');
     }
 
 }

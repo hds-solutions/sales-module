@@ -3,13 +3,21 @@
 namespace HDSSolutions\Finpar\DataTables;
 
 use HDSSolutions\Finpar\Models\Invoice as Resource;
+use HDSSolutions\Finpar\Traits\SearchablePartnerable;
+use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class InvoiceDataTable extends Base\DataTable {
+    use SearchablePartnerable;
 
     protected array $with = [
         'partnerable',
         'currency',
+    ];
+
+    protected array $orderBy = [
+        'document_status'   => 'asc',
+        'transacted_at'     => 'desc',
     ];
 
     public function __construct() {
@@ -26,19 +34,17 @@ class InvoiceDataTable extends Base\DataTable {
                 ->hidden(),
 
             Column::make('document_number')
-                ->title( __('sales::invoice.document_number.0') ),
+                ->title( __('sales::invoice.document_number.0') )
+                ->renderRaw('bold:document_number'),
 
-            Column::computed('transacted_at')
+            Column::make('transacted_at')
                 ->title( __('sales::invoice.transacted_at.0') )
                 ->renderRaw('datetime:transacted_at;F j, Y H:i'),
 
             Column::make('partnerable.full_name')
                 ->title( __('sales::invoice.partnerable_id.0') ),
 
-            // Column::make('currency.name')
-            //     ->title( __('sales::invoice.currency_id.0') ),
-
-            Column::make('is_credit')
+            Column::computed('is_credit')
                 ->title( __('sales::invoice.payment_rule.0') )
                 ->renderRaw('view:invoice')
                 ->data( view('sales::invoices.datatable.is_credit')->render() ),
@@ -58,6 +64,15 @@ class InvoiceDataTable extends Base\DataTable {
 
             Column::make('actions'),
         ];
+    }
+
+    protected function joins(Builder $query):Builder {
+        // add custom JOIN to customers + people for Partnerable
+        return $query
+            // join to partnerable
+            ->leftJoin('customers', 'customers.id', 'invoices.partnerable_id')
+            // join to people
+            ->join('people', 'people.id', 'customers.id');
     }
 
 }

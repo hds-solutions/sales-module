@@ -15,14 +15,10 @@ class SalesMenu extends Base\Menu {
                 'icon'      => 'cogs',
             ])->data('priority', 700);
 
-        // get inventory menu group
-        $inventory = backend()->menu()->get('inventory');
-
         $this
             // append items to submenu
             ->orders($sub)
             ->invoices($sub)
-            ->in_outs($inventory)
             ->receipments($sub)
             ;
 
@@ -45,16 +41,6 @@ class SalesMenu extends Base\Menu {
             $menu->add(__('sales::invoices.nav'), [
                 'route'     => 'backend.invoices',
                 'icon'      => 'invoices'
-            ]);
-
-        return $this;
-    }
-
-    private function in_outs(&$menu) {
-        if (Route::has('backend.in_outs') && $this->can('in_outs'))
-            $menu->add(__('sales::in_outs.nav'), [
-                'route'     => 'backend.in_outs',
-                'icon'      => 'in_outs'
             ]);
 
         return $this;

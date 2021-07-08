@@ -46,7 +46,7 @@ class SalesModuleServiceProvider extends ModuleServiceProvider {
         // merge configuration
         $this->mergeConfigFrom( module_path('config/sales.php'), 'sales' );
         //
-        AliasLoader::getInstance()->alias('Invoice', Invoice::class);
+        $this->alias('Invoice', Invoice::class);
     }
 
 }
