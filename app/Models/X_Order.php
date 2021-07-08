@@ -54,4 +54,12 @@ abstract class X_Order extends Base\Model {
         return pretty_date($this->transacted_at, true);
     }
 
+    public function getTotalAttribute():int|float {
+        return $this->attributes['total'] / pow(10, $this->currency->decimals);
+    }
+
+    public function setTotalAttribute(int|float $total) {
+        $this->attributes['total'] = $total * pow(10, $this->currency->decimals);
+    }
+
 }

@@ -40,4 +40,28 @@ abstract class X_OrderLine extends Base\Model {
         'conversion_rate'   => [ 'sometimes', 'nullable', 'min:0' ],
     ];
 
+    public function getPriceReferenceAttribute():int|float {
+        return $this->attributes['price_reference'] / pow(10, $this->currency->decimals);
+    }
+
+    public function setPriceReferenceAttribute(int|float $price_reference) {
+        $this->attributes['price_reference'] = $price_reference * pow(10, $this->currency->decimals);
+    }
+
+    public function getPriceOrderedAttribute():int|float {
+        return $this->attributes['price_ordered'] / pow(10, $this->currency->decimals);
+    }
+
+    public function setPriceOrderedAttribute(int|float $price_ordered) {
+        $this->attributes['price_ordered'] = $price_ordered * pow(10, $this->currency->decimals);
+    }
+
+    public function getTotalAttribute():int|float {
+        return $this->attributes['total'] / pow(10, $this->currency->decimals);
+    }
+
+    public function setTotalAttribute(int|float $total) {
+        $this->attributes['total'] = $total * pow(10, $this->currency->decimals);
+    }
+
 }
