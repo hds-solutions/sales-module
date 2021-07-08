@@ -47,8 +47,13 @@ class OrderController extends Controller {
         // load resources
         if ($request->ajax()) return $dataTable->ajax();
 
+        // load customers
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+        ])->get();
+
         // return view with dataTable
-        return $dataTable->render('sales::orders.index', [ 'count' => Resource::count() ]);
+        return $dataTable->render('sales::orders.index', compact('customers') + [ 'count' => Resource::count() ]);
     }
 
     /**
@@ -57,7 +62,7 @@ class OrderController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create(Request $request) {
-        // load cash_books
+        // load customers
         $customers = Customer::with([
             // 'addresses', // TODO: Customer.addresses
         ])->get();

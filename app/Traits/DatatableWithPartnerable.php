@@ -4,7 +4,7 @@ namespace HDSSolutions\Finpar\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 
-trait SearchablePartnerable {
+trait DatatableWithPartnerable {
 
     protected function orderPartnerableFullName(Builder $query, string $order):Builder {
         // add custom orderBy for column Partnerable.full_name
@@ -28,6 +28,11 @@ trait SearchablePartnerable {
             ->orWhere('people.lastname', 'like', "%$value%")
             // fint by People.firstname
             ->orWhere('people.firstname', 'like', "%$value%");
+    }
+
+    protected function filterPartnerable(Builder $query, $partnerable_id):Builder {
+        // filter only from partnerable
+        return $query->where('partnerable_id', $partnerable_id);
     }
 
     protected abstract function joins(Builder $query):Builder;

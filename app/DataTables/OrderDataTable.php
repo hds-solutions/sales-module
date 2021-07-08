@@ -3,12 +3,14 @@
 namespace HDSSolutions\Finpar\DataTables;
 
 use HDSSolutions\Finpar\Models\Order as Resource;
-use HDSSolutions\Finpar\Traits\SearchablePartnerable;
+use HDSSolutions\Finpar\Traits\DatatableWithPartnerable;
+use HDSSolutions\Finpar\Traits\DatatableWithCurrency;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class OrderDataTable extends Base\DataTable {
-    use SearchablePartnerable;
+    use DatatableWithPartnerable;
+    use DatatableWithCurrency;
 
     protected array $with = [
         'partnerable',
@@ -65,7 +67,10 @@ class OrderDataTable extends Base\DataTable {
             // join to partnerable
             ->leftJoin('customers', 'customers.id', 'orders.partnerable_id')
             // join to people
-            ->join('people', 'people.id', 'customers.id');
+            ->join('people', 'people.id', 'customers.id')
+
+            // join to currency
+            ->leftJoin('currencies', 'currencies.id', 'orders.currency_id');
     }
 
 }

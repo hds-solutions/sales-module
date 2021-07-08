@@ -3,12 +3,14 @@
 namespace HDSSolutions\Finpar\DataTables;
 
 use HDSSolutions\Finpar\Models\Receipment as Resource;
-use HDSSolutions\Finpar\Traits\SearchablePartnerable;
+use HDSSolutions\Finpar\Traits\DatatableWithPartnerable;
+use HDSSolutions\Finpar\Traits\DatatableWithCurrency;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class ReceipmentDataTable extends Base\DataTable {
-    use SearchablePartnerable;
+    use DatatableWithPartnerable;
+    use DatatableWithCurrency;
 
     protected array $with = [
         'partnerable',
