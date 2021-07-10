@@ -48,6 +48,7 @@ class CreateOrdersTable extends Migration {
             $table->amount('price_ordered');
             $table->unsignedInteger('quantity_ordered');
             $table->unsignedInteger('quantity_invoiced')->nullable();
+            $table->unsignedInteger('quantity_delivered')->nullable();
             $table->amount('total');
             $table->boolean('is_invoiced')->default(false);
             $table->unsignedInteger('conversion_rate')->nullable();
