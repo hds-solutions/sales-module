@@ -177,10 +177,17 @@ class Order extends X_Order implements Document {
             ]);
         }
 
-        // create InOut document
-        if (!($inOut = InOut::createFromOrder( $this ))->exists || $inOut->getDocumentError() !== null)
-            // redirect inOut document error
-            return $this->documentError( $inOut->getDocumentError() );
+        // create InOut document (only for sales)
+        if ($this->is_sale) {
+            // create InOut document
+            if (!($inOut = InOut::createFromOrder( $this ))->exists || $inOut->getDocumentError() !== null)
+                // redirect inOut document error
+                return $this->documentError( $inOut->getDocumentError() );
+            // check if inOut hasn't lines (if OrderLines are only product.stockable=false)
+            if ($inOut->lines->count() === 0)
+                // delete empty InOut
+                $inOut->delete();
+        }
 
         // return completed status
         return Document::STATUS_Completed;
