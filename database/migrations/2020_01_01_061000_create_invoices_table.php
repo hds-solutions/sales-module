@@ -22,6 +22,7 @@ class CreateInvoicesTable extends Migration {
             $table->id();
             $table->foreignTo('Company');
             $table->foreignTo('Branch');
+            $table->foreignTo('Warehouse')->nullable();
             $table->foreignTo('Currency');
             $table->foreignTo('Employee');
             $table->morphable('partner');

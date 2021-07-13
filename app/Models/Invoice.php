@@ -24,23 +24,31 @@ class Invoice extends X_Invoice implements Document {
 
     public function __construct(array|Order $attributes = []) {
         // check if is instance of Order
-        if (($order = $attributes) instanceof Order)
-            // copy attributes from Order
-            $attributes = [
-                'branch_id'         => $order->branch_id,
-                'currency_id'       => $order->currency_id,
-                'employee_id'       => $order->employee_id,
-                'partnerable_type'  => $order->partnerable_type,
-                'partnerable_id'    => $order->partnerable_id,
-                'transacted_at'     => $order->transacted_at,
-                'is_purchase'       => $order->is_purchase,
-            ];
+        if (($order = $attributes) instanceof Order) $attributes = self::fromOrder($order);
         // redirect attributes to parent
         parent::__construct(is_array($attributes) ? $attributes : []);
     }
 
+    private static function fromOrder(Order $order):array {
+        // copy attributes from Order
+        return  [
+            'branch_id'         => $order->branch_id,
+            'warehouse_id'      => $order->warehouse_id,
+            'currency_id'       => $order->currency_id,
+            'employee_id'       => $order->employee_id,
+            'partnerable_type'  => $order->partnerable_type,
+            'partnerable_id'    => $order->partnerable_id,
+            'transacted_at'     => $order->transacted_at,
+            'is_purchase'       => $order->is_purchase,
+        ];
+    }
+
     public function branch() {
         return $this->belongsTo(Branch::class);
+    }
+
+    public function warehouse() {
+        return $this->belongsTo(Warehouse::class);
     }
 
     public function currency() {
@@ -65,6 +73,17 @@ class Invoice extends X_Invoice implements Document {
             ->withTimestamps()
             ->withPivot([ 'imputed_amount' ])
             ->as('receipmentInvoice');
+    }
+
+    public function creditNotes() {
+        return $this->hasMany(CreditNote::class, 'documentable_id')
+            ->where('documentable_type', self::class);
+    }
+
+    public function materialReturns() {
+        return $this->hasMany(InOut::class)
+            ->where('is_material_return', true)
+            ->completed();
     }
 
     public function scopeOverDue(Builder $query, int $graceDays = 0) {
@@ -147,8 +166,8 @@ class Invoice extends X_Invoice implements Document {
     public function completeIt():?string {
         // update OrderLines with invoiced quantity. When isPurchase add invoiced to pending stock
         foreach ($this->lines as $line) {
-            // check if line is linked to OrderLine
-            // is so, update OrderLine.quantity_invoiced
+            // check if line is linked to any OrderLine
+            // if so, update OrderLine.quantity_invoiced
             if ($line->orderLines->count()) {
                 // save invoiced quantoty for later validations
                 $quantity_pending = $line->quantity_invoiced;
@@ -166,12 +185,6 @@ class Invoice extends X_Invoice implements Document {
                     if (!$orderLine->save())
                         // redirect error
                         return $this->documentError( $orderLine->errors()->first() );
-                    // check if all lines of order where invoiced
-                    if ($orderLine->order->lines()->invoiced(false)->count() === 0)
-                        // mark order as invoiced
-                        if (!$orderLine->order->update([ 'is_invoiced' => true ]))
-                            // return order saving error
-                            return $this->documentError( $orderLine->order->errors()->first() );
                     // update invoiced quantity on pivot
                     $line->orderLines()->updateExistingPivot($orderLine->id, [
                         'quantity_invoiced' => $quantity_to_invoice,
@@ -194,14 +207,13 @@ class Invoice extends X_Invoice implements Document {
             if ($this->is_purchase && $line->product->stockable) {
                 // total quantity to set as pending
                 $invoicedToPending = $line->quantity_invoiced;
-                // get Variant|Product locators
+
+                // update pending stock for Variant|Product on configured locators
                 foreach (($line->variant ?? $line->product)->locators as $locator) {
                     // get storage for locator
                     $storage = Storage::getFromProductOnLocator($line->product, $line->variant, $locator);
                     // update pending stock for Variant|Product
-                    $storage->pending += $invoicedToPending;
-                    // save storage changes
-                    if (!$storage->save())
+                    if (!$storage->update([ 'pending' => $storage->pending + $invoicedToPending ]))
                         // redirect error
                         return $this->documentError( $storage->errors()->first() );
                     // set pending to 0 (zero), all invoiced went to first storage found
@@ -209,6 +221,21 @@ class Invoice extends X_Invoice implements Document {
                     // exit loop
                     break;
                 }
+
+                // check if is remaining invoiced quantity (no locators are configured on Product|Variant)
+                if ($invoicedToPending > 0)
+                    // update pending stock for Variant|Product on existing locators
+                    foreach (Storage::getFromProduct($line->product, $line->variant, $this->branch) as $storage) {
+                        // update pending stock for Variant|Product
+                        if (!$storage->update([ 'pending' => $storage->pending + $invoicedToPending ]))
+                            // redirect error
+                            return $this->documentError( $storage->errors()->first() );
+                        // set pending to 0 (zero), all invoiced went to first storage found
+                        $invoicedToPending = 0;
+                        // exit loop
+                        break;
+                    }
+
                 // check if invoiced quantity was set on storage
                 if ($invoicedToPending !== 0)
                     // reject with error
@@ -219,53 +246,75 @@ class Invoice extends X_Invoice implements Document {
             }
         }
 
+        // create InOut document (only for purchases)
+        if ($this->is_purchase) {
+            // create InOut document
+            if (!($inOut = InOut::createFromInvoice( $this ))->exists || $inOut->getDocumentError() !== null)
+                // redirect inOut document error
+                return $this->documentError( $inOut->getDocumentError() );
+            // check if inOut hasn't lines (if OrderLines are only product.stockable=false)
+            if ($inOut->lines->count() === 0)
+                // delete empty InOut
+                $inOut->delete();
+        }
+
         // return completed status
         return Document::STATUS_Completed;
     }
 
-    public static function createFromOrder(int|Order $order, array $attributes = []):Invoice {
+    public static function createFromOrder(int|Order $order, array $attributes = []):self {
         // make invoice
-        $invoice = self::makeFromOrder($order, $attributes);
+        $resource = self::makeFromOrder($order, $attributes);
+
         // stop process if invoice can't be saved
-        if (!$invoice->save()) return $invoice;
+        if (!$resource->save())
+            // return error through document error
+            return tap($resource, fn($resource) => $resource->documentError( $resource->errors()->first() ));
+
         // foreach lines
-        foreach ($invoice->lines as $invoiceLine) {
+        foreach ($resource->lines as $line) {
             // link with parent
-            $invoiceLine->invoice()->associate($invoice);
+            $line->invoice()->associate($resource);
             // stop process if line can't be saved
-            if (!$invoiceLine->save()) return $invoice;
+            if (!$line->save())
+                // return error through document error
+                return tap($resource, fn($resource) => $resource->documentError( $line->errors()->first() ));
+
             // check if has orderLine
-            if (isset($invoiceLine->orderLine)) {
+            if (isset($line->orderLine)) {
                 // link OrderLine with InvoiceLine
-                $invoiceLine->orderLines()->attach($invoiceLine->orderLine, [
-                    'invoice_line_id'   => $invoiceLine->id,
-                    'quantity_ordered'  => $invoiceLine->orderLine->quantity_ordered - $invoiceLine->orderLine->quantity_invoiced,
+                $line->orderLines()->attach($line->orderLine, [
+                    'invoice_line_id'   => $line->id,
+                    'quantity_ordered'  => $line->orderLine->quantity_ordered - $line->orderLine->quantity_invoiced,
                 ]);
                 // remove temporal relation
-                $invoiceLine->unsetRelation('orderLine');
+                $line->unsetRelation('orderLine');
             }
         }
 
         // return created invoice
-        return $invoice;
+        return $resource;
     }
 
-    public static function makeFromOrder(int|Order $order, array $attributes = []):Invoice {
+    public static function makeFromOrder(int|Order $order, array $attributes = []):self {
         // load order if isn't instance
         if (!$order instanceof Order) $order = Order::findOrFail($order);
+
         // create new Invoice from Order
-        $invoice = new self($order);
+        $resource = new self($order);
         // append extra attributes
-        $invoice->fill( $attributes );
+        $resource->fill( $attributes );
+
         // create InvoiceLines from OrderLines
-        $order->lines->each(function($orderLine) use ($invoice) {
+        $order->lines->each(function($orderLine) use ($resource) {
             // create a new InvoiceLine from OrderLine
-            $invoice->lines->push( $invoiceLine = new InvoiceLine($orderLine) );
-            // set temporal orderLine on temporal relation
-            $invoiceLine->setRelation('orderLine', $orderLine);
+            $resource->lines->push( $line = new InvoiceLine($orderLine) );
+            // set orderLine on temporal relation
+            $line->setRelation('orderLine', $orderLine);
         });
+
         // return Invoice
-        return $invoice;
+        return $resource;
     }
 
     private function creditValidations():?string {

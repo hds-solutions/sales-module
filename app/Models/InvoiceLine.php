@@ -9,20 +9,23 @@ class InvoiceLine extends X_InvoiceLine {
 
     public function __construct(array|OrderLine $attributes = []) {
         // check if is instance of OrderLine
-        if (($orderLine = $attributes) instanceof OrderLine)
-            // copy attributes from OrderLine
-            $attributes = [
-                'currency_id'       => $orderLine->currency_id,
-                'product_id'        => $orderLine->product_id,
-                'variant_id'        => $orderLine->variant_id,
-                'price_reference'   => $orderLine->price_reference,
-                'price_ordered'     => $orderLine->price_ordered,
-                'price_invoiced'    => $orderLine->price_ordered,
-                'quantity_ordered'  => $orderLine->quantity_ordered,
-                'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
-            ];
+        if (($orderLine = $attributes) instanceof OrderLine) $attributes = self::fromOrderLine($orderLine);
         // redirect attributes to parent
-        parent::__construct($attributes);
+        parent::__construct(is_array($attributes) ? $attributes : []);
+    }
+
+    private static function fromOrderLine(OrderLine $orderLine):array {
+        // copy attributes from OrderLine
+        return [
+            'currency_id'       => $orderLine->currency_id,
+            'product_id'        => $orderLine->product_id,
+            'variant_id'        => $orderLine->variant_id,
+            'price_reference'   => $orderLine->price_reference,
+            'price_ordered'     => $orderLine->price_ordered,
+            'price_invoiced'    => $orderLine->price_ordered,
+            'quantity_ordered'  => $orderLine->quantity_ordered,
+            'quantity_invoiced' => $orderLine->quantity_ordered - $orderLine->quantity_invoiced,
+        ];
     }
 
     public function invoice() {

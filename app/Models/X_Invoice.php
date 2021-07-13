@@ -17,6 +17,7 @@ abstract class X_Invoice extends Base\Model {
 
     protected $fillable = [
         'branch_id',
+        'warehouse_id',
         'currency_id',
         'employee_id',
         'partnerable_id',
@@ -44,6 +45,7 @@ abstract class X_Invoice extends Base\Model {
 
     protected static array $rules = [
         'branch_id'         => [ 'required' ],
+        'warehouse_id'      => [ 'sometimes', 'nullable' ],
         'currency_id'       => [ 'required' ],
         'employee_id'       => [ 'required' ],
         'partnerable_type'  => [ 'required' ],

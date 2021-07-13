@@ -48,7 +48,7 @@ class OrderLine extends X_OrderLine {
             ]));
 
         // validations when product is stockable
-        if ($this->product->stockable) {
+        if ($this->order->isOpen() && $this->product->stockable) {
             // check if there are drafted Inventories of Variant|Product
             if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
                 // reject line with error
@@ -84,8 +84,12 @@ class OrderLine extends X_OrderLine {
     }
 
     public function afterSave() {
-        // update order total amount
-        $this->order->update([ 'total' => $this->order->lines()->sum('total') ]);
+        $this->order->update([
+            // update Order.total amount
+            'total'         => $this->order->lines()->sum('total'),
+            // update Order.is_invoiced flag
+            'is_invoiced'   => $this->order->lines()->invoiced(false)->count() === 0,
+        ]);
     }
 
 }
