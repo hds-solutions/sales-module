@@ -203,7 +203,9 @@ class InvoiceController extends Controller {
         ]);
 
         // load customers
-        $customers = Customer::all();
+        $customers = Customer::with([
+            // 'addresses', // TODO: Customer.addresses
+        ])->get();
         // load current company branches with warehouses
         $branches = backend()->company()->branches()->with([
             'warehouses',

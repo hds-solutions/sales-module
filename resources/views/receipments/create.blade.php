@@ -12,8 +12,8 @@
                     @lang('sales::receipments.create')
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                    {{-- <a href="{{ route('backend.inventories.create') }}"
-                        class="btn btn-sm btn-primary">@lang('inventory::companieies.create')</a> --}}
+                    {{-- <a href="{{ route('backend.receipments.create') }}"
+                        class="btn btn-sm btn-primary">@lang('inventory::receipments.create')</a> --}}
                 </div>
             </div>
         </div>
