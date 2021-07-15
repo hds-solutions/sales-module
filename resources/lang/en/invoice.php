@@ -179,6 +179,30 @@
             '_' => 'Imputed amount',
             '?' => 'Imputed amount help text',
         ],
+    ],
+
+    'material_returns'  => [
+        'Material Returns',
+        '_' => 'Material Returns',
+        '?' => 'Material Returns help text',
+
+        'quantity'          => [
+            'Quantity',
+            '_' => 'Quantity',
+            '?' => 'Quantity help text',
+        ],
+
+        'credit_note'       => [
+            'Credit Note',
+            '_' => 'Credit Note',
+            '?' => 'Credit Note help text',
+        ],
+
+        'total'             => [
+            'Total',
+            '_' => 'Total',
+            '?' => 'Total help text',
+        ],
     ]
 
 ];

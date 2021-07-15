@@ -83,9 +83,10 @@
 
             </div>
 
-            @if (count($resource->receipments))
+            @if (count($resource->receipments) || count($resource->materialReturns))
             <div class="col-12 col-xl-6">
 
+                @if (count($resource->receipments))
                 <div class="row">
                     <div class="col">
                         <h2 class="mb-0">@lang('sales::invoice.receipments.0')</h2>
@@ -127,6 +128,55 @@
                         <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->paid_amount, currency($resource->currency_id)->decimals) }}</b></h5>
                     </div>
                 </div>
+                @endif
+
+                @if (count($resource->materialReturns))
+                <div class="row">
+                    <div class="col">
+                        <h2 class="mb-0">@lang('sales::invoice.material_returns.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('sales::invoice.material_returns.document_number.0') --}}</th>
+                                        {{-- <th class="align-middle text-center">@lang('sales::invoice.material_returns.quantity.0')</th> --}}
+                                        <th class="align-middle">@lang('sales::invoice.material_returns.credit_note.0')</th>
+                                        <th class="align-middle text-right">@lang('sales::invoice.material_returns.total.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($resource->materialReturns as $materialReturn)
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.material_returns.show', $materialReturn) }}"
+                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $materialReturn->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
+                                            {{-- <td class="align-middle text-center"><b>{{ $materialReturn->lines->sum('quantity_movement') }}</b></td> --}}
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.credit_notes.show', $materialReturn->creditNote) }}"
+                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $materialReturn->creditNote->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
+                                            <td class="align-middle text-right">{{ currency($resource->currency_id)->code }} <b>{{ number($materialReturn->creditNote->payment_amount, currency($resource->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col pl-0 text-right">
+                        <h5 class="pr-1">{{ currency($resource->currency_id)->code }} <b>{{ number($resource->materialReturns->sum('creditNote.payment_amount'), currency($resource->currency_id)->decimals) }}</b></h5>
+                    </div>
+                </div>
+                @endif
 
             </div>
             @endif
