@@ -66,19 +66,19 @@ abstract class X_Invoice extends Base\Model {
     }
 
     public function getTotalAttribute():int|float {
-        return $this->attributes['total'] / pow(10, $this->currency->decimals);
+        return $this->attributes['total'] / pow(10, currency($this->currency_id)->decimals);
     }
 
     public function setTotalAttribute(int|float $total) {
-        $this->attributes['total'] = $total * pow(10, $this->currency->decimals);
+        $this->attributes['total'] = $total * pow(10, currency($this->currency_id)->decimals);
     }
 
     public function getPaidAmountAttribute():int|float {
-        return $this->attributes['paid_amount'] / pow(10, $this->currency->decimals);
+        return $this->attributes['paid_amount'] / pow(10, currency($this->currency_id)->decimals);
     }
 
     public function setPaidAmountAttribute(int|float $paid_amount) {
-        $this->attributes['paid_amount'] = $paid_amount * pow(10, $this->currency->decimals);
+        $this->attributes['paid_amount'] = $paid_amount * pow(10, currency($this->currency_id)->decimals);
     }
 
     public function getPendingAmountAttribute() {
