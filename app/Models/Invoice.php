@@ -75,15 +75,14 @@ class Invoice extends X_Invoice implements Document {
             ->as('receipmentInvoice');
     }
 
-    public function creditNotes() {
-        return $this->hasMany(CreditNote::class, 'documentable_id')
-            ->where('documentable_type', self::class);
-    }
+    // public function creditNotes() {
+    //     return $this->hasManyThrough(CreditNote::class, MaterialReturn::class, null, 'documentable_id')
+    //         ->where('documentable_type', MaterialReturn::class)
+    //         ->select('credit_notes.*');
+    // }
 
     public function materialReturns() {
-        return $this->hasMany(InOut::class)
-            ->where('is_material_return', true)
-            ->completed();
+        return $this->hasMany(MaterialReturn::class);
     }
 
     public function scopeOverDue(Builder $query, int $graceDays = 0) {

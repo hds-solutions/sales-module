@@ -173,6 +173,10 @@ class InvoiceController extends Controller {
                     ]),
             ]),
             'receipments',
+            'materialReturns' => fn($materialReturn) => $materialReturn->completed()->with([
+                'lines.invoiceLine',
+                'creditNote',
+            ]),
         ]);
 
         // redirect to list
