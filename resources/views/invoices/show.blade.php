@@ -8,17 +8,17 @@
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
-            <div class="col-6">
-                <i class="fas fa-user-plus"></i>
+            <div class="col-6 d-flex align-items-center">
+                <i class="fas fa-user-plus mr-2"></i>
                 @lang('sales::invoices.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
                 @if (!$resource->isCompleted())
                 <a href="{{ route('backend.invoices.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-info">@lang('sales::invoices.edit')</a>
+                    class="btn btn-sm ml-2 btn-outline-primary btn-hover-info">@lang('sales::invoices.edit')</a>
                 @endif
                 <a href="{{ route('backend.invoices.create') }}"
-                    class="btn btn-sm ml-2 btn-primary">@lang('sales::invoices.create')</a>
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::invoices.create')</a>
             </div>
         </div>
     </div>
@@ -111,7 +111,7 @@
                                         <tr>
                                             <td class="align-middle">
                                                 <a href="{{ route('backend.receipments.show', $receipment) }}"
-                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $receipment->document_number }}<small class="ml-2">{{ $receipment->transacted_at_pretty }}</small></a>
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $receipment->document_number }}<small class="ml-2">{{ $receipment->transacted_at_pretty }}</small></a>
                                             <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->payments_amount, currency($receipment->currency_id)->decimals) }}</b></td>
                                             <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->receipmentInvoice->imputed_amount, currency($receipment->currency_id)->decimals) }}</b></td>
                                         </tr>
@@ -156,11 +156,11 @@
                                         <tr>
                                             <td class="align-middle">
                                                 <a href="{{ route('backend.material_returns.show', $materialReturn) }}"
-                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $materialReturn->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $materialReturn->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
                                             {{-- <td class="align-middle text-center"><b>{{ $materialReturn->lines->sum('quantity_movement') }}</b></td> --}}
                                             <td class="align-middle">
                                                 <a href="{{ route('backend.credit_notes.show', $materialReturn->creditNote) }}"
-                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $materialReturn->creditNote->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $materialReturn->creditNote->document_number }}<small class="ml-2">{{ $materialReturn->transacted_at_pretty }}</small></a>
                                             <td class="align-middle text-right">{{ currency($resource->currency_id)->code }} <b>{{ number($materialReturn->creditNote->payment_amount, currency($resource->currency_id)->decimals) }}</b></td>
                                         </tr>
                                     @endforeach
@@ -223,13 +223,13 @@
                                     </td>
                                     <td class="align-middle pl-3">
                                         <a href="{{ route('backend.products.edit', $line->product) }}"
-                                            class="text-primary text-decoration-none">{{ $line->product->name }}</a>
+                                            class="font-weight-bold text-decoration-none">{{ $line->product->name }}</a>
                                     </td>
                                     <td class="align-middle pl-3">
                                         <div>
                                             @if ($line->variant)
                                             <a href="{{ route('backend.variants.edit', $line->variant) }}"
-                                                class="text-primary text-decoration-none">{{ $line->variant->sku }}</a>
+                                                class="font-weight-bold text-decoration-none">{{ $line->variant->sku }}</a>
                                             @else
                                                 --
                                             @endif
@@ -254,7 +254,7 @@
                                     <td class="py-0"></td>
                                     <td class="py-0 pl-3" colspan="3">
                                         <a href="{{ route('backend.orders.show', $orderLine->order) }}"
-                                            class="text-secondary text-decoration-none">{{ $orderLine->order->document_number }}</a> <small class="ml-1">{{ $orderLine->order->transacted_at_pretty }}</small>
+                                            class="text-dark font-weight-bold text-decoration-none">{{ $orderLine->order->document_number }} <small class="ml-1">{{ $orderLine->order->transacted_at_pretty }}</small></a>
                                     </td>
                                     <td class="py-0 text-center">{{ $orderLine->pivot->quantity_ordered }}</td>
                                     <td class="py-0"></td>
