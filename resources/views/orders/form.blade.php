@@ -22,7 +22,7 @@
     {{-- helper="sales::order.transacted_at.?" --}} />
 
 <x-backend-form-foreign name="branch_id" required
-    :values="$branches" :resource="$resource ?? null"
+    :values="$branches" :resource="$resource ?? null" :default="backend()->branch()?->id"
 
     foreign="branches" foreign-add-label="sales::branches.add"
 
@@ -32,6 +32,7 @@
 
     <x-backend-form-foreign name="warehouse_id" required secondary
         :values="$branches->pluck('warehouses')->flatten()" :resource="$resource ?? null"
+        :default="backend()->warehouse()?->id"
 
         foreign="warehouses" foreign-add-label="sales::warehouses.add"
         filtered-by="[name=branch_id]" filtered-using="branch"
