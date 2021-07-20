@@ -1,19 +1,19 @@
 <?php
 
-namespace HDSSolutions\Finpar;
+namespace HDSSolutions\Laravel;
 
-use HDSSolutions\Finpar\Models\Invoice;
+use HDSSolutions\Laravel\Models\Invoice;
 use HDSSolutions\Laravel\Modules\ModuleServiceProvider;
 use Illuminate\Foundation\AliasLoader;
 
 class SalesModuleServiceProvider extends ModuleServiceProvider {
 
     protected array $middlewares = [
-        \HDSSolutions\Finpar\Http\Middleware\SalesMenu::class,
+        \HDSSolutions\Laravel\Http\Middleware\SalesMenu::class,
     ];
 
     private $commands = [
-        // \HDSSolutions\Finpar\Commands\SomeCommand::class,
+        // \HDSSolutions\Laravel\Commands\SomeCommand::class,
     ];
 
     public function bootEnv():void {

@@ -1,8 +1,8 @@
 <?php
 
-namespace HDSSolutions\Finpar\Seeders;
+namespace HDSSolutions\Laravel\Seeders;
 
-use HDSSolutions\Finpar\Models\Setting;
+use HDSSolutions\Laravel\Models\Setting;
 use Illuminate\Database\Seeder;
 
 class SalesSettingsSeeder extends Seeder {

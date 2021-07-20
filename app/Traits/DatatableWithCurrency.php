@@ -1,6 +1,6 @@
 <?php
 
-namespace HDSSolutions\Finpar\Traits;
+namespace HDSSolutions\Laravel\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 

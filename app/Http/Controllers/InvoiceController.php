@@ -1,19 +1,19 @@
 <?php
 
-namespace HDSSolutions\Finpar\Http\Controllers;
+namespace HDSSolutions\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use HDSSolutions\Finpar\DataTables\InvoiceDataTable as DataTable;
-use HDSSolutions\Finpar\Http\Request;
-use HDSSolutions\Finpar\Models\Invoice as Resource;
-use HDSSolutions\Finpar\Models\Currency;
-use HDSSolutions\Finpar\Models\Customer;
-use HDSSolutions\Finpar\Models\Employee;
-use HDSSolutions\Finpar\Models\InvoiceLine;
-use HDSSolutions\Finpar\Models\Order;
-use HDSSolutions\Finpar\Models\Product;
-use HDSSolutions\Finpar\Models\Variant;
-use HDSSolutions\Finpar\Traits\CanProcessDocument;
+use HDSSolutions\Laravel\DataTables\InvoiceDataTable as DataTable;
+use HDSSolutions\Laravel\Http\Request;
+use HDSSolutions\Laravel\Models\Invoice as Resource;
+use HDSSolutions\Laravel\Models\Currency;
+use HDSSolutions\Laravel\Models\Customer;
+use HDSSolutions\Laravel\Models\Employee;
+use HDSSolutions\Laravel\Models\InvoiceLine;
+use HDSSolutions\Laravel\Models\Order;
+use HDSSolutions\Laravel\Models\Product;
+use HDSSolutions\Laravel\Models\Variant;
+use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller {

@@ -1,6 +1,6 @@
 <?php
 
-namespace HDSSolutions\Finpar\Sales;
+namespace HDSSolutions\Laravel\Sales;
 
 class Facade extends \Illuminate\Support\Facades\Facade {
     /**

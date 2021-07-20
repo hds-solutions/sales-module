@@ -1,10 +1,10 @@
 <?php
 
-namespace HDSSolutions\Finpar\DataTables;
+namespace HDSSolutions\Laravel\DataTables;
 
-use HDSSolutions\Finpar\Models\Receipment as Resource;
-use HDSSolutions\Finpar\Traits\DatatableWithPartnerable;
-use HDSSolutions\Finpar\Traits\DatatableWithCurrency;
+use HDSSolutions\Laravel\Models\Receipment as Resource;
+use HDSSolutions\Laravel\Traits\DatatableWithPartnerable;
+use HDSSolutions\Laravel\Traits\DatatableWithCurrency;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 

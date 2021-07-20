@@ -1,8 +1,8 @@
 <?php
 
-namespace HDSSolutions\Finpar\Traits;
+namespace HDSSolutions\Laravel\Traits;
 
-use HDSSolutions\Finpar\Contracts\AsPerson;
+use HDSSolutions\Laravel\Contracts\AsPerson;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasPartnerable {

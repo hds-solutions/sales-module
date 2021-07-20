@@ -1,20 +1,20 @@
 <?php
 
-namespace HDSSolutions\Finpar\Http\Controllers;
+namespace HDSSolutions\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use HDSSolutions\Finpar\DataTables\ReceipmentDataTable as DataTable;
-use HDSSolutions\Finpar\Http\Request;
-use HDSSolutions\Finpar\Models\Receipment as Resource;
-use HDSSolutions\Finpar\Models\Currency;
-use HDSSolutions\Finpar\Models\Customer;
-use HDSSolutions\Finpar\Models\Employee;
-use HDSSolutions\Finpar\Models\Invoice;
-use HDSSolutions\Finpar\Models\ReceipmentInvoice;
-use HDSSolutions\Finpar\Models\ReceipmentPayment;
-use HDSSolutions\Finpar\Models\Product;
-use HDSSolutions\Finpar\Models\Variant;
-use HDSSolutions\Finpar\Traits\CanProcessDocument;
+use HDSSolutions\Laravel\DataTables\ReceipmentDataTable as DataTable;
+use HDSSolutions\Laravel\Http\Request;
+use HDSSolutions\Laravel\Models\Receipment as Resource;
+use HDSSolutions\Laravel\Models\Currency;
+use HDSSolutions\Laravel\Models\Customer;
+use HDSSolutions\Laravel\Models\Employee;
+use HDSSolutions\Laravel\Models\Invoice;
+use HDSSolutions\Laravel\Models\ReceipmentInvoice;
+use HDSSolutions\Laravel\Models\ReceipmentPayment;
+use HDSSolutions\Laravel\Models\Product;
+use HDSSolutions\Laravel\Models\Variant;
+use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
 
 class ReceipmentController extends Controller {
