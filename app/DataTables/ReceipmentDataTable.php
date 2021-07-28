@@ -66,7 +66,7 @@ class ReceipmentDataTable extends Base\DataTable {
             Column::make('document_status_pretty')
                 ->title( __('inventory::inventory.document_status.0') ),
 
-            Column::make('actions'),
+            Column::computed('actions'),
         ];
     }
 

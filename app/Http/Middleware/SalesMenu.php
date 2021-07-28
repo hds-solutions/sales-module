@@ -12,7 +12,7 @@ class SalesMenu extends Base\Menu {
         $sub = backend()->menu()
             ->add(__('sales::sales.nav'), [
                 'nickname'  => 'sales',
-                'icon'      => 'cogs',
+                'icon'      => 'chart-bar',
             ])->data('priority', 700);
 
         $this
@@ -30,7 +30,7 @@ class SalesMenu extends Base\Menu {
         if (Route::has('backend.orders') && $this->can('orders'))
             $menu->add(__('sales::orders.nav'), [
                 'route'     => 'backend.orders',
-                'icon'      => 'orders'
+                'icon'      => 'file-invoice'
             ]);
 
         return $this;
@@ -40,7 +40,7 @@ class SalesMenu extends Base\Menu {
         if (Route::has('backend.invoices') && $this->can('invoices'))
             $menu->add(__('sales::invoices.nav'), [
                 'route'     => 'backend.invoices',
-                'icon'      => 'invoices'
+                'icon'      => 'file-invoice-dollar'
             ]);
 
         return $this;
@@ -50,7 +50,7 @@ class SalesMenu extends Base\Menu {
         if (Route::has('backend.receipments') && $this->can('receipments'))
             $menu->add(__('sales::receipments.nav'), [
                 'route'     => 'backend.receipments',
-                'icon'      => 'receipments'
+                'icon'      => 'receipt'
             ]);
 
         return $this;

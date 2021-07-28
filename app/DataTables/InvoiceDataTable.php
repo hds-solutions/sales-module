@@ -64,7 +64,7 @@ class InvoiceDataTable extends Base\DataTable {
                 ->renderRaw('view:invoice')
                 ->data( view('sales::invoices.datatable.paid_amount')->render() ),
 
-            Column::make('actions'),
+            Column::computed('actions'),
         ];
     }
 

@@ -57,7 +57,7 @@ class OrderDataTable extends Base\DataTable {
                 ->renderRaw('view:order')
                 ->data( view('sales::orders.datatable.total')->render() ),
 
-            Column::make('actions'),
+            Column::computed('actions'),
         ];
     }
 
@@ -66,8 +66,8 @@ class OrderDataTable extends Base\DataTable {
         return $query
             // join to partnerable
             ->leftJoin('customers', 'customers.id', 'orders.partnerable_id')
-            // join to people
-            ->join('people', 'people.id', 'customers.id')
+                // join to people
+                ->join('people', 'people.id', 'customers.id')
 
             // join to currency
             ->leftJoin('currencies', 'currencies.id', 'orders.currency_id');

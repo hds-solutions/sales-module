@@ -53,7 +53,10 @@ class OrderController extends Controller {
         ])->get();
 
         // return view with dataTable
-        return $dataTable->render('sales::orders.index', compact('customers') + [ 'count' => Resource::count() ]);
+        return $dataTable->render('sales::orders.index', compact('customers') + [
+            'count'                 => Resource::count(),
+            'show_company_selector' => !backend()->companyScoped(),
+        ]);
     }
 
     /**
@@ -62,6 +65,9 @@ class OrderController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create(Request $request) {
+        // force company selection
+        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
+
         // load customers
         $customers = Customer::with([
             // 'addresses', // TODO: Customer.addresses

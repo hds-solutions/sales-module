@@ -15,7 +15,7 @@
                 </div>
                 <div class="col-6 d-flex justify-content-end">
                     <a href="{{ route('backend.orders.create') }}"
-                       class="btn btn-sm btn-primary">@lang('sales::orders.create')</a>
+                       class="btn btn-sm btn-outline-primary">@lang('sales::orders.create')</a>
                 </div>
             </div>
             <div class="row collapse @if (request()->has('filters')) show @endif" id="filters">
