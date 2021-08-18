@@ -299,15 +299,6 @@ class InvoiceController extends Controller {
         return redirect()->route('backend.invoices');
     }
 
-    public function price(Request $request) {
-        // get resources
-        $product = $request->has('product') ? Product::findOrFail($request->product) : null;
-        $variant = $request->has('variant') ? Variant::findOrFail($request->variant) : null;
-        $currency = $request->has('currency') ? Currency::findOrFail($request->currency) : null;
-        // return stock for requested product
-        return response()->json($variant?->price($currency)?->pivot ?? $product?->price($currency)?->pivot);
-    }
-
     private function syncLines(Resource $resource, array $lines) {
         // load inventory lines
         $resource->load(['lines']);

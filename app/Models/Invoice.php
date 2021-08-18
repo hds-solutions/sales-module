@@ -19,7 +19,7 @@ class Invoice extends X_Invoice implements Document {
 
     public static function nextDocumentNumber(string $stamping = null):string {
         // return next document number for specified stamping
-        return str_increment(self::where('stamping', $stamping)->max('document_number') ?? null);
+        return str_increment(self::withTrashed()->where('stamping', $stamping)->max('document_number') ?? null);
     }
 
     public function __construct(array|Order $attributes = []) {
@@ -211,6 +211,8 @@ class Invoice extends X_Invoice implements Document {
                 foreach (($line->variant ?? $line->product)->locators as $locator) {
                     // get storage for locator
                     $storage = Storage::getFromProductOnLocator($line->product, $line->variant, $locator);
+                    // check if storage exists
+                    if (!$storage->exists) $storage->save();
                     // update pending stock for Variant|Product
                     if (!$storage->update([ 'pending' => $storage->pending + $invoicedToPending ]))
                         // redirect error
@@ -248,7 +250,7 @@ class Invoice extends X_Invoice implements Document {
         // create InOut document (only for purchases)
         if ($this->is_purchase) {
             // create InOut document
-            if (!($inOut = InOut::createFromInvoice( $this ))->exists || $inOut->getDocumentError() !== null)
+            if (!($inOut = InOut::createFromInvoice( $this, [ 'warehouse_id' => backend()->warehouse()->id ] ))->exists || $inOut->getDocumentError() !== null)
                 // redirect inOut document error
                 return $this->documentError( $inOut->getDocumentError() );
             // check if inOut hasn't lines (if OrderLines are only product.stockable=false)

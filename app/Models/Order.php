@@ -14,7 +14,7 @@ class Order extends X_Order implements Document {
 
     public static function nextDocumentNumber():string {
         // return next document number for specified stamping
-        return str_increment(self::max('document_number') ?? null);
+        return str_increment(self::withTrashed()->max('document_number') ?? null);
     }
 
     public function branch() {
@@ -68,20 +68,16 @@ class Order extends X_Order implements Document {
             // check drafted order from more than XX days ago
             if (self::drafted()->createdAgo( config('settings.pending-documents-age') )->count() > 0)
                 // reject order with error
-                return $validator->errors()->add([
-                    'id'    => __('sales::orders.drafted-created-ago', [
-                        'days'  => config('settings.pending-documents-age'),
-                    ])
-                ]);
+                return $validator->errors()->add('id', __('sales::orders.drafted-created-ago', [
+                    'days'  => config('settings.pending-documents-age'),
+                ]));
 
             // check if there is orders pending for invoiceIt from more than XX days ago
             if (self::invoiced(false)->createdAgo( config('settings.pending-documents-age') )->count() > 0)
                 // reject order with error
-                return $validator->errors()->add([
-                    'id'    => __('sales::orders.not-invoiced-created-ago', [
-                        'days'  => config('settings.pending-documents-age'),
-                    ])
-                ]);
+                return $validator->errors()->add('id', __('sales::orders.not-invoiced-created-ago', [
+                    'days'  => config('settings.pending-documents-age'),
+                ]));
         }
 
         // total must have value

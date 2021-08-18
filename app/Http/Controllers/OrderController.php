@@ -267,6 +267,14 @@ class OrderController extends Controller {
         return redirect()->route('backend.orders');
     }
 
+    public function product(Request $request) {
+        // find product/variant
+        return response()->json([
+            'product'   => Product::code( $request->product ),
+            'variant'   => Variant::sku( $request->product ),
+        ]);
+    }
+
     public function price(Request $request) {
         // get resources
         $product = $request->has('product') ? Product::findOrFail($request->product) : null;

@@ -57,12 +57,14 @@ class InvoiceDataTable extends Base\DataTable {
             Column::make('total')
                 ->title( __('sales::invoice.total.0') )
                 ->renderRaw('view:invoice')
-                ->data( view('sales::invoices.datatable.total')->render() ),
+                ->data( view('sales::invoices.datatable.total')->render() )
+                ->class('text-right'),
 
             Column::make('paid_amount')
                 ->title( __('sales::invoice.paid_amount.0') )
                 ->renderRaw('view:invoice')
-                ->data( view('sales::invoices.datatable.paid_amount')->render() ),
+                ->data( view('sales::invoices.datatable.paid_amount')->render() )
+                ->class('text-right'),
 
             Column::computed('actions'),
         ];

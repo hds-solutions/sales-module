@@ -38,7 +38,7 @@ class OrderLine extends X_OrderLine {
         return $query->where('is_invoiced', $invoiced);
     }
 
-    public function beforeSave(Validator $validator) {
+    protected function beforeSave(Validator $validator) {
         // check if order already has a line with current Variant|Product
         if (!$this->exists && $this->order->hasProduct( $this->product, $this->variant ))
             // reject line with error
@@ -84,6 +84,7 @@ class OrderLine extends X_OrderLine {
     }
 
     public function afterSave() {
+        // update order total
         $this->order->update([
             // update Order.total amount
             'total'         => $this->order->lines()->sum('total'),

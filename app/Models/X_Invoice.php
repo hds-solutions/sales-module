@@ -35,6 +35,7 @@ abstract class X_Invoice extends Base\Model {
 
     protected $attributes = [
         'is_paid'   => false,
+        'total'     => 0,
     ];
 
     protected $appends = [

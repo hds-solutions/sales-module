@@ -95,7 +95,7 @@
                                         <tr>
                                             <td class="align-middle">
                                                 <a href="{{ route('backend.invoices.show', $invoice) }}"
-                                                    class="text-secondary text-decoration-none font-weight-bold">{{ $invoice->document_number }}<small class="ml-2">{{ $invoice->transacted_at_pretty }}</small></a>
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $invoice->document_number }}<small class="ml-2">{{ $invoice->transacted_at_pretty }}</small></a>
                                             <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->total, currency($invoice->currency_id)->decimals) }}</b></td>
                                             <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->receipmentInvoice->imputed_amount, currency($invoice->currency_id)->decimals) }}</b></td>
                                         </tr>
@@ -150,7 +150,7 @@
                                                     Payment::PAYMENT_TYPE_CreditNote    => route('backend.credit_notes.show', $payment),
                                                     Payment::PAYMENT_TYPE_Promissory    => '#',
                                                     default => null,
-                                                } }}" class="text-secondary text-decoration-none"><b>{!! match($payment->receipmentPayment->payment_type) {
+                                                } }}" class="text-dark text-decoration-none"><b>{!! match($payment->receipmentPayment->payment_type) {
                                                     Payment::PAYMENT_TYPE_Cash          => $payment->cash->cashBook->name,
                                                     Payment::PAYMENT_TYPE_Card          => $payment->card_holder.' <small>**** **** **** '.$payment->card_number.'</small>',
                                                     Payment::PAYMENT_TYPE_Credit        => trans_choice('sales::receipment.payments.dues.0', $payment->dues, [ 'dues' => $payment->dues ]).' <small>'.$payment->interest.'%</small>',

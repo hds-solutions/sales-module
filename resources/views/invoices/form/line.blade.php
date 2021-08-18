@@ -1,7 +1,8 @@
-<div class="col-1 d-flex justify-content-center">
+<div class="col-1 d-flex align-items-center justify-content-center">
     <div class="position-relative d-flex align-items-center h-50px">
         <img src="" class="img-fluid mh-50px" id="line_preview">
     </div>
+    <x-form-input type="text" name="product-finder" placeholder="sales::order.lines.product_id.0" />
 </div>
 
 <div class="col-9 col-xl-10 d-flex align-items-center">

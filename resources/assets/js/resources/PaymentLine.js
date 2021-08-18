@@ -16,7 +16,6 @@ export default class PaymentLine extends DocumentLine {
     }
 
     _init() {
-        super._init();
         // get payment type selector
         let paymentType = this.container.querySelector('[name="payments[payment_type][]"]'),
             paymentAmount = this.container.querySelector('[name="payments[payment_amount][]"]'),
