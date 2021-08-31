@@ -13,7 +13,8 @@
                 @lang('sales::invoices.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
-                <button class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#printables-modal">
+                <button class="btn btn-sm btn-outline-info"
+                    data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
                     <i class="fas fa-print"></i>
                 </button>
 
