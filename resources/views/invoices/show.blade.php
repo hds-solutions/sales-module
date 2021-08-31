@@ -13,6 +13,10 @@
                 @lang('sales::invoices.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
+                <button class="btn btn-sm btn-outline-info" data-toggle="modal" data-target="#printables-modal">
+                    <i class="fas fa-print"></i>
+                </button>
+
                 @if (!$resource->isCompleted())
                 <a href="{{ route('backend.invoices.edit', $resource) }}"
                     class="btn btn-sm ml-2 btn-outline-primary btn-hover-info">@lang('sales::invoices.edit')</a>

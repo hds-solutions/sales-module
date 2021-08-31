@@ -15,6 +15,7 @@ use HDSSolutions\Laravel\Models\Product;
 use HDSSolutions\Laravel\Models\Variant;
 use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class InvoiceController extends Controller {
     use CanProcessDocument;
@@ -34,11 +35,31 @@ class InvoiceController extends Controller {
         return 'backend.invoices.show';
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    public function printIt(Request $request, Resource $resource) {
+        // return view('sales::printables.invoice', compact('resource'));
+        // set global options
+        PDF::setOptions([ 'dpi' => 150 ]);
+
+        // render first pass
+        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
+        $pdf->setOptions([
+            'page-width'    => 85,
+            'page-height'   => 25,
+        ]);
+        // get page count
+        $pages = preg_match_all("/\/Page\W/", $pdf->output(), $dummy);
+
+        // render new pass with optimal page height
+        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
+        $pdf->setOptions([
+            'page-width'    => 85,
+            'page-height'   => 20 * $pages,
+        ]);
+
+        // return rendered pdf
+        return $pdf->inline('testing_'.now());
+    }
+
     public function index(Request $request, DataTable $dataTable) {
         // check only-form flag
         if ($request->has('only-form'))
@@ -52,11 +73,6 @@ class InvoiceController extends Controller {
         return $dataTable->render('sales::invoices.index', [ 'count' => Resource::count() ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create(Request $request) {
         // load customers
         $customers = Customer::with([
@@ -100,12 +116,6 @@ class InvoiceController extends Controller {
         ));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request) {
         // cast values to boolean
         if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
@@ -148,12 +158,6 @@ class InvoiceController extends Controller {
             redirect()->route('backend.invoices.show', $resource);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
     public function show(Resource $resource) {
         // load inventory data
         $resource->load([
@@ -183,12 +187,6 @@ class InvoiceController extends Controller {
         return view('sales::invoices.show', compact('resource'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Resource $resource) {
         // check if document is already approved or processed
         if ($resource->isApproved() || $resource->isProcessed())
@@ -236,13 +234,6 @@ class InvoiceController extends Controller {
         return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'orders', 'resource'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id) {
         // find resource
         $resource = Resource::findOrFail($id);
@@ -281,12 +272,6 @@ class InvoiceController extends Controller {
         return redirect()->route('backend.invoices.show', $resource);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id) {
         // find resource
         $resource = Resource::findOrFail($id);
