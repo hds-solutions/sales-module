@@ -28,7 +28,7 @@ class CreateInvoicesTable extends Migration {
             $table->morphable('partner');
             $table->unsignedInteger('address_id')->nullable(); // TODO: Link to Partner.address
             $table->timestamp('transacted_at')->useCurrent();
-            $table->string('stamping')->nullable();
+            $table->foreignTo('Stamping')->nullable();
             $table->string('document_number');
             $table->boolean('is_purchase')->default(false);
             $table->boolean('is_credit')->default(false);

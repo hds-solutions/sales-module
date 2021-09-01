@@ -12,16 +12,6 @@ class Invoice extends X_Invoice implements Document {
     use HasDocumentActions,
         HasPartnerable;
 
-    public static function currentStamping():?string {
-        // return latest stamping number used
-        return self::select('stamping')->orderByDesc('transacted_at')->first()?->stamping ?? null;
-    }
-
-    public static function nextDocumentNumber(string $stamping = null):string {
-        // return next document number for specified stamping
-        return str_increment(self::withTrashed()->where('stamping', $stamping)->max('document_number') ?? null);
-    }
-
     public function __construct(array|Order $attributes = []) {
         // check if is instance of Order
         if (($order = $attributes) instanceof Order) $attributes = self::fromOrder($order);
@@ -57,6 +47,10 @@ class Invoice extends X_Invoice implements Document {
 
     public function employee() {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function stamping() {
+        return $this->belongsTo(Stamping::class);
     }
 
     public function address() {

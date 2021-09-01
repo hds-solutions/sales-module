@@ -40,7 +40,7 @@
         '?' => 'Fecha help text',
     ],
 
-    'stamping' => [
+    'stamping_id' => [
         'Timbrado',
         '_' => 'Timbrado',
         '?' => 'Timbrado help text',
