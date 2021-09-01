@@ -7,15 +7,20 @@
     placeholder="sales::invoice.is_purchase._"
     {{-- helper="sales::invoice.is_purchase.?" --}} />
 
-<x-backend-form-text name="stamping" required
-    :resource="$resource ?? null" :default="$highs['stamping'] ?? null"
+<x-backend-form-foreign name="stamping_id" required
+    :values="$stampings" :resource="$resource ?? null"
 
-    label="sales::invoice.stamping.0"
-    placeholder="sales::invoice.stamping._"
-    {{-- helper="sales::invoice.stamping.?" --}} />
+    foreign="stampings" foreign-add-label="sales::stampings.add"
+    show="document_number" append="next:next_document_number"
+
+    label="sales::invoice.stamping_id.0"
+    placeholder="sales::invoice.stamping_id._"
+    {{-- helper="sales::invoice.stamping_id.?" --}} />
 
 <x-backend-form-text name="document_number" required
-    :resource="$resource ?? null" :default="$highs['document_number'] ?? null"
+    :resource="$resource ?? null"
+
+    data-stamping="[name=stamping_id]"
 
     label="sales::invoice.document_number.0"
     placeholder="sales::invoice.document_number._"
@@ -30,6 +35,7 @@
 
 <x-backend-form-foreign name="branch_id" required
     :values="$branches" :resource="$resource ?? null"
+    :default="backend()->branch()->id"
 
     foreign="branches" foreign-add-label="sales::branches.add"
 
@@ -114,7 +120,7 @@
                                 <span class="input-group-text font-weight-bold px-3">Total:</span>
                             </div>
                             <input name="total" type="number" min="0" thousand readonly
-                                value="{{ old('total', isset($resource) ? number($resource->total, backend()->currencies()->firstWhere('id', $resource->currency_id)->decimals) : null) }}" tabindex="-1"
+                                value="{{ old('total', isset($resource) ? number($resource->total, backend()->currencies()->firstWhere('id', $resource->currency_id)->decimals) : 0) }}" tabindex="-1"
                                 data-currency-by="[name=currency_id]" data-keep-id="true" data-decimals="0"
                                 class="form-control form-control-lg text-right font-weight-bold"
                                 placeholder="@lang('sales::invoice.lines.total.0')">

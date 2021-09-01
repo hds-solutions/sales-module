@@ -165,7 +165,7 @@ export default class OrderLine extends DocumentLine {
             total += lineTotal;
         });
         // set total
-        this.document.total.value = total > 0 ? total : '';
+        this.document.total.value = total;
         // fire format
         if (total > 0) this.fire('blur', this.document.total);
     }

@@ -42,8 +42,8 @@
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.stamping.0'):</div>
-                    <div class="col h4">{{ $resource->stamping }}</div>
+                    <div class="col">@lang('sales::invoice.stamping_id.0'):</div>
+                    <div class="col h4">{{ $resource->stamping->document_number }}</div>
                 </div>
 
                 <div class="row">
