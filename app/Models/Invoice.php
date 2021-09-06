@@ -144,6 +144,15 @@ class Invoice extends X_Invoice implements Document {
 
         // when document isSale, validate credit available of Partnerable
         if ($this->is_sale) {
+            // check valid stamping
+            if (!$this->stamping->is_valid)
+                // reject document
+                return $this->documentError('sales::invoices.invalid-stamping', [
+                    'stamping'  => $this->stamping->document_number,
+                    'from'      => $this->stamping->valid_from,
+                    'until'     => $this->stamping->valid_until,
+                ]);
+
             // when document isCredit, validate that Partnerable has enabled and available credit
             if ($this->is_credit && ($error = $this->creditValidations()) !== null)
                 // return document error
