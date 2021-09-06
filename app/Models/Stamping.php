@@ -16,11 +16,11 @@ class Stamping extends X_Stamping {
         return self::where('valid_from', '<', now())->where('valid_until', '>=', now());
     }
 
-    public function getMaxDocumentNumberAttribute() {
+    public function getMaxDocumentNumberAttribute():string {
         return $this->invoices->max('document_number');
     }
 
-    public function getNextDocumentNumberAttribute() {
+    public function getNextDocumentNumberAttribute():string {
         return str_increment($this->max_document_number ?? null);
     }
 
