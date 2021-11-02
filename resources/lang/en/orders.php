@@ -14,4 +14,6 @@
     'save'          => 'Save',
     'cancel'        => 'Cancel',
 
+    'not-invoiced-created-ago'  => 'There are unbilled orders with more than :days days',
+
 ];

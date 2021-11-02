@@ -14,4 +14,6 @@
     'save'          => 'Guardar',
     'cancel'        => 'Cancelar',
 
+    'not-invoiced-created-ago'  => 'Hay pedidos sin facturar con mas de :days dias'
+
 ];
