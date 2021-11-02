@@ -12,9 +12,17 @@ class SalesController extends Controller {
 
     public function product(Request $request) {
         // find product/variant
+        $product = Product::code( $request->product );
+        $variant = Variant::sku( $request->product );
+        $product ??= $variant?->product;
+        //
+        $currency = $request->has('currency') ? Currency::findOrFail($request->currency) : pos_settings()->currency();
+        //
         return response()->json([
-            'product'   => Product::code( $request->product ),
-            'variant'   => Variant::sku( $request->product ),
+            'product'   => $product ?? null,
+            'variant'   => $variant ?? null,
+            'image'     => $variant?->images->first()->url ?? $product?->images->first()->url ?? asset('backend-module/assets/images/default.jpg'),
+            'price'     => $variant?->price( $currency )?->pivot->price ?? $product?->price( $currency )?->pivot->price ?? null,
         ]);
     }
 
