@@ -20,7 +20,7 @@ export default class Order extends Document {
             // foreach lines and fire change
             this.lines.forEach(line =>
                 // fire change on first <select> (product selector)
-                this.fire('change', line.container.querySelector('select:first-child'))
+                Order.fire('change', line.container.querySelector('select:first-child'))
             )
         );
     }
