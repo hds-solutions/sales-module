@@ -61,6 +61,24 @@ class Invoice extends X_Invoice implements Document {
         return $this->hasMany(InvoiceLine::class);
     }
 
+    public function orders() {
+        return $this->hasManyDeep(Order::class, [
+            InvoiceLine::class, InvoiceLineOrderLine::class,
+            OrderLine::class,
+        ], [
+            null,
+            'invoice_line_id',
+            'id',
+            'id',
+        ], [
+            null,
+            'id',
+            'order_line_id',
+            'order_id',
+        // prevent columns overlap
+        ])->select('orders.*')->groupBy('orders.id');
+    }
+
     public function receipments() {
         return $this->belongsToMany(Receipment::class, 'receipment_invoice')
             ->using(ReceipmentInvoice::class)
