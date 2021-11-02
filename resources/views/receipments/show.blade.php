@@ -66,6 +66,47 @@
                 </div>
 
             </div>
+            @if (count($creditNotes = $resource->checks->pluck('receipmentPayment.creditNote')->filter()))
+            <div class="col-12 col-xl-6">
+
+                <div class="row">
+                    <div class="col">
+                        <h2>@lang('sales::receipment.credit_notes.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('payments::credit_note.document_number.0') --}}</th>
+                                        <th class="align-middle text-right">@lang('payments::credit_note.description.0')</th>
+                                        <th class="align-middle text-right">@lang('payments::credit_note.payment_amount.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($creditNotes as $creditNote)
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.credit_notes.show', $creditNote) }}"
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $creditNote->document_number }}<small class="ml-2">{{ $creditNote->transacted_at_pretty }}</small></a>
+                                            <td class="align-middle text-right">{{ $creditNote->description }}</td>
+                                            <td class="align-middle text-right">{{ currency($creditNote->currency_id)->code }} <b>{{ number($creditNote->payment_amount, currency($creditNote->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            @endif
         </div>
 
         <div class="row pt-5">
