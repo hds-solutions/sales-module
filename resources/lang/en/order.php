@@ -83,6 +83,6 @@
 
         'no-enough-stock'   => 'There is no stock available for product :product :variant, Available: :available',
 
-    ] + include('order_line.php'),
+    ] + __('sales::order_line'),
 
 ];

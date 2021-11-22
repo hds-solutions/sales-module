@@ -3,7 +3,7 @@
     'nav'           => 'Orders',
 
     'title'         => 'Orders',
-    'description'   => 'Orders description',
+    'description'   => '',
 
     'index'         => 'Orders List',
     'create'        => 'Create new Order',

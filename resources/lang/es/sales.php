@@ -1,5 +1,5 @@
 <?php return [
 
-    'nav'   => 'Compra / Venta',
+    'nav'   => 'Compras & Ventas',
 
 ];

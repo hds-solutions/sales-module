@@ -23,9 +23,9 @@
     ],
 
     'partnerable_id'=> [
-        'Partner',
-        '_' => 'Partner',
-        '?' => 'Partner help text',
+        'Entidad',
+        '_' => 'Entidad',
+        '?' => 'Entidad help text',
     ],
 
     'address_id'    => [
@@ -35,9 +35,9 @@
     ],
 
     'transacted_at' => [
-        'Fecha',
-        '_' => 'Fecha',
-        '?' => 'Fecha help text',
+        'Fecha Transacción',
+        '_' => 'Fecha Transacción',
+        '?' => 'Fecha Transacción help text',
     ],
 
     'stamping_id' => [
@@ -96,71 +96,48 @@
         '_' => 'Líneas',
         '?' => 'Líneas help text',
 
-        'image'         => [
-            'Imágen',
-            '_' => 'Imágen',
-            '?' => '',
+    ] + __('sales::invoice_line'),
+
+    'receipments'       => [
+        'Recibos',
+        '_' => 'Recibos',
+        '?' => 'Recibos help text',
+
+        'total'             => [
+            'Total',
+            '_' => 'Total',
+            '?' => 'Total help text',
         ],
 
-        'currency_id'       => [
-            'Moneda',
-            '_' => 'Moneda',
-            '?' => 'Moneda help text',
+        'imputed_amount'    => [
+            'Monto imputado',
+            '_' => 'Monto imputado',
+            '?' => 'Monto imputado help text',
         ],
+    ],
 
-        'product_id'    => [
-            'Producto',
-            '_' => 'Producto',
-            '?' => 'Producto help text',
-        ],
+    'material_returns'  => [
+        'Devoluciones de Material',
+        '_' => 'Devoluciones de Material',
+        '?' => 'Devoluciones de Material help text',
 
-        'variant_id'    => [
-            'Variante',
-            '_' => 'Variante',
-            '?' => 'Variante help text',
-        ],
-
-        'price_reference'   => [
-            'Precio referencia',
-            '_' => 'Precio referencia',
-            '?' => 'Precio referencia help text',
-        ],
-
-        'price_ordered'     => [
-            'Precio pedido',
-            '_' => 'Precio pedido',
-            '?' => 'Precio pedido help text',
-        ],
-
-        'price_invoiced'    => [
-            'Precio',
-            '_' => 'Precio',
-            '?' => 'Precio help text',
-        ],
-
-        'quantity_ordered'  => [
-            'Cantidad pedido',
-            '_' => 'Cantidad pedido',
-            '?' => 'Cantidad pedido help text',
-        ],
-
-        'quantity_invoiced' => [
+        'quantity'          => [
             'Cantidad',
             '_' => 'Cantidad',
             '?' => 'Cantidad help text',
         ],
 
-        'quantity_received'  => [
-            'Cantidad recibida',
-            '_' => 'Cantidad recibida',
-            '?' => 'Cantidad recibida help text',
+        'credit_note'       => [
+            'Nota de Crédito',
+            '_' => 'Nota de Crédito',
+            '?' => 'Nota de Crédito help text',
         ],
 
-        'total'  => [
+        'total'             => [
             'Total',
             '_' => 'Total',
             '?' => 'Total help text',
         ],
-    ],
+    ]
 
 ];
