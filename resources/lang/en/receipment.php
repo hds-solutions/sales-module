@@ -132,4 +132,10 @@
         ],
     ],
 
+    'credit_notes'  => [
+        'Credit Notes',
+        '_' => 'Credit Notes',
+        '?' => 'Credit Notes help text',
+    ],
+
 ];

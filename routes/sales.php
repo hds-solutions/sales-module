@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use HDSSolutions\Laravel\Http\Controllers\{
     OrderController,
+    StampingController,
     InvoiceController,
     SalesController,
     ReceipmentController,
@@ -21,6 +22,10 @@ Route::group([
         ->name('index', 'backend.orders');
     Route::post('orders/{resource}/process',    [ OrderController::class, 'processIt' ])
         ->name('backend.orders.process');
+
+    Route::resource('stampings',                StampingController::class,  $name_prefix)
+        ->parameters([ 'stampings' => 'resource' ])
+        ->name('index', 'backend.stampings');
 
     Route::resource('invoices',                 InvoiceController::class,   $name_prefix)
         ->parameters([ 'invoices' => 'resource' ])

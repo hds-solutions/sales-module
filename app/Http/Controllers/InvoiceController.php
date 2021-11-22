@@ -12,6 +12,7 @@ use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\InvoiceLine;
 use HDSSolutions\Laravel\Models\Order;
 use HDSSolutions\Laravel\Models\Product;
+use HDSSolutions\Laravel\Models\Stamping;
 use HDSSolutions\Laravel\Models\Variant;
 use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
@@ -35,31 +36,6 @@ class InvoiceController extends Controller {
         return 'backend.invoices.show';
     }
 
-    public function printIt(Request $request, Resource $resource) {
-        // return view('sales::printables.invoice', compact('resource'));
-        // set global options
-        PDF::setOptions([ 'dpi' => 150 ]);
-
-        // render first pass
-        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
-        $pdf->setOptions([
-            'page-width'    => 85,
-            'page-height'   => 25,
-        ]);
-        // get page count
-        $pages = preg_match_all("/\/Page\W/", $pdf->output(), $dummy);
-
-        // render new pass with optimal page height
-        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
-        $pdf->setOptions([
-            'page-width'    => 85,
-            'page-height'   => 20 * $pages,
-        ]);
-
-        // return rendered pdf
-        return $pdf->inline('testing_'.now());
-    }
-
     public function index(Request $request, DataTable $dataTable) {
         // check only-form flag
         if ($request->has('only-form'))
@@ -70,10 +46,16 @@ class InvoiceController extends Controller {
         if ($request->ajax()) return $dataTable->ajax();
 
         // return view with dataTable
-        return $dataTable->render('sales::invoices.index', [ 'count' => Resource::count() ]);
+        return $dataTable->render('sales::invoices.index', [
+            'count'                 => Resource::count(),
+            'show_company_selector' => !backend()->companyScoped(),
+        ]);
     }
 
     public function create(Request $request) {
+        // force company selection
+        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
+
         // load customers
         $customers = Customer::with([
             // 'addresses', // TODO: Customer.addresses
@@ -94,16 +76,15 @@ class InvoiceController extends Controller {
                 $variant->setRelation('product', $product)
             ))
         );
+        // load valid stampings
+        $stampings = Stamping::ordered()->valid()->with([
+            'invoices' => fn($invoice) => $invoice,
+        ])->get();
 
         // get completed orders that aren't invoiced
         $orders = Order::with([
             'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
         ])->completed()->invoiced(false)->get();
-
-        $highs = [
-            'stamping'          => $stamping = Resource::currentStamping(),
-            'document_number'   => Resource::nextDocumentNumber( $stamping ),
-        ];
 
         // show create form
         return view('sales::invoices.create', compact(
@@ -111,8 +92,8 @@ class InvoiceController extends Controller {
             'branches',
             'employees',
             'products',
+            'stampings',
             'orders',
-            'highs',
         ));
     }
 
@@ -133,9 +114,8 @@ class InvoiceController extends Controller {
         // save resource
         if (!$resource->save())
             // redirect with errors
-            return back()
-                ->withErrors( $resource->errors() )
-                ->withInput();
+            return back()->withInput()
+                ->withErrors( $resource->errors() );
 
         // sync lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
@@ -158,7 +138,7 @@ class InvoiceController extends Controller {
             redirect()->route('backend.invoices.show', $resource);
     }
 
-    public function show(Resource $resource) {
+    public function show(Request $request, Resource $resource) {
         // load inventory data
         $resource->load([
             'branch',
@@ -187,7 +167,7 @@ class InvoiceController extends Controller {
         return view('sales::invoices.show', compact('resource'));
     }
 
-    public function edit(Resource $resource) {
+    public function edit(Request $request, Resource $resource) {
         // check if document is already approved or processed
         if ($resource->isApproved() || $resource->isProcessed())
             // redirect to show route
@@ -224,6 +204,10 @@ class InvoiceController extends Controller {
                 $variant->setRelation('product', $product)
             ))
         );
+        // load valid stampings
+        $stampings = Stamping::ordered()->valid()->with([
+            'invoices' => fn($invoice) => $invoice,
+        ])->get();
 
         // get completed orders
         $orders = Order::with([
@@ -231,13 +215,17 @@ class InvoiceController extends Controller {
         ])->completed()->invoiced(false)->get();
 
         // show edit form
-        return view('sales::invoices.edit', compact('customers', 'branches', 'employees', 'products', 'orders', 'resource'));
+        return view('sales::invoices.edit', compact('resource',
+            'customers',
+            'branches',
+            'employees',
+            'products',
+            'stampings',
+            'orders',
+        ));
     }
 
-    public function update(Request $request, $id) {
-        // find resource
-        $resource = Resource::findOrFail($id);
-
+    public function update(Request $request, Resource $resource) {
         // cast values to boolean
         if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
         if ($request->has('is_credit'))     $request->merge([ 'is_credit' => $request->is_credit == 'true' ]);
@@ -251,9 +239,8 @@ class InvoiceController extends Controller {
         // save resource
         if (!$resource->update( $request->input() ))
             // redirect with errors
-            return back()
-                ->withErrors( $resource->errors() )
-                ->withInput();
+            return back()->withInput()
+                ->withErrors( $resource->errors() );
 
         // sync lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
@@ -272,16 +259,40 @@ class InvoiceController extends Controller {
         return redirect()->route('backend.invoices.show', $resource);
     }
 
-    public function destroy($id) {
-        // find resource
-        $resource = Resource::findOrFail($id);
+    public function destroy(Request $request, Resource $resource) {
         // delete resource
         if (!$resource->delete())
             // redirect with errors
             return back()
                 ->withErrors($resource->errors()->any() ? $resource->errors() : [ $resource->getDocumentError() ]);
+
         // redirect to list
         return redirect()->route('backend.invoices');
+    }
+
+    public function printIt(Request $request, Resource $resource) {
+        return view('sales::printables.invoice', compact('resource'));
+        // set global options
+        PDF::setOptions([ 'dpi' => 150 ]);
+
+        // render first pass
+        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
+        $pdf->setOptions([
+            'page-width'    => 85,
+            'page-height'   => 25,
+        ]);
+        // get page count
+        $pages = preg_match_all("/\/Page\W/", $pdf->output(), $dummy);
+
+        // render new pass with optimal page height
+        $pdf = PDF::loadView('sales::printables.invoice', compact('resource'));
+        $pdf->setOptions([
+            'page-width'    => 85,
+            'page-height'   => 20 * $pages,
+        ]);
+
+        // return rendered pdf
+        return $pdf->inline('testing_'.now());
     }
 
     private function syncLines(Resource $resource, array $lines) {
@@ -318,8 +329,7 @@ class InvoiceController extends Controller {
             ]);
             // save inventory line
             if (!$orderLine->save())
-                return back()
-                    ->withInput()
+                return back()->withInput()
                     ->withErrors( $orderLine->errors() );
         }
 

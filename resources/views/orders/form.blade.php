@@ -47,7 +47,7 @@
 <x-backend-form-foreign name="employee_id" required
     :values="$employees" :resource="$resource ?? null" show="full_name"
 
-    foreign="employees" foreign-add-label="sales::employees.add"
+    foreign="employees" foreign-add-label="customers::employees.add"
 
     label="sales::order.employee_id.0"
     placeholder="sales::order.employee_id._"
@@ -56,7 +56,7 @@
 <x-backend-form-foreign name="partnerable_id" required
     :values="$customers" :resource="$resource ?? null" show="business_name"
 
-    foreign="customers" foreign-add-label="sales::customers.add"
+    foreign="customers" foreign-add-label="customers::customers.add"
 
     label="sales::order.partnerable_id.0"
     placeholder="sales::order.partnerable_id._"

@@ -3,7 +3,7 @@
     'nav'           => 'Orders',
 
     'title'         => 'Orders',
-    'description'   => 'Orders description',
+    'description'   => '',
 
     'index'         => 'Orders List',
     'create'        => 'Create new Order',
@@ -13,5 +13,7 @@
 
     'save'          => 'Save',
     'cancel'        => 'Cancel',
+
+    'not-invoiced-created-ago'  => 'There are unbilled orders with more than :days days',
 
 ];

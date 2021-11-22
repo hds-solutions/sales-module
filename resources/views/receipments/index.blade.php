@@ -8,8 +8,8 @@
     <div class="card mb-3">
         <div class="card-header">
             <div class="row">
-                <div class="col-6">
-                    <i class="fas fa-table"></i>
+                <div class="col-6 d-flex align-items-center">
+                    <i class="fas fa-table mr-2"></i>
                     @lang('sales::receipments.index')
                 </div>
                 <div class="col-6 d-flex justify-content-end">
@@ -23,6 +23,7 @@
                 <div class="table-responsive">
                     {{ $dataTable->table() }}
                     @include('backend::components.datatable-actions', [
+                        'resource'  => 'receipments',
                         'actions'   => [ 'show' ],
                         'label'     => '{resource.name}',
                     ])
@@ -30,9 +31,9 @@
             @else
                 <div class="text-center m-t-30 m-b-30 p-b-10">
                     <h2><i class="fas fa-table text-custom"></i></h2>
-                    <h3>@lang('sales::receipments.title')</h3>
+                    <h3>@lang('backend.empty.title')</h3>
                     <p class="text-muted">
-                        @lang('sales::receipments.description')
+                        @lang('backend.empty.description')
                         <a href="{{ route('backend.receipments.create') }}" class="text-custom">
                             <ins>@lang('sales::receipments.create')</ins>
                         </a>

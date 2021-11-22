@@ -44,7 +44,7 @@ export default class InvoiceLine extends DocumentLine {
             invoice.dataset.pendingAmount;
 
         // fire thousands plugin formatter
-        this.#thousands.forEach(thousand => this.fire('blur', thousand));
+        this.#thousands.forEach(thousand => InvoiceLine.fire('blur', thousand));
     }
 
     #updateTotal(event) {
@@ -66,7 +66,7 @@ export default class InvoiceLine extends DocumentLine {
         // set totals
         this.document.invoicesAmount.value = total > 0 ? total : '';
         // fire format
-        if (total > 0) this.fire('blur', this.document.invoicesAmount);
+        if (total > 0) InvoiceLine.fire('blur', this.document.invoicesAmount);
     }
 
 }

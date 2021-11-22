@@ -90,7 +90,7 @@ export default class PaymentLine extends DocumentLine {
         // set totals
         this.document.paymentsAmount.value = total > 0 ? total : '';
         // fire format
-        if (total > 0) this.fire('blur', this.document.paymentsAmount);
+        if (total > 0) PaymentLine.fire('blur', this.document.paymentsAmount);
     }
 
 }

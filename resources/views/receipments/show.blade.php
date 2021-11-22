@@ -8,17 +8,17 @@
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
-            <div class="col-6">
-                <i class="fas fa-user-plus"></i>
+            <div class="col-6 d-flex align-items-center">
+                <i class="fas fa-user-plus mr-2"></i>
                 @lang('sales::receipments.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
                 {{-- @if (!$resource->isCompleted())
                 <a href="{{ route('backend.receipments.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-info">@lang('sales::receipments.edit')</a>
+                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::receipments.edit')</a>
                 @endif --}}
                 <a href="{{ route('backend.receipments.create') }}"
-                    class="btn btn-sm ml-2 btn-primary">@lang('sales::receipments.create')</a>
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::receipments.create')</a>
             </div>
         </div>
     </div>
@@ -66,6 +66,47 @@
                 </div>
 
             </div>
+            @if (count($creditNotes = $resource->checks->pluck('receipmentPayment.creditNote')->filter()))
+            <div class="col-12 col-xl-6">
+
+                <div class="row">
+                    <div class="col">
+                        <h2>@lang('sales::receipment.credit_notes.0')</h2>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-borderless table-hover" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th class="align-middle">{{-- @lang('payments::credit_note.document_number.0') --}}</th>
+                                        <th class="align-middle text-right">@lang('payments::credit_note.description.0')</th>
+                                        <th class="align-middle text-right">@lang('payments::credit_note.payment_amount.0')</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($creditNotes as $creditNote)
+                                        <tr>
+                                            <td class="align-middle">
+                                                <a href="{{ route('backend.credit_notes.show', $creditNote) }}"
+                                                    class="text-dark text-decoration-none font-weight-bold">{{ $creditNote->document_number }}<small class="ml-2">{{ $creditNote->transacted_at_pretty }}</small></a>
+                                            <td class="align-middle text-right">{{ $creditNote->description }}</td>
+                                            <td class="align-middle text-right">{{ currency($creditNote->currency_id)->code }} <b>{{ number($creditNote->payment_amount, currency($creditNote->currency_id)->decimals) }}</b></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            @endif
         </div>
 
         <div class="row pt-5">
@@ -160,7 +201,7 @@
                                                 } !!}</b></a>
                                             </td>
                                             <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
-                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number(($payment->payment_amount ?? $payment->amount) - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

@@ -1,18 +1,18 @@
 <?php return [
 
-    'nav'           => 'Invoices',
+    'nav'           => 'Facturas',
 
-    'title'         => 'Invoices',
+    'title'         => 'Facturas',
     'description'   => '',
 
-    'index'         => 'Invoices List',
-    'create'        => 'Create new Invoice',
-    'add'           => 'Add new Invoice ...',
-    'show'          => 'Invoice Details',
-    'edit'          => 'Edit Invoice',
+    'index'         => 'Listado de Facturas',
+    'create'        => 'Crear nueva Factura',
+    'add'           => 'Agregar nueva Factura ...',
+    'show'          => 'Detalles de la Factura',
+    'edit'          => 'Editar Factura',
 
-    'save'          => 'Save',
-    'cancel'        => 'Cancel',
+    'save'          => 'Guardar',
+    'cancel'        => 'Cancelar',
 
     'lines'     => [
         'invoiced-gt-pending'   => 'Quantity to invoice of :product :variant can\'t be greater than ordered',

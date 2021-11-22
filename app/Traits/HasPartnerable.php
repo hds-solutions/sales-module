@@ -9,7 +9,8 @@ trait HasPartnerable {
 
     public function partnerable() {
         return $this->morphTo(type: 'partnerable_type', id: 'partnerable_id')
-            ->with([ 'identity' ]);
+            ->with([ 'identity' ])
+            ->withTrashed();
     }
 
     public function scopeOfPartnerable(Builder $query, int|AsPerson $partnerable) {

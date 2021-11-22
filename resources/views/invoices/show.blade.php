@@ -13,12 +13,14 @@
                 @lang('sales::invoices.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
+                @if ($resource->isCompleted())
                 <button class="btn btn-sm btn-outline-info"
                     data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
                     <i class="fas fa-print"></i>
                 </button>
+                @endif
 
-                @if (!$resource->isCompleted())
+                @if (!$resource->wasCompleted())
                 <a href="{{ route('backend.invoices.edit', $resource) }}"
                     class="btn btn-sm ml-2 btn-outline-primary btn-hover-info">@lang('sales::invoices.edit')</a>
                 @endif
@@ -42,8 +44,8 @@
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.stamping.0'):</div>
-                    <div class="col h4">{{ $resource->stamping }}</div>
+                    <div class="col">@lang('sales::invoice.stamping_id.0'):</div>
+                    <div class="col h4">{{ $resource->stamping->document_number }}</div>
                 </div>
 
                 <div class="row">

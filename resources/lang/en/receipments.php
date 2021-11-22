@@ -3,8 +3,7 @@
     'nav'           => 'Receipments',
 
     'title'         => 'Receipments',
-    'description'   => 'Receipments description',
-
+    'description'   => '',
     'index'         => 'Receipments List',
     'create'        => 'Create new Receipment',
     'add'           => 'Add new Receipment ...',

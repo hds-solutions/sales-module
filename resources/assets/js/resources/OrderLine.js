@@ -76,7 +76,7 @@ export default class OrderLine extends DocumentLine {
                     Application.$(this.container.querySelector('[name="lines[product_id][]"]'))
                         .selectpicker('val', data.variant !== null ? data.variant.product_id : (data.product !== null ? data.product.id : null));
                     // fire change to enable variants selector
-                    this.fire('change', this.container.querySelector('[name="lines[product_id][]"]'));
+                    OrderLine.fire('change', this.container.querySelector('[name="lines[product_id][]"]'));
 
                     // select variant
                     Application.$(this.container.querySelector('[name="lines[variant_id][]"]'))
@@ -84,7 +84,7 @@ export default class OrderLine extends DocumentLine {
                     // disable flag, next change event fires ajax requests
                     this.#loading = false;
                     // fire change to update price
-                    this.fire('change', this.container.querySelector('[name="lines[variant_id][]"]'));
+                    OrderLine.fire('change', this.container.querySelector('[name="lines[variant_id][]"]'));
 
                     // re-enable field
                     this.#finder.removeAttribute('disabled');
@@ -126,7 +126,7 @@ export default class OrderLine extends DocumentLine {
                 // parse or set to 1 as default
                 quantity.value = !data.price || quantity.value.length > 0 ? quantity.value : 1;
                 // execute change event on quantity field
-                this.fire('change', quantity);
+                OrderLine.fire('change', quantity);
             },
         });
     }
@@ -147,9 +147,9 @@ export default class OrderLine extends DocumentLine {
         ) / Math.pow(10, price.dataset.decimals);
 
         // fire thousands plugin formatter
-        this.#thousands.forEach(thousand => this.fire('blur', thousand));
+        this.#thousands.forEach(thousand => OrderLine.fire('blur', thousand));
         // fire total change
-        this.fire('change', total);
+        OrderLine.fire('change', total);
     }
 
     #updateTotal(event) {
@@ -165,9 +165,9 @@ export default class OrderLine extends DocumentLine {
             total += lineTotal;
         });
         // set total
-        this.document.total.value = total > 0 ? total : '';
+        this.document.total.value = total;
         // fire format
-        if (total > 0) this.fire('blur', this.document.total);
+        if (total > 0) OrderLine.fire('blur', this.document.total);
     }
 
 }
