@@ -14,12 +14,19 @@ abstract class X_Stamping extends Base\Model {
     ];
 
     protected $fillable = [
+        'is_purchase',
+        'provider_id',
         'document_number',
         'valid_from',
         'valid_until',
+        'length',
+        'start',
+        'end',
+        'current',
     ];
 
     protected $casts = [
+        'is_purchase'   => 'boolean',
         'valid_from'    => 'datetime',
         'valid_until'   => 'datetime',
     ];
@@ -27,6 +34,18 @@ abstract class X_Stamping extends Base\Model {
     protected $appends = [
         'valid_from_pretty',
         'valid_until_pretty',
+    ];
+
+    protected static array $rules = [
+        'is_purchase'       => [ 'required', 'boolean' ],
+        'provider_id'       => [ 'required_if:is_purchase,true' ],
+        'document_number'   => [ 'required' ],
+        'valid_from'        => [ 'required_if:is_purchase,false', 'nullable', 'date', 'before:valid_until' ],
+        'valid_until'       => [ 'required_if:is_purchase,false', 'nullable', 'date', 'after:valid_from' ],
+        'length'            => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'min:1' ],
+        'start'             => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'lt:end' ],
+        'end'               => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'gt:start' ],
+        'current'           => [ 'sometimes', 'nullable', 'numeric', 'gte:start', 'lte:end' ],
     ];
 
     public function getValidFromPrettyAttribute():string {

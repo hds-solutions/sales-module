@@ -8,17 +8,17 @@
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
-            <div class="col-6">
-                <i class="fas fa-user-plus"></i>
+            <div class="col-6 d-flex align-items-center">
+                <i class="fas fa-user-plus mr-2"></i>
                 @lang('sales::receipments.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
                 {{-- @if (!$resource->isCompleted())
                 <a href="{{ route('backend.receipments.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-info">@lang('sales::receipments.edit')</a>
+                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::receipments.edit')</a>
                 @endif --}}
                 <a href="{{ route('backend.receipments.create') }}"
-                    class="btn btn-sm ml-2 btn-primary">@lang('sales::receipments.create')</a>
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::receipments.create')</a>
             </div>
         </div>
     </div>
@@ -201,7 +201,7 @@
                                                 } !!}</b></a>
                                             </td>
                                             <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
-                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number(($payment->payment_amount ?? $payment->amount) - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

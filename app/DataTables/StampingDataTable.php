@@ -29,8 +29,17 @@ class StampingDataTable extends Base\DataTable {
                 ->title( __('sales::stamping.id.0') )
                 ->hidden(),
 
-            Column::make('stamping')
-                ->title( __('sales::stamping.stamping.0') ),
+            Column::make('document_number')
+                ->title( __('sales::stamping.document_number.0') ),
+
+            Column::make('valid_from_pretty')
+                ->title( __('sales::stamping.valid_from.0') ),
+
+            Column::make('valid_until_pretty')
+                ->title( __('sales::stamping.valid_until.0') ),
+
+            Column::make('current')
+                ->title( __('sales::stamping.current.0') ),
 
             Column::computed('invoices')
                 ->title( __('sales::stamping.invoices.0') )

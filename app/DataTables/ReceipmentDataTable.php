@@ -5,12 +5,14 @@ namespace HDSSolutions\Laravel\DataTables;
 use HDSSolutions\Laravel\Models\Receipment as Resource;
 use HDSSolutions\Laravel\Traits\DatatableWithPartnerable;
 use HDSSolutions\Laravel\Traits\DatatableWithCurrency;
+use HDSSolutions\Laravel\Traits\DatatableAsDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
 class ReceipmentDataTable extends Base\DataTable {
     use DatatableWithPartnerable;
     use DatatableWithCurrency;
+    use DatatableAsDocument;
 
     protected array $with = [
         'partnerable',

@@ -8,17 +8,17 @@
 <div class="card mb-3">
     <div class="card-header">
         <div class="row">
-            <div class="col-6">
-                <i class="fas fa-user-plus"></i>
+            <div class="col-6 d-flex align-items-center">
+                <i class="fas fa-user-plus mr-2"></i>
                 @lang('sales::orders.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
-                @if (!$resource->isCompleted())
+                @if (!$resource->wasCompleted())
                 <a href="{{ route('backend.orders.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-info">@lang('sales::orders.edit')</a>
+                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::orders.edit')</a>
                 @endif
                 <a href="{{ route('backend.orders.create') }}"
-                    class="btn btn-sm ml-2 btn-primary">@lang('sales::orders.create')</a>
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::orders.create')</a>
             </div>
         </div>
     </div>
@@ -47,7 +47,7 @@
 
                 <div class="row">
                     <div class="col">@lang('sales::order.partnerable_id.0'):</div>
-                    <div class="col h4">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
@@ -113,13 +113,13 @@
                                     </td>
                                     <td class="align-middle pl-3">
                                         <a href="{{ route('backend.products.edit', $line->product) }}"
-                                            class="text-primary text-decoration-none">{{ $line->product->name }}</a>
+                                            class="font-weight-bold text-decoration-none">{{ $line->product->name }}</a>
                                     </td>
                                     <td class="align-middle pl-3">
                                         <div>
                                             @if ($line->variant)
                                             <a href="{{ route('backend.variants.edit', $line->variant) }}"
-                                                class="text-primary text-decoration-none">{{ $line->variant->sku }}</a>
+                                                class="font-weight-bold text-decoration-none">{{ $line->variant->sku }}</a>
                                             @else
                                                 --
                                             @endif
@@ -144,10 +144,10 @@
                                     <td class="py-0"></td>
                                     <td class="py-0 pl-3" colspan="3">
                                         <a href="{{ route('backend.invoices.show', $invoiceLine->invoice) }}"
-                                            class="text-secondary text-decoration-none">{{ $invoiceLine->invoice->document_number }}</a> <small class="ml-1">{{ $invoiceLine->invoice->transacted_at_pretty }}</small>
+                                            class="text-dark font-weight-bold text-decoration-none">{{ $invoiceLine->invoice->document_number }}</a> <small class="ml-1">{{ $invoiceLine->invoice->transacted_at_pretty }}</small>
                                     </td>
                                     <td class="py-0"></td>
-                                    <td class="py-0 text-center">{{ $invoiceLine->pivot->quantity_invoiced }}</td>
+                                    <td class="py-0 text-center">{{ $invoiceLine->pivot->quantity_invoiced ?? 0 }}</td>
                                     <td class="py-0"></td>
                                 </tr>
                                 @endforeach

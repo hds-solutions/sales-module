@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use HDSSolutions\Laravel\DataTables\StampingDataTable as DataTable;
 use HDSSolutions\Laravel\Http\Request;
 use HDSSolutions\Laravel\Models\Stamping as Resource;
+use HDSSolutions\Laravel\Models\Provider;
 
 class StampingController extends Controller {
 
@@ -34,11 +35,17 @@ class StampingController extends Controller {
         // force company selection
         if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
 
+        // get providers
+        $providers = Provider::ordered()->get();
+
         // show create form
-        return view('sales::stampings.create');
+        return view('sales::stampings.create', compact('providers'));
     }
 
     public function store(Request $request) {
+        // cast to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => filter_var($request->is_purchase, FILTER_VALIDATE_BOOLEAN) ]);
+
         // create resource
         $resource = new Resource( $request->input() );
 
@@ -62,11 +69,17 @@ class StampingController extends Controller {
     }
 
     public function edit(Request $request, Resource $resource) {
+        // get providers
+        $providers = Provider::ordered()->get();
+
         // show edit form
-        return view('sales::stampings.edit', compact('resource'));
+        return view('sales::stampings.edit', compact('resource', 'providers'));
     }
 
     public function update(Request $request, Resource $resource) {
+        // cast to boolean
+        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => filter_var($request->is_purchase, FILTER_VALIDATE_BOOLEAN) ]);
+
         // save resource
         if (!$resource->update( $request->input() ))
             // redirect with errors

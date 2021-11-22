@@ -11,7 +11,9 @@
     :values="$stampings" :resource="$resource ?? null"
 
     foreign="stampings" foreign-add-label="sales::stampings.add"
-    show="document_number" append="next:next_document_number"
+    show="document_number" data-show-subtext="true"
+    subtext="valid_from_pretty - valid_until_pretty"
+    append="next:next_document_number"
 
     label="sales::invoice.stamping_id.0"
     placeholder="sales::invoice.stamping_id._"

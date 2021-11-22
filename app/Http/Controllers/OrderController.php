@@ -48,7 +48,7 @@ class OrderController extends Controller {
         if ($request->ajax()) return $dataTable->ajax();
 
         // load customers
-        $customers = Customer::with([
+        $customers = Customer::ordered()->with([
             // 'addresses', // TODO: Customer.addresses
         ])->get();
 

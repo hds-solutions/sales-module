@@ -15,8 +15,13 @@ class SalesMenu extends Base\Menu {
                 'icon'      => 'chart-bar',
             ])->data('priority', 700);
 
+        // get configs menu group
+        $configs = backend()->menu()->get('configs');
+
         $this
             // append items to submenu
+            ->stampings($configs)
+
             ->orders($sub)
             ->invoices($sub)
             ->receipments($sub)
@@ -26,8 +31,18 @@ class SalesMenu extends Base\Menu {
         return $next($request);
     }
 
+    private function stampings(&$menu) {
+        if (Route::has('backend.stampings') && $this->can('stampings.crud.index'))
+            $menu->add(__('sales::stampings.nav'), [
+                'route'     => 'backend.stampings',
+                'icon'      => 'file-invoice'
+            ]);
+
+        return $this;
+    }
+
     private function orders(&$menu) {
-        if (Route::has('backend.orders') && $this->can('orders'))
+        if (Route::has('backend.orders') && $this->can('orders.crud.index'))
             $menu->add(__('sales::orders.nav'), [
                 'route'     => 'backend.orders',
                 'icon'      => 'file-invoice'
@@ -37,7 +52,7 @@ class SalesMenu extends Base\Menu {
     }
 
     private function invoices(&$menu) {
-        if (Route::has('backend.invoices') && $this->can('invoices'))
+        if (Route::has('backend.invoices') && $this->can('invoices.crud.index'))
             $menu->add(__('sales::invoices.nav'), [
                 'route'     => 'backend.invoices',
                 'icon'      => 'file-invoice-dollar'
@@ -47,7 +62,7 @@ class SalesMenu extends Base\Menu {
     }
 
     private function receipments(&$menu) {
-        if (Route::has('backend.receipments') && $this->can('receipments'))
+        if (Route::has('backend.receipments') && $this->can('receipments.crud.index'))
             $menu->add(__('sales::receipments.nav'), [
                 'route'     => 'backend.receipments',
                 'icon'      => 'receipt'

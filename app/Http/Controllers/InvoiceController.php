@@ -271,7 +271,7 @@ class InvoiceController extends Controller {
     }
 
     public function printIt(Request $request, Resource $resource) {
-        // return view('sales::printables.invoice', compact('resource'));
+        return view('sales::printables.invoice', compact('resource'));
         // set global options
         PDF::setOptions([ 'dpi' => 150 ]);
 
