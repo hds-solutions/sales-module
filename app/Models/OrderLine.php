@@ -42,7 +42,7 @@ class OrderLine extends X_OrderLine {
         // check if order already has a line with current Variant|Product
         if (!$this->exists && $this->order->hasProduct( $this->product, $this->variant ))
             // reject line with error
-            return $validator->errors()->add('product_id', __('sales::order.lines.already-has-product', [
+            return $validator->errors()->add('product_id', __('sales::order_line.beforeSave.already-has-product', [
                 'product'   => $this->product->name,
                 'variant'   => $this->variant?->sku,
             ]));
@@ -52,15 +52,16 @@ class OrderLine extends X_OrderLine {
             // check if there are drafted Inventories of Variant|Product
             if (Inventory::hasOpenForProduct( $this->product, $this->variant, $this->order->branch ))
                 // reject line with error
-                return $validator->errors()->add('product_id', __('sales::order.lines.pending-inventories', [
+                return $validator->errors()->add('product_id', __('sales::order_line.beforeSave.pending-inventories', [
                     'product'   => $this->product->name,
                     'variant'   => $this->variant?->sku,
+                    'branch'    => $this->order->branch,
                 ]));
 
             // check available stock of Variant|Product
             if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
                 // reject line with error
-                return $validator->errors()->add('product_id', __('sales::order.lines.no-enough-stock', [
+                return $validator->errors()->add('product_id', __('sales::order_line.beforeSave.no-enough-stock', [
                     'product'   => $this->product->name,
                     'variant'   => $this->variant?->sku,
                     'available' => $available,

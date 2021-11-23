@@ -138,6 +138,28 @@
             '_' => 'Total',
             '?' => 'Total help text',
         ],
-    ]
+    ],
+
+    'creditValidations' => [
+        'no-credit-enabled'     => 'La entidad no tiene crédito habilitado',
+        'overdue-invoices'      => 'La entidad posee facturas pendientes sobre el plazo de gracia',
+        'no-credit-available'   => 'La entidad no tiene suficiente crédito disponible',
+    ],
+
+    'prepareIt'     => [
+        'no-lines'              => 'Documento no tiene lineas',
+        'invoiced-gt-pending'   => 'No se puede facturar una mayor cantidad que la ordenada para el producto :product :variant',
+        'invalid-stamping'      => 'El timbrado :stamping no es válido! (disponible desde :from hasta :until)',
+    ],
+
+    'completeIt'    => [
+        'invoiced-to-orderlines-failed' => 'No se encontraron suficientes lineas de pedido para marcar la cantidad facturada del producto :product :variant',
+        'invoiced-to-pending-failed'    => 'No se encontraron suficientes ubicaciones para asignar la cantidad pendiente del producto :product :variant',
+    ],
+
+    'voidIt'        => [
+        'invoiced-to-revert-on-orders-failed'   => 'No se encontraron suficientes lineas de pedido para revertir la cantidad facturada del producto :product :variant',
+        'invoiced-to-revert-on-storage-failed'  => 'No se encontraron suficientes ubicaciones para revertir la cantidad pendiente del producto :product :variant',
+    ],
 
 ];

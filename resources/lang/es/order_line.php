@@ -66,4 +66,10 @@
         '?' => 'Está Facturado help text',
     ],
 
+    'beforeSave'    => [
+        'already-has-product'   => 'El pedido ya tiene el producto :product :variant',
+        'pending-inventories'   => 'Hay inventarios pendientes para el producto :product :variant en la sucursal :branch',
+        'no-enough-stock'       => 'No hay suficiente stock disponible para el producto :product :variant, solo :available disponible',
+    ],
+
 ];

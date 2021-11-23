@@ -138,4 +138,24 @@
         '?' => 'Credit Notes help text',
     ],
 
+    'prepareIt'     => [
+        'no-invoices'           => 'No invoices to pay set',
+        'no-payments'           => 'No payments set',
+        'invoice-not-completed' => 'Invoice :invoice isn\'t completed',
+        'invoice-already-paid'  => 'Invoice :invoice is already paid',
+        'imputed-gt-payments'   => 'Invoices imputed amount is greater than payments',
+        'credit-with-cash-invoices'         => 'Can\'t pay cash invoices with credit payments',
+        'partnerable-no-credit-enabled'     => 'Partner :partnerable has no credit enabled',
+        'partnerable-no-credit-available'   => 'Partner :partnerable don\'t have enough credit available',
+    ],
+
+    'completeIt'    => [
+        'credit_note-check-diff'    => 'Credit Note for difference of check :check',
+        'credit_note-check-diff-creation-failed'        => 'Failed to create Credit Note for difference of check',
+        'payment-check-associate-credit-note-failed'    => 'Failed to associate the generated Credit Note to the Check',
+        'payment-update-failed'     => 'Failed to update generated payment information',
+        'invoice-update-failed'     => 'Failed to update paid amount on Invoice :invoice',
+        'partnerable-update-credit-used-failed'         => 'Failed to update credit used on partner',
+    ],
+
 ];

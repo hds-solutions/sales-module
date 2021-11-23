@@ -80,14 +80,14 @@ class Order extends X_Order implements Document {
             // check drafted order from more than XX days ago
             if (self::drafted()->createdAgo( config('settings.pending-documents-age') )->count() > 0)
                 // reject order with error
-                return $validator->errors()->add('id', __('sales::orders.drafted-created-ago', [
+                return $validator->errors()->add('id', __('sales::order.beforeSave.drafted-created-ago', [
                     'days'  => config('settings.pending-documents-age'),
                 ]));
 
             // check if there is orders pending for invoiceIt from more than XX days ago
             if (self::invoiced(false)->createdAgo( config('settings.pending-documents-age') )->count() > 0)
                 // reject order with error
-                return $validator->errors()->add('id', __('sales::orders.not-invoiced-created-ago', [
+                return $validator->errors()->add('id', __('sales::order.beforeSave.not-invoiced-created-ago', [
                     'days'  => config('settings.pending-documents-age'),
                 ]));
         }
@@ -98,14 +98,14 @@ class Order extends X_Order implements Document {
 
     public function prepareIt():?string {
         // check if document has lines
-        if (!$this->lines()->count()) return $this->documentError('sales::order.no-lines');
+        if (!$this->lines()->count()) return $this->documentError('sales::order.prepareIt.no-lines');
 
         // line validations only for sale document
         if ($this->is_sale) foreach ($this->lines as $line) {
             // check if product is sold
             if (!$line->product->type->is_sold)
                 // return document error
-                return $this->documentError('sales::order.lines.product-isnt-sold', [
+                return $this->documentError('sales::order.prepareIt.product-isnt-sold', [
                     'product'   => $line->product->name,
                     'variant'   => $line->variant?->sku,
                 ]);
@@ -115,15 +115,16 @@ class Order extends X_Order implements Document {
                 // check if there are drafted Inventories of Variant|Product
                 if (Inventory::hasOpenForProduct( $line->product, $line->variant, $this->branch ))
                     // reject line with error
-                    return $this->documentError('sales::order.lines.pending-inventories', [
+                    return $this->documentError('sales::order.prepareIt.pending-inventories', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
+                        'branch'    => $this->branch->name,
                     ]);
 
                 // check available stock of Variant|Product
                 if ($line->quantity_ordered > ($available = Storage::getQtyAvailable( $line->product, $line->variant, $this->branch )))
                     // reject line with error
-                    return $this->documentError('sales::order.lines.no-enough-stock', [
+                    return $this->documentError('sales::order.prepareIt.no-enough-stock', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
                         'available' => $available,
@@ -132,7 +133,7 @@ class Order extends X_Order implements Document {
         }
 
         // return status InProgress
-        return Document::STATUS_InProgress;
+        return self::STATUS_InProgress;
     }
 
     public function rejectIt():bool {
@@ -196,7 +197,7 @@ class Order extends X_Order implements Document {
             // if there is pending quantity, reject document process
             if ($pendingToReserve !== 0)
                 // reject with error
-                return $this->documentError('sales::order.lines.pending-to-reserve-failed', [
+                return $this->documentError('sales::order.completeIt.pending-to-reserve', [
                     'product'   => $line->product->name,
                     'variant'   => $line->variant?->sku,
                 ]);
@@ -212,7 +213,7 @@ class Order extends X_Order implements Document {
             $inOut->delete();
 
         // return completed status
-        return Document::STATUS_Completed;
+        return self::STATUS_Completed;
     }
 
     public function voidIt():bool {
@@ -235,7 +236,7 @@ class Order extends X_Order implements Document {
         // check if Order is already invoiced
         if ($this->is_invoiced)
             // reject process, stock must return through a MaterialReturn document
-            return $this->documentError('sales::orders.voidIt.already-invoiced') == null;
+            return $this->documentError('sales::order.voidIt.already-invoiced') == null;
 
         // check if Order hasn't InOut document
         // if so, all order lines contains non stockable products
@@ -244,7 +245,7 @@ class Order extends X_Order implements Document {
             return true;
 
         // try to rollback InOut document
-        if (!$this->inOut->processIt( Document::ACTION_Void ))
+        if (!$this->inOut->processIt( self::ACTION_Void ))
             // redirect inOut document error
             return $this->documentError( $this->inOut->getDocumentError() ) === null;
 
@@ -295,7 +296,7 @@ class Order extends X_Order implements Document {
             // check if there is remaining reserved quantity to revert
             if ($pendingToRevert !== 0)
                 // reject with error
-                return $this->documentError('sales::orders.voidIt.reserved-to-revert-on-storage-failed', [
+                return $this->documentError('sales::order.voidIt.reserved-to-revert-on-storage', [
                     'product'   => $line->product->name,
                     'variant'   => $line->variant?->sku,
                 ]);

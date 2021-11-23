@@ -1,5 +1,7 @@
 <?php return [
 
+    'nav'           => 'Invoice',
+
     'details'       => [
         'Details'
     ],
@@ -138,6 +140,28 @@
             '_' => 'Total',
             '?' => 'Total help text',
         ],
+    ],
+
+    'creditValidations' => [
+        'no-credit-enabled'     => 'Partner has no credit enabled',
+        'overdue-invoices'      => 'Partner has pending overdue invoices',
+        'no-credit-available'   => 'Partner don\'t have enough credit available',
+    ],
+
+    'prepareIt'     => [
+        'no-lines'              => 'Document without lines',
+        'invoiced-gt-pending'   => 'Can\'t invoice more quantity that ordered of product :product :variant',
+        'invalid-stamping'      => 'Stamping :stamping isn\'t valid! (available from :from until :until)',
+    ],
+
+    'completeIt'    => [
+        'invoiced-to-orderlines-failed' => 'There is not enough OrderLines to set invoiced quantity of product :product :variant',
+        'invoiced-to-pending-failed'    => 'No enough storages found to set as pending for product :product :variant',
+    ],
+
+    'voidIt'        => [
+        'invoiced-to-revert-on-orders-failed'   => 'There is not enough OrderLines to revert invoiced quantity of product :product :variant',
+        'invoiced-to-revert-on-storage-failed'  => 'No enough storages found to revert pending for product :product :variant',
     ],
 
 ];

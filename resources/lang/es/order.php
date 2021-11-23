@@ -85,4 +85,25 @@
 
     ] + __('sales::order_line'),
 
+    'beforeSave'    => [
+        'drafted-created-ago'       => 'Sistema Bloqueado! Hay pedidos en borrador creados hace más de :days días',
+        'not-invoiced-created-ago'  => 'Sistema Bloqueado! Hay pedidos pendientes de facturación creados hace más de :days días',
+    ],
+
+    'prepareIt'     => [
+        'no-lines'              => 'Documento no tiene lineas',
+        'product-isnt-sold'     => 'El producto :product :variant no está marcado para venta',
+        'pending-inventories'   => 'Hay inventarios pendientes para producto :product :variant en la sucursal :branch',
+        'no-enough-stock'       => 'No hay suficiente stock disponible para el producto :product :variant, solo :available disponible',
+    ],
+
+    'completeIt'    => [
+        'pending-to-reserve'    => 'No se encontraron suficientes ubicaciones para reservar el stock del producto :product :variant',
+    ],
+
+    'voidIt'        => [
+        'already-invoiced'      => 'El pedido ya esta facturado. Utilice el documento de Devolución de Material para retornar mercadería',
+        'reserved-to-revert-on-storage' => 'No se encontraron suficientes ubicaciones para revertir el stock reservado del producto :product :variant',
+    ],
+
 ];

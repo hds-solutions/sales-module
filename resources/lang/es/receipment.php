@@ -91,9 +91,9 @@
     ],
 
     'payments' => [
-        'pagos',
-        '_' => 'pagos',
-        '?' => 'pagos help text',
+        'Pagos',
+        '_' => 'Pagos',
+        '?' => 'Pagos help text',
 
         'payment_type'      => [
             'Tipo',
@@ -136,6 +136,26 @@
         'Notas de Crédito',
         '_' => 'Notas de Crédito',
         '?' => 'Notas de Crédito help text',
+    ],
+
+    'prepareIt'     => [
+        'no-invoices'           => 'No se asignaron facturas a pagar',
+        'no-payments'           => 'No se asignaron pagos',
+        'invoice-not-completed' => 'La factura :invoice no se completo',
+        'invoice-already-paid'  => 'La factura :invoice ya está pagada',
+        'imputed-gt-payments'   => 'El monto imputado de las facturas es mayor al monto de los pagos',
+        'credit-with-cash-invoices'         => 'No se pueden pagar facturas al contado con pagos a crédito',
+        'partnerable-no-credit-enabled'     => 'La entidad :partnerable no tiene crédito habilitado',
+        'partnerable-no-credit-available'   => 'La entidad :partnerable no tiene suficiente crédito disponible',
+    ],
+
+    'completeIt'    => [
+        'credit_note-check-diff'    => 'Nota de Crédito por diferencia de cheque :check',
+        'credit_note-check-diff-creation-failed'        => 'Falló la creación de la Nota de Crédito por diferencia de cheque',
+        'payment-check-associate-credit-note-failed'    => 'Falló la vinculación de la Nota de Crédito generada con el Cheque',
+        'payment-update-failed'     => 'Falló la actualización de la información del pago generado',
+        'invoice-update-failed'     => 'Falló la actualización del monto pagado en la factura :invoice',
+        'partnerable-update-credit-used-failed'         => 'Falló la actualización del crédito utilizado en la entidad',
     ],
 
 ];

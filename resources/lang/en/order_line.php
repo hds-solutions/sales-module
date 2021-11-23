@@ -66,4 +66,10 @@
         '?' => 'Is Invoiced help text',
     ],
 
+    'beforeSave'    => [
+        'already-has-product'   => 'The order already has product :product :variant',
+        'pending-inventories'   => 'There are pending inventories for product :product :variant on branch :branch',
+        'no-enough-stock'       => 'There is no enough stock for product :product :variant, only :available available',
+    ],
+
 ];

@@ -212,7 +212,7 @@ class Invoice extends X_Invoice implements Document {
 
     public function prepareIt():?string {
         // check if document has lines
-        if (!$this->lines()->count()) return $this->documentError('sales::invoice.no-lines');
+        if (!$this->lines()->count()) return $this->documentError('sales::invoice.prepareIt.no-lines');
 
         // check that invoiced quantity of products isn't greater than ordered quantity
         foreach ($this->lines as $line) {
@@ -221,7 +221,7 @@ class Invoice extends X_Invoice implements Document {
             // check if quantity invoiced > ordered quantity
             if ($line->quantity_invoiced > $line->orderLines->sum('pivot.quantity_ordered'))
                 // reject document with error
-                return $this->documentError('sales::invoices.lines.invoiced-gt-pending', [
+                return $this->documentError('sales::invoice.prepareIt.invoiced-gt-pending', [
                     'product'   => $line->product->name,
                     'variant'   => $line->variant?->sku,
                 ]);
@@ -232,10 +232,10 @@ class Invoice extends X_Invoice implements Document {
             // check valid stamping
             if (!$this->stamping->is_valid)
                 // reject document
-                return $this->documentError('sales::invoices.invalid-stamping', [
+                return $this->documentError('sales::invoice.prepareIt.invalid-stamping', [
                     'stamping'  => $this->stamping->document_number,
-                    'from'      => $this->stamping->valid_from,
-                    'until'     => $this->stamping->valid_until,
+                    'from'      => $this->stamping->valid_from_pretty,
+                    'until'     => $this->stamping->valid_until_pretty,
                 ]);
 
             // when document isCredit, validate that Partnerable has enabled and available credit
@@ -288,7 +288,7 @@ class Invoice extends X_Invoice implements Document {
                 // check if there is remaining quantity to invoice
                 if ($quantity_pending > 0)
                     // reject with error
-                    return $this->documentError('sales::invoices.lines.invoiced-to-orderlines-failed', [
+                    return $this->documentError('sales::invoice.completeIt.invoiced-to-orderlines-failed', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
                     ]);
@@ -332,7 +332,7 @@ class Invoice extends X_Invoice implements Document {
                 // check if invoiced quantity was set on storage
                 if ($invoicedToPending !== 0)
                     // reject with error
-                    return $this->documentError('sales::invoices.lines.invoiced-to-pending-failed', [
+                    return $this->documentError('sales::invoice.completeIt.invoiced-to-pending-failed', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
                     ]);
@@ -406,7 +406,7 @@ class Invoice extends X_Invoice implements Document {
                 // check if there is remaining quantity to revert
                 if ($pendingToRevert > 0)
                     // reject with error
-                    return $this->documentError('sales::invoices.voidIt.invoiced-to-revert-on-orders-failed', [
+                    return $this->documentError('sales::invoice.voidIt.invoiced-to-revert-on-orders-failed', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
                     ]);
@@ -454,7 +454,7 @@ class Invoice extends X_Invoice implements Document {
                 // check if there is remaining invoiced quantity to revert
                 if ($pendingToRevert !== 0)
                     // reject with error
-                    return $this->documentError('sales::invoices.voidIt.invoiced-to-revert-on-storage-failed', [
+                    return $this->documentError('sales::invoice.voidIt.invoiced-to-revert-on-storage-failed', [
                         'product'   => $line->product->name,
                         'variant'   => $line->variant?->sku,
                     ]);
@@ -469,17 +469,17 @@ class Invoice extends X_Invoice implements Document {
         // check if Partner has credit enabled
         if (!$this->partnerable->has_credit_enabled)
             // return error
-            return 'sales::invoices.partnerable-no-credit-enabled';
+            return 'sales::invoice.creditValidations.no-credit-enabled';
 
         // check if Partner has overdue invoices
         if (self::ofPartnerable($this->partnerable)->overGrace($this->partnerable)->count() > 0)
             // reject error
-            return 'sales::invoices.partnerable-overdue-invoices';
+            return 'sales::invoice.creditValidations.overdue-invoices';
 
         // check if Partner has available credit
         if ($this->partnerable->credit_available === 0)
             // reject error
-            return 'sales::invoices.partnerable-no-credit-available';
+            return 'sales::invoice.creditValidations.no-credit-available';
 
         // no error, return null
         return null;
