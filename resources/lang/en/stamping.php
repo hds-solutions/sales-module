@@ -48,4 +48,9 @@
         '?' => 'Current document number help text',
     ],
 
+    'invoices'    => [
+        'Invoices',
+        'count' => 'invoices',
+    ],
+
 ];
