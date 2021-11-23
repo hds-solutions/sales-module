@@ -201,7 +201,7 @@
                                                 } !!}</b></a>
                                             </td>
                                             <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
-                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number(($payment->payment_amount ?? $payment->amount) - $payment->receipmentPayment->creditNote?->payment_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
+                                            <td class="align-middle text-right">{{ currency($payment->receipmentPayment->currency_id)->code }} <b>{{ number($payment->receipmentPayment->used_amount, currency($payment->receipmentPayment->currency_id)->decimals) }}</b></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
