@@ -28,6 +28,12 @@
         '?' => 'Moneda help text',
     ],
 
+    'price_list_id' => [
+        'Lista de Precios',
+        '_' => 'Lista de Precios',
+        '?' => 'Lista de Precios help text',
+    ],
+
     'employee_id'   => [
         'Empleado',
         '_' => 'Empleado',
