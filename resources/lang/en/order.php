@@ -4,6 +4,12 @@
         'Details'
     ],
 
+    'order_id'      => [
+        'Order',
+        '_' => 'Order',
+        '?' => 'Order help text',
+    ],
+
     'branch_id'     => [
         'Branch',
         '_' => 'Branch',
@@ -34,10 +40,28 @@
         '?' => 'Partner help text',
     ],
 
+    'customer_id'   => [
+        'Customer',
+        '_' => 'Customer',
+        '?' => 'Customer help text',
+    ],
+
+    'provider_id'   => [
+        'Provider',
+        '_' => 'Provider',
+        '?' => 'Provider help text',
+    ],
+
     'address_id'=> [
         'Address',
         '_' => 'Address',
         '?' => 'Address help text',
+    ],
+
+    'in_out_id'    => [
+        'Egress document',
+        '_' => 'Egress document',
+        '?' => 'Egress document help text',
     ],
 
     'transacted_at' => [

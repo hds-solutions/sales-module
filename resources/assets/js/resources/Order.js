@@ -6,7 +6,7 @@ export default class Order extends Document {
     constructor() {
         super();
         this.total = document.querySelector('[name="total"]');
-        this.currency = document.querySelector('[name="currency_id"]');
+        this.price_list = document.querySelector('[name="price_list_id"]');
         this._init();
     }
 
@@ -15,12 +15,12 @@ export default class Order extends Document {
     }
 
     _init() {
-        // capture currency change and redirect change to every line
-        this.currency.addEventListener('change', e =>
+        // capture price_list change and redirect change to every line
+        this.price_list.addEventListener('change', e =>
             // foreach lines and fire change
             this.lines.forEach(line =>
                 // fire change on first <select> (product selector)
-                Order.fire('change', line.container.querySelector('select:first-child'))
+                Order.fire('change', [...line.container.querySelectorAll('select')].pop())
             )
         );
     }

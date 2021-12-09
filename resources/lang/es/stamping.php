@@ -24,28 +24,4 @@
         '?' => 'Válido hasta help text',
     ],
 
-    'length'            => [
-        'Tamaño',
-        '_' => 'Tamaño de los números de documentos',
-        '?' => 'Length help text',
-    ],
-
-    'start'             => [
-        'Inicio',
-        '_' => 'Inicio del rango',
-        '?' => 'Inicio del rango help text',
-    ],
-
-    'end'               => [
-        'Fin',
-        '_' => 'Fin del rango',
-        '?' => 'Fin del rango help text',
-    ],
-
-    'current'           => [
-        'Número actual',
-        '_' => 'Número actual',
-        '?' => 'Número actual help text',
-    ],
-
 ];

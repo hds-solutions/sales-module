@@ -24,30 +24,6 @@
         '?' => 'Valid Until help text',
     ],
 
-    'length'            => [
-        'Length',
-        '_' => 'Generated document number Length',
-        '?' => 'Length help text',
-    ],
-
-    'start'             => [
-        'Start',
-        '_' => 'Start document number',
-        '?' => 'Start document number help text',
-    ],
-
-    'end'               => [
-        'End',
-        '_' => 'End document number',
-        '?' => 'End document number help text',
-    ],
-
-    'current'           => [
-        'Current document number',
-        '_' => 'Current document number',
-        '?' => 'Current document number help text',
-    ],
-
     'invoices'    => [
         'Invoices',
         'count' => 'invoices',

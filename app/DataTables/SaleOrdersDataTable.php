@@ -9,7 +9,7 @@ use HDSSolutions\Laravel\Traits\DatatableAsDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
-class OrderDataTable extends Base\DataTable {
+class SaleOrdersDataTable extends Base\DataTable {
     use DatatableWithPartnerable;
     use DatatableWithCurrency;
     use DatatableAsDocument;
@@ -27,7 +27,7 @@ class OrderDataTable extends Base\DataTable {
     public function __construct() {
         parent::__construct(
             Resource::class,
-            route('backend.orders'),
+            route('backend.sales.orders'),
         );
     }
 
@@ -57,15 +57,17 @@ class OrderDataTable extends Base\DataTable {
             Column::make('total')
                 ->title( __('sales::order.total.0') )
                 ->renderRaw('view:order')
-                ->data( view('sales::orders.datatable.total')->render() ),
+                ->data( view('sales::orders.datatable.total')->render() )
+                ->class('text-right'),
 
             Column::computed('actions'),
         ];
     }
 
     protected function joins(Builder $query):Builder {
+        // load Sale Orders only
         // add custom JOIN to customers + people for Partnerable
-        return $query
+        return $query->isSale()
             // join to partnerable
             ->leftJoin('customers', 'customers.id', 'orders.partnerable_id')
                 // join to people

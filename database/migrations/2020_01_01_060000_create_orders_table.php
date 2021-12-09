@@ -24,6 +24,7 @@ class CreateOrdersTable extends Migration {
             $table->foreignTo('Branch');
             $table->foreignTo('Warehouse');
             $table->foreignTo('Currency');
+            $table->foreignTo('PriceList');
             $table->foreignTo('Employee');
             $table->morphable('partner');
             $table->unsignedInteger('address_id')->nullable(); // TODO: Link to Partner.address

@@ -9,7 +9,7 @@ use HDSSolutions\Laravel\Traits\DatatableAsDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
-class InvoiceDataTable extends Base\DataTable {
+class SaleInvoicesDataTable extends Base\DataTable {
     use DatatableWithPartnerable;
     use DatatableWithCurrency;
     use DatatableAsDocument;
@@ -27,7 +27,7 @@ class InvoiceDataTable extends Base\DataTable {
     public function __construct() {
         parent::__construct(
             Resource::class,
-            route('backend.invoices'),
+            route('backend.sales.invoices'),
         );
     }
 
@@ -79,6 +79,11 @@ class InvoiceDataTable extends Base\DataTable {
             ->leftJoin('customers', 'customers.id', 'invoices.partnerable_id')
             // join to people
             ->join('people', 'people.id', 'customers.id');
+    }
+
+    protected function filters(Builder $query):Builder {
+        // load Sale Invoices only
+        return $query->isSale();
     }
 
 }

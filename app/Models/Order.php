@@ -19,29 +19,39 @@ class Order extends X_Order implements Document {
         $this->document_enableVoidIt = true;
     }
 
-    public static function nextDocumentNumber():?string {
+    public static function nextDocumentNumber(bool $is_purchase = false):?string {
         // return next document number for specified stamping
-        return str_increment(self::withTrashed()->max('document_number'));
+        return str_increment(self::isPurchase($is_purchase)->withTrashed()->max('document_number'));
     }
 
     public function branch() {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class)
+            ->withTrashed();
     }
 
     public function warehouse() {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(Warehouse::class)
+            ->withTrashed();
     }
 
     public function currency() {
-        return $this->belongsTo(Currency::class);
+        return $this->belongsTo(Currency::class)
+            ->withTrashed();
+    }
+
+    public function priceList() {
+        return $this->belongsTo(PriceList::class)
+            ->withTrashed();
     }
 
     public function employee() {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withTrashed();
     }
 
     public function address() {
-        return $this->belongsTo(Address::class);
+        return $this->belongsTo(Address::class)
+            ->withTrashed();
     }
 
     public function lines() {
@@ -55,6 +65,14 @@ class Order extends X_Order implements Document {
 
     public function scopeInvoiced(Builder $query, bool $invoiced = true) {
         return $query->where('is_invoiced', $invoiced);
+    }
+
+    public function scopeIsPurchase(Builder $query, bool $is_purchase = true) {
+        return $query->where('is_purchase', $is_purchase);
+    }
+
+    public function scopeIsSale(Builder $query, bool $is_sale = true) {
+        return $this->scopeIsPurchase($query, !$is_sale);
     }
 
     public function hasProduct(int|Product $product, int|Variant|null $variant = null) {

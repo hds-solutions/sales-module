@@ -30,10 +30,28 @@
         '?' => 'Partner help text',
     ],
 
+    'customer_id'   => [
+        'Customer',
+        '_' => 'Customer',
+        '?' => 'Customer help text',
+    ],
+
+    'provider_id'   => [
+        'Provider',
+        '_' => 'Provider',
+        '?' => 'Provider help text',
+    ],
+
     'address_id'    => [
         'Address',
         '_' => 'Address',
         '?' => 'Address help text',
+    ],
+
+    'in_out_id'    => [
+        'Ingress document',
+        '_' => 'Ingress document',
+        '?' => 'Ingress document help text',
     ],
 
     'transacted_at' => [
@@ -99,6 +117,13 @@
         '?' => 'Lines help text',
 
     ] + __('sales::invoice_line'),
+
+    'orders'        => [
+        'Orders',
+        '_' => 'Orders',
+        '?' => 'Orders help text',
+
+    ] + __('sales::order'),
 
     'receipments'       => [
         'Receipments',

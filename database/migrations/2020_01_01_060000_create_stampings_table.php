@@ -21,10 +21,6 @@ class CreateStampingsTable extends Migration {
             $table->string('document_number');
             $table->timestamp('valid_from');
             $table->timestamp('valid_until');
-            $table->unsignedTinyInteger('length')->nullable();
-            $table->unsignedBigInteger('start')->nullable();
-            $table->unsignedBigInteger('end')->nullable();
-            $table->unsignedBigInteger('current')->nullable();
         });
     }
 

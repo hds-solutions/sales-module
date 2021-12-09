@@ -22,10 +22,15 @@ class SalesMenu extends Base\Menu {
             // append items to submenu
             ->stampings($configs)
 
-            ->orders($sub)
-            ->invoices($sub)
-            ->receipments($sub)
-            ;
+            ->purchase_orders($sub)
+            ->purchase_invoices($sub)
+            ->purchase_receipments($sub)
+
+            ->sale_orders($sub)
+            ->sale_invoices($sub)
+            ->sale_receipments($sub)
+
+            ->reports($sub);
 
         // continue witn next middleware
         return $next($request);
@@ -41,31 +46,71 @@ class SalesMenu extends Base\Menu {
         return $this;
     }
 
-    private function orders(&$menu) {
-        if (Route::has('backend.orders') && $this->can('orders.crud.index'))
-            $menu->add(__('sales::orders.nav'), [
-                'route'     => 'backend.orders',
+    private function purchase_orders(&$menu) {
+        if (Route::has('backend.purchases.orders') && $this->can('orders.crud.index'))
+            $menu->add(__('sales::orders.purchases.nav'), [
+                'route'     => [ 'backend.purchases.orders' ],
                 'icon'      => 'file-invoice'
             ]);
 
         return $this;
     }
 
-    private function invoices(&$menu) {
-        if (Route::has('backend.invoices') && $this->can('invoices.crud.index'))
-            $menu->add(__('sales::invoices.nav'), [
-                'route'     => 'backend.invoices',
+    private function purchase_invoices(&$menu) {
+        if (Route::has('backend.purchases.invoices') && $this->can('invoices.crud.index'))
+            $menu->add(__('sales::invoices.purchases.nav'), [
+                'route'     => [ 'backend.purchases.invoices' ],
                 'icon'      => 'file-invoice-dollar'
             ]);
 
         return $this;
     }
 
-    private function receipments(&$menu) {
-        if (Route::has('backend.receipments') && $this->can('receipments.crud.index'))
-            $menu->add(__('sales::receipments.nav'), [
-                'route'     => 'backend.receipments',
+    private function purchase_receipments(&$menu) {
+        if (Route::has('backend.purchases.receipments') && $this->can('receipments.crud.index'))
+            $menu->add(__('sales::receipments.purchases.nav'), [
+                'route'     => 'backend.purchases.receipments',
                 'icon'      => 'receipt'
+            ]);
+
+        return $this;
+    }
+
+    private function sale_orders(&$menu) {
+        if (Route::has('backend.sales.orders') && $this->can('orders.crud.index'))
+            $menu->add(__('sales::orders.sales.nav'), [
+                'route'     => [ 'backend.sales.orders' ],
+                'icon'      => 'file-invoice'
+            ]);
+
+        return $this;
+    }
+
+    private function sale_invoices(&$menu) {
+        if (Route::has('backend.sales.invoices') && $this->can('invoices.crud.index'))
+            $menu->add(__('sales::invoices.sales.nav'), [
+                'route'     => [ 'backend.sales.invoices' ],
+                'icon'      => 'file-invoice-dollar'
+            ]);
+
+        return $this;
+    }
+
+    private function sale_receipments(&$menu) {
+        if (Route::has('backend.sales.receipments') && $this->can('receipments.crud.index'))
+            $menu->add(__('sales::receipments.sales.nav'), [
+                'route'     => 'backend.sales.receipments',
+                'icon'      => 'receipt'
+            ]);
+
+        return $this;
+    }
+
+    private function reports(&$menu) {
+        if (Route::has('backend.reports.sales.invoices') && $this->can('reports.sales.invoices'))
+            $menu->add(__('sales::reports.sales.invoices.0'), [
+                'route'     => 'backend.reports.sales.invoices',
+                'icon'      => 'chart-line'
             ]);
 
         return $this;

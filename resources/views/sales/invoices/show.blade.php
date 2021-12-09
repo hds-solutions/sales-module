@@ -1,7 +1,7 @@
 @extends('sales::layouts.master')
 
-@section('page-name', __('sales::invoices.title'))
-@section('description', __('sales::invoices.description'))
+@section('page-name', __('sales::invoices.sales.title'))
+@section('description', __('sales::invoices.sales.description'))
 
 @section('content')
 
@@ -10,22 +10,22 @@
         <div class="row">
             <div class="col-6 d-flex align-items-center">
                 <i class="fas fa-user-plus mr-2"></i>
-                @lang('sales::invoices.show')
+                @lang('sales::invoices.sales.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
-                @if ($resource->isCompleted())
+                @if ($resource->wasCompleted())
                 <button class="btn btn-sm btn-outline-info"
-                    data-printable="{{ route('backend.invoices.print', $resource) }}" data-print="true">
+                    data-printable="{{ route('backend.sales.invoices.print', $resource) }}" data-print="true">
                     <i class="fas fa-print"></i>
                 </button>
                 @endif
 
                 @if (!$resource->wasCompleted())
-                <a href="{{ route('backend.invoices.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-outline-primary btn-hover-info">@lang('sales::invoices.edit')</a>
+                <a href="{{ route('backend.sales.invoices.edit', $resource) }}"
+                    class="btn btn-sm ml-2 btn-outline-secondary btn-hover-info">@lang('sales::invoices.sales.edit')</a>
                 @endif
-                <a href="{{ route('backend.invoices.create') }}"
-                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::invoices.create')</a>
+                <a href="{{ route('backend.sales.invoices.create') }}"
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::invoices.sales.create')</a>
             </div>
         </div>
     </div>
@@ -44,48 +44,48 @@
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.stamping_id.0'):</div>
-                    <div class="col h4">{{ $resource->stamping->document_number }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.stamping_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->stamping->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.document_number.0'):</div>
-                    <div class="col h4 font-weight-bold">{{ $resource->document_number }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.document_number.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.branch_id.0'):</div>
-                    <div class="col h4">{{ $resource->branch->name }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.branch_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->branch->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.partnerable_id.0'):</div>
-                    <div class="col h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.customer_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.employee_id.0'):</div>
-                    <div class="col h4">{{ $resource->employee->fullname }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.currency_id.0'):</div>
-                    <div class="col h4">{{ currency($resource->currency_id)->name }}</div>
-                </div>
-
-                {{-- <div class="row">
-                    <div class="col">@lang('sales::invoice.description.0'):</div>
-                    <div class="col h4">{{ $resource->description }}</div>
-                </div> --}}
-
-                <div class="row">
-                    <div class="col">@lang('sales::invoice.transacted_at.0'):</div>
-                    <div class="col h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.currency_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ currency($resource->currency_id)->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.document_status.0'):</div>
-                    <div class="col h4 mb-0">{{ Document::__($resource->document_status) }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.price_list_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->priceList->name }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.transacted_at.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::invoice.document_status.0'):</div>
+                    <div class="col-8 col-lg-6 h4 mb-0">{{ Document::__($resource->document_status) }}</div>
                 </div>
 
             </div>
@@ -117,7 +117,7 @@
                                     @foreach ($resource->receipments as $receipment)
                                         <tr>
                                             <td class="align-middle">
-                                                <a href="{{ route('backend.receipments.show', $receipment) }}"
+                                                <a href="{{ route('backend.sales.receipments.show', $receipment) }}"
                                                     class="text-dark text-decoration-none font-weight-bold">{{ $receipment->document_number }}<small class="ml-2">{{ $receipment->transacted_at_pretty }}</small></a>
                                             <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->payments_amount, currency($receipment->currency_id)->decimals) }}</b></td>
                                             <td class="align-middle text-right">{{ currency($receipment->currency_id)->code }} <b>{{ number($receipment->receipmentInvoice->imputed_amount, currency($receipment->currency_id)->decimals) }}</b></td>
@@ -260,11 +260,11 @@
                                 <tr class="collapse line-{{ $line->id }}-details">
                                     <td class="py-0"></td>
                                     <td class="py-0 pl-3" colspan="3">
-                                        <a href="{{ route('backend.orders.show', $orderLine->order) }}"
+                                        <a href="{{ route('backend.sales.orders.show', $orderLine->order) }}"
                                             class="text-dark font-weight-bold text-decoration-none">{{ $orderLine->order->document_number }} <small class="ml-1">{{ $orderLine->order->transacted_at_pretty }}</small></a>
                                     </td>
                                     <td class="py-0 text-center">{{ $orderLine->pivot->quantity_ordered }}</td>
-                                    <td class="py-0"></td>
+                                    <td class="py-0" colspan="2"></td>
                                 </tr>
                                 @endforeach
                             @endforeach
@@ -283,7 +283,7 @@
         </div>
 
         @include('backend::components.document-actions', [
-            'route'     => 'backend.invoices.process',
+            'route'     => 'backend.sales.invoices.process',
             'resource'  => $resource,
         ])
 

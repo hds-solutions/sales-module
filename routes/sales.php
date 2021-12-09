@@ -2,12 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use HDSSolutions\Laravel\Http\Controllers\{
-    OrderController,
     StampingController,
-    InvoiceController,
+
+    PurchaseOrderController,
+    PurchaseInvoiceController,
+    PurchaseReceipmentController,
+
+    SaleOrderController,
+    SaleInvoiceController,
+    SaleReceipmentController,
     SalesController,
-    ReceipmentController,
-    PriceChangeController,
+
+    SalesReportsController,
 };
 
 Route::group([
@@ -17,34 +23,62 @@ Route::group([
     // name prefix
     $name_prefix = [ 'as' => 'backend' ];
 
-    Route::resource('orders',                   OrderController::class,     $name_prefix)
-        ->parameters([ 'orders' => 'resource' ])
-        ->name('index', 'backend.orders');
-    Route::post('orders/{resource}/process',    [ OrderController::class, 'processIt' ])
-        ->name('backend.orders.process');
-
     Route::resource('stampings',                StampingController::class,  $name_prefix)
         ->parameters([ 'stampings' => 'resource' ])
         ->name('index', 'backend.stampings');
 
-    Route::resource('invoices',                 InvoiceController::class,   $name_prefix)
+
+    Route::resource('purchases/orders',                     PurchaseOrderController::class, [ 'as' => 'backend.purchases' ])
+        ->parameters([ 'orders' => 'resource' ])
+        ->name('index', 'backend.purchases.orders');
+    Route::post('purchases/orders/{resource}/process',      [ PurchaseOrderController::class, 'processIt' ])
+        ->name('backend.purchases.orders.process');
+
+    Route::resource('purchases/invoices',                   PurchaseInvoiceController::class, [ 'as' => 'backend.purchases' ])
         ->parameters([ 'invoices' => 'resource' ])
-        ->name('index', 'backend.invoices');
-    Route::get('invoices/{resource}/print.pdf', [ InvoiceController::class, 'printIt' ])
-        ->name('backend.invoices.print');
-    Route::post('invoices/{resource}/process',  [ InvoiceController::class, 'processIt' ])
-        ->name('backend.invoices.process');
+        ->name('index', 'backend.purchases.invoices');
+    Route::get('purchases/invoices/{resource}/print.pdf',   [ PurchaseInvoiceController::class, 'printIt' ])
+        ->name('backend.purchases.invoices.print');
+    Route::post('purchases/invoices/{resource}/process',    [ PurchaseInvoiceController::class, 'processIt' ])
+        ->name('backend.purchases.invoices.process');
+
+    Route::resource('purchases/receipments',                 PurchaseReceipmentController::class, [ 'as' => 'backend.purchases' ])
+        ->parameters([ 'receipments' => 'resource' ])
+        ->name('index', 'backend.purchases.receipments')
+        ->only([ 'index', 'show' ]);
+    Route::post('purchases/receipments/{resource}/process',  [ PurchaseReceipmentController::class, 'processIt' ])
+        ->name('backend.purchases.receipments.process');
+
+
+    Route::resource('sales/orders',                     SaleOrderController::class, [ 'as' => 'backend.sales' ])
+        ->parameters([ 'orders' => 'resource' ])
+        ->name('index', 'backend.sales.orders');
+    Route::post('sales/orders/{resource}/process',      [ SaleOrderController::class, 'processIt' ])
+        ->name('backend.sales.orders.process');
+
+    Route::resource('sales/invoices',                   SaleInvoiceController::class, [ 'as' => 'backend.sales' ])
+        ->parameters([ 'invoices' => 'resource' ])
+        ->name('index', 'backend.sales.invoices');
+    Route::get('sales/invoices/{resource}/print.pdf',   [ SaleInvoiceController::class, 'printIt' ])
+        ->name('backend.sales.invoices.print');
+    Route::post('sales/invoices/{resource}/process',    [ SaleInvoiceController::class, 'processIt' ])
+        ->name('backend.sales.invoices.process');
+
+    Route::resource('sales/receipments',                SaleReceipmentController::class, [ 'as' => 'backend.sales' ])
+        ->parameters([ 'receipments' => 'resource' ])
+        ->name('index', 'backend.sales.receipments')
+        ->only([ 'index', 'show' ]);
+    Route::post('sales/receipments/{resource}/process', [ SaleReceipmentController::class, 'processIt' ])
+        ->name('backend.sales.receipments.process');
+
 
     Route::post('sales/product',                [ SalesController::class, 'product' ])
         ->name('backend.sales.product');
     Route::post('sales/price',                  [ SalesController::class, 'price' ])
         ->name('backend.sales.price');
 
-    Route::resource('receipments',                  ReceipmentController::class,   $name_prefix)
-        ->parameters([ 'receipments' => 'resource' ])
-        ->name('index', 'backend.receipments');
-        // ->only([ 'index', 'show' ]);
-    Route::post('receipments/{resource}/process',   [ ReceipmentController::class, 'processIt' ])
-        ->name('backend.receipments.process');
+
+    Route::get('reports/sales/invoices',        [ SalesReportsController::class, 'sale_invoices' ], $name_prefix)
+        ->name('backend.reports.sales.invoices');
 
 });

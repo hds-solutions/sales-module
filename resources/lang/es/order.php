@@ -4,6 +4,12 @@
         'Detalles'
     ],
 
+    'order_id'      => [
+        'Pedido',
+        '_' => 'Pedido',
+        '?' => 'Pedido help text',
+    ],
+
     'branch_id'     => [
         'Sucursal',
         '_' => 'Sucursal',
@@ -34,10 +40,28 @@
         '?' => 'Entidad help text',
     ],
 
+    'customer_id'   => [
+        'Cliente',
+        '_' => 'Cliente',
+        '?' => 'Cliente help text',
+    ],
+
+    'provider_id'   => [
+        'Proveedor',
+        '_' => 'Proveedor',
+        '?' => 'Proveedor help text',
+    ],
+
     'address_id'=> [
         'Dirección',
         '_' => 'Dirección',
         '?' => 'Dirección help text',
+    ],
+
+    'in_out_id'    => [
+        'Salida de Stock',
+        '_' => 'Salida de Stock',
+        '?' => 'Salida de Stock help text',
     ],
 
     'transacted_at' => [

@@ -33,19 +33,23 @@ class InvoiceLine extends X_InvoiceLine {
     }
 
     public function currency() {
-        return $this->belongsTo(Currency::class);
+        return $this->belongsTo(Currency::class)
+            ->withTrashed();
     }
 
     public function employee() {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withTrashed();
     }
 
     public function product() {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)
+            ->withTrashed();
     }
 
     public function variant() {
-        return $this->belongsTo(Variant::class);
+        return $this->belongsTo(Variant::class)
+            ->withTrashed();
     }
 
     public function orderLines() {
@@ -72,9 +76,9 @@ class InvoiceLine extends X_InvoiceLine {
         // set original price from product|variant
         if (!$this->exists) $this->price_reference =
             // set variant price if variant is set
-            $this->variant?->price($this->currency)?->pivot?->price ??
+            $this->variant?->price( $this->invoice->priceList )?->price?->price ??
             // otherwise, set product price without variant
-            $this->product?->price($this->currency)?->pivot?->price ?? 0;
+            $this->product?->price( $this->invoice->priceList )?->price?->price ?? 0;
 
         // calculate line total amount
         $this->total = $this->price_invoiced * $this->quantity_invoiced;

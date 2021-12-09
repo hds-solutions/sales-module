@@ -1,6 +1,6 @@
 @extends('sales::layouts.master')
 
-@section('page-name', __('sales::orders.title'))
+@section('page-name', __('sales::invoices.sales.title'))
 
 @section('content')
 
@@ -9,19 +9,19 @@
             <div class="row">
                 <div class="col-4 d-flex align-items-center">
                     <i class="fas fa-company-plus"></i>
-                    @lang('sales::orders.create')
+                    @lang('sales::invoices.sales.edit')
                 </div>
                 <div class="col d-flex justify-content-end">
-                    {{-- <a href="{{ route('backend.orders.create') }}"
-                        class="btn btn-sm btn-primary">@lang('inventory::orders.create')</a> --}}
+                     <a href="{{ route('backend.sales.invoices.create') }}"
+                        class="btn btn-sm btn-outline-primary">@lang('sales::invoices.sales.create')</a>
                 </div>
             </div>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('backend.orders.store') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('backend.sales.invoices.update', $resource) }}" enctype="multipart/form-data">
                 @csrf
-                @onlyform
-                @include('sales::orders.form')
+                @method('PUT')
+                @include('sales::sales.invoices.form')
             </form>
         </div>
     </div>

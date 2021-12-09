@@ -28,10 +28,28 @@
         '?' => 'Entidad help text',
     ],
 
+    'customer_id'   => [
+        'Cliente',
+        '_' => 'Cliente',
+        '?' => 'Cliente help text',
+    ],
+
+    'provider_id'   => [
+        'Proveedor',
+        '_' => 'Proveedor',
+        '?' => 'Proveedor help text',
+    ],
+
     'address_id'    => [
         'Dirección',
         '_' => 'Dirección',
         '?' => 'Dirección help text',
+    ],
+
+    'in_out_id'    => [
+        'Entrada de Stock',
+        '_' => 'Entrada de Stock',
+        '?' => 'Entrada de Stock help text',
     ],
 
     'transacted_at' => [
@@ -59,9 +77,9 @@
     ],
 
     'is_credit'     => [
-        'Es venta a credito?',
-        '_' => 'Si, es venta a credito',
-        '?' => 'Es venta a credito? help text',
+        'Es a credito?',
+        '_' => 'Si, es a credito',
+        '?' => 'Es a credito? help text',
     ],
 
     'total' => [
@@ -97,6 +115,13 @@
         '?' => 'Líneas help text',
 
     ] + __('sales::invoice_line'),
+
+    'orders'        => [
+        'Pedidos',
+        '_' => 'Pedidos',
+        '?' => 'Pedidos help text',
+
+    ] + __('sales::order'),
 
     'receipments'       => [
         'Recibos',

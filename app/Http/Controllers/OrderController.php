@@ -3,19 +3,19 @@
 namespace HDSSolutions\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use HDSSolutions\Laravel\DataTables\OrderDataTable as DataTable;
+use HDSSolutions\Laravel\DataTables\Base\DataTableContract;
 use HDSSolutions\Laravel\Http\Request;
 use HDSSolutions\Laravel\Models\Order as Resource;
 use HDSSolutions\Laravel\Models\Currency;
-use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\OrderLine;
 use HDSSolutions\Laravel\Models\Product;
 use HDSSolutions\Laravel\Models\Variant;
 use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
-class OrderController extends Controller {
+abstract class OrderController extends Controller {
     use CanProcessDocument;
 
     public function __construct() {
@@ -23,90 +23,29 @@ class OrderController extends Controller {
         $this->authorizeResource(Resource::class, 'resource');
     }
 
-    protected function documentClass():string {
+    protected final function documentClass():string {
         // return class
         return Resource::class;
     }
 
-    protected function redirectTo():string {
+    protected final function redirectTo():string {
         // go to resource view
-        return 'backend.orders.show';
+        return 'backend.'.$this->prefix().'.orders.show';
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request, DataTable $dataTable) {
-        // check only-form flag
-        if ($request->has('only-form'))
-            // redirect to popup callback
-            return view('backend::components.popup-callback', [ 'resource' => new Resource ]);
+    protected abstract function documentType():string;
 
-        // load resources
-        if ($request->ajax()) return $dataTable->ajax();
+    protected final function isPurchaseDocument():bool { return $this->documentType() === 'purchase'; }
+    protected final function isSaleDocument():bool { return $this->documentType() === 'sale'; }
+    protected final function prefix():string { return Str::plural($this->documentType()); }
 
-        // load customers
-        $customers = Customer::ordered()->with([
-            // 'addresses', // TODO: Customer.addresses
-        ])->get();
+    // public abstract function index(Request $request, DataTableContract $dataTable);
 
-        // return view with dataTable
-        return $dataTable->render('sales::orders.index', compact('customers') + [
-            'count'                 => Resource::count(),
-            'show_company_selector' => !backend()->companyScoped(),
-        ]);
-    }
+    protected abstract function getPartnerable($partnerable);
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(Request $request) {
-        // force company selection
-        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
-
-        // load customers
-        $customers = Customer::with([
-            // 'addresses', // TODO: Customer.addresses
-        ])->get();
-        // load current company branches with warehouses
-        $branches = backend()->company()->branches()->with([
-            'warehouses',
-        ])->get();
-        // load employees
-        $employees = Employee::all();
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
-        ])->get();
-
-        $highs = [
-            'document_number'   => Resource::nextDocumentNumber(),
-        ];
-
-        // show create form
-        return view('sales::orders.create', compact(
-            'customers',
-            'branches',
-            'employees',
-            'products',
-            'highs',
-        ));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request) {
+    public final function store(Request $request) {
         // cast values to boolean
-        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+        $request->merge([ 'is_purchase' => $this->isPurchaseDocument() ]);
 
         // start a transaction
         DB::beginTransaction();
@@ -115,14 +54,13 @@ class OrderController extends Controller {
         $resource = new Resource( $request->input() );
 
         // set Customer through associate() to set partnerable_type
-        $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
+        $resource->partnerable()->associate( $this->getPartnerable($request->partnerable_id) );
 
         // save resource
         if (!$resource->save())
             // redirect with errors
-            return back()
-                ->withErrors( $resource->errors() )
-                ->withInput();
+            return back()->withInput()
+                ->withErrors( $resource->errors() );
 
         // sync inventory lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
@@ -137,16 +75,10 @@ class OrderController extends Controller {
             // redirect to popup callback
             view('backend::components.popup-callback', compact('resource')) :
             // redirect to resource details
-            redirect()->route('backend.orders.show', $resource);
+            redirect()->route('backend.'.$this->prefix().'.orders.show', $resource);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Resource $resource) {
+    public final function show(Resource $resource) {
         // load inventory data
         $resource->load([
             'branch',
@@ -171,71 +103,24 @@ class OrderController extends Controller {
         ]);
 
         // redirect to list
-        return view('sales::orders.show', compact('resource'));
+        return view('sales::'.$this->prefix().'.orders.show', compact('resource'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Resource $resource) {
-        // check if document is already approved or processed
-        if ($resource->isApproved() || $resource->isProcessed())
-            // redirect to show route
-            return redirect()->route('backend.orders.show', $resource);
-
-        // load resource relations
-        $resource->load([
-            'currency',
-            'lines.product',
-        ]);
-
-        // load customers
-        $customers = Customer::all();
-        // load current company branches with warehouses
-        $branches = backend()->company()->branches()->with([
-            'warehouses',
-        ])->get();
-        // load employees
-        $employees = Employee::all();
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
-        ])->get();
-
-        // show edit form
-        return view('sales::orders.edit', compact('customers', 'branches', 'employees', 'products', 'resource'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id) {
-        // find resource
-        $resource = Resource::findOrFail($id);
-
+    public final function update(Request $request, Resource $resource) {
         // cast values to boolean
-        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
+        $request->merge([ 'is_purchase' => $this->isPurchaseDocument() ]);
 
         // start a transaction
         DB::beginTransaction();
 
         // associate Partner
-        $resource->partnerable()->associate( Customer::findOrFail($request->get('partnerable_id')) );
+        $resource->partnerable()->associate( $this->getPartnerable($request->partnerable_id) );
 
         // save resource
         if (!$resource->update( $request->input() ))
             // redirect with errors
-            return back()
-                ->withErrors( $resource->errors() )
-                ->withInput();
+            return back()->withInput()
+                ->withErrors( $resource->errors() );
 
         // sync inventory lines
         if (($redirect = $this->syncLines($resource, $request->get('lines'))) !== true)
@@ -246,28 +131,21 @@ class OrderController extends Controller {
         DB::commit();
 
         // redirect to resource details
-        return redirect()->route('backend.orders.show', $resource);
+        return redirect()->route('backend.'.$this->prefix().'.orders.show', $resource);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Resource $resource
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id) {
-        // find resource
-        $resource = Resource::findOrFail($id);
+    public final function destroy(Resource $resource) {
         // delete resource
         if (!$resource->delete())
             // redirect with errors
             return back()
                 ->withErrors($resource->errors()->any() ? $resource->errors() : [ $resource->getDocumentError() ]);
+
         // redirect to list
-        return redirect()->route('backend.orders');
+        return redirect()->route('backend.'.$this->prefix().'.orders');
     }
 
-    public function product(Request $request) {
+    public final function product(Request $request) {
         // find product/variant
         return response()->json([
             'product'   => Product::code( $request->product ),
@@ -275,7 +153,7 @@ class OrderController extends Controller {
         ]);
     }
 
-    public function price(Request $request) {
+    public final function price(Request $request) {
         // get resources
         $product = $request->has('product') ? Product::findOrFail($request->product) : null;
         $variant = $request->has('variant') ? Variant::findOrFail($request->variant) : null;
@@ -286,7 +164,7 @@ class OrderController extends Controller {
 
     private function syncLines(Resource $resource, array $lines) {
         // load inventory lines
-        $resource->load(['lines']);
+        $resource->load([ 'lines' ]);
 
         // foreach new/updated lines
         foreach (($lines = array_group( $lines )) as $line) {
@@ -312,15 +190,14 @@ class OrderController extends Controller {
 
             // update line values
             $orderLine->fill([
-                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price,
+                'price_reference'   => $variant?->price( $resource->priceList )?->price->price ?? $product->price( $resource->priceList )?->price->price ?? $line['price'],
                 'price_ordered'     => $line['price'],
                 'quantity_ordered'  => $line['quantity'],
                 // 'total'             => $line['total'],
             ]);
             // save inventory line
             if (!$orderLine->save())
-                return back()
-                    ->withInput()
+                return back()->withInput()
                     ->withErrors( $orderLine->errors() );
         }
 

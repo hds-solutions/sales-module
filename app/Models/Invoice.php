@@ -27,6 +27,7 @@ class Invoice extends X_Invoice implements Document {
             'branch_id'         => $order->branch_id,
             'warehouse_id'      => $order->warehouse_id,
             'currency_id'       => $order->currency_id,
+            'price_list_id'     => $order->price_list_id,
             'employee_id'       => $order->employee_id,
             'partnerable_type'  => $order->partnerable_type,
             'partnerable_id'    => $order->partnerable_id,
@@ -91,27 +92,38 @@ class Invoice extends X_Invoice implements Document {
     }
 
     public function branch() {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class)
+            ->withTrashed();
     }
 
     public function warehouse() {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(Warehouse::class)
+            ->withTrashed();
     }
 
     public function currency() {
-        return $this->belongsTo(Currency::class);
+        return $this->belongsTo(Currency::class)
+            ->withTrashed();
+    }
+
+    public function priceList() {
+        return $this->belongsTo(PriceList::class)
+            ->withTrashed();
     }
 
     public function employee() {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withTrashed();
     }
 
     public function stamping() {
-        return $this->belongsTo(Stamping::class);
+        return $this->belongsTo(Stamping::class)
+            ->withTrashed();
     }
 
     public function address() {
-        return $this->belongsTo(Address::class);
+        return $this->belongsTo(Address::class)
+            ->withTrashed();
     }
 
     public function lines() {
@@ -138,7 +150,7 @@ class Invoice extends X_Invoice implements Document {
 
     public function inOut() {
         // return inOut of invoice
-        return $this->belongsTo(InOut::class);
+        return $this->hasOne(InOut::class);
     }
 
     public function inOuts() {
@@ -179,6 +191,14 @@ class Invoice extends X_Invoice implements Document {
     public function scopePaid(Builder $query, bool $paid = true) {
         // return invoices that are paid
         return $query->where('is_paid', $paid);
+    }
+
+    public function scopeIsPurchase(Builder $query, bool $is_purchase = true) {
+        return $query->where('is_purchase', $is_purchase);
+    }
+
+    public function scopeIsSale(Builder $query, bool $is_sale = true) {
+        return $this->scopeIsPurchase($query, !$is_sale);
     }
 
     public function hasProduct(int|Product $product, int|Variant|null $variant = null) {
@@ -342,7 +362,7 @@ class Invoice extends X_Invoice implements Document {
         // create InOut document (only for purchases)
         if ($this->is_purchase) {
             // create InOut document
-            if (!($inOut = InOut::createFromInvoice( $this, [ 'warehouse_id' => backend()->warehouse()->id ] ))->exists || $inOut->getDocumentError() !== null)
+            if (!($inOut = InOut::createFromInvoice( $this, [ 'warehouse_id' => backend()->branch()->warehouses()->first()->id ] ))->exists || $inOut->getDocumentError() !== null)
                 // redirect inOut document error
                 return $this->documentError( $inOut->getDocumentError() );
             // check if inOut hasn't lines (if OrderLines are only product.stockable=false)

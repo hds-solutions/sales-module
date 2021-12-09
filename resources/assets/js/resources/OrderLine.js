@@ -106,12 +106,18 @@ export default class OrderLine extends DocumentLine {
         // build request data
         let data = { _token: this.document.token },
             option;
-        // load product,variant,currency selected options
+
+        // load product,variant,priceList selected options
         if ((option = this.container.querySelector('[name="lines[product_id][]"]').selectedOptions[0]).value) data.product = option.value;
         if ((option = this.container.querySelector('[name="lines[variant_id][]"]').selectedOptions[0]).value) data.variant = option.value;
-        if ((option = field.form.querySelector('[name="currency_id"]').selectedOptions[0]).value) data.currency = option.value;
-        // ignore if no product
+        if ((option = field.form.querySelector('[name="price_list_id"]').selectedOptions[0]).value) data.priceList = option.value;
+
+        // ignore if already loading or no product is set
         if (this.#loading || !data.product) return;
+
+        // remove product finder
+        this.#finder.remove();
+
         // request current price quantity
         $.ajax({
             method: 'POST',
@@ -119,7 +125,10 @@ export default class OrderLine extends DocumentLine {
             data: data,
             // update current price for product+variant on locator
             success: data => {
-                // set price
+                // check for errors
+                if (data.error) return console.error( data.error );
+
+                // set price on line container
                 this.container.querySelector('[name="lines[price][]"]').value = data.price ?? null;
                 // get line quantity
                 let quantity = this.container.querySelector('[name="lines[quantity][]"]');

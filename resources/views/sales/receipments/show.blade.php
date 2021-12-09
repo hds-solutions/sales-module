@@ -1,7 +1,7 @@
 @extends('sales::layouts.master')
 
-@section('page-name', __('sales::receipments.title'))
-@section('description', __('sales::receipments.description'))
+@section('page-name', __('sales::receipments.sales.title'))
+@section('description', __('sales::receipments.sales.description'))
 
 @section('content')
 
@@ -10,15 +10,15 @@
         <div class="row">
             <div class="col-6 d-flex align-items-center">
                 <i class="fas fa-user-plus mr-2"></i>
-                @lang('sales::receipments.show')
+                @lang('sales::receipments.sales.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
                 {{-- @if (!$resource->isCompleted())
-                <a href="{{ route('backend.receipments.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::receipments.edit')</a>
+                <a href="{{ route('backend.sales.receipments.edit', $resource) }}"
+                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::receipments.sales.edit')</a>
                 @endif --}}
-                <a href="{{ route('backend.receipments.create') }}"
-                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::receipments.create')</a>
+                {{-- <a href="{{ route('backend.sales.receipments.create') }}"
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::receipments.sales.create')</a> --}}
             </div>
         </div>
     </div>
@@ -41,7 +41,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::invoice.partnerable_id.0'):</div>
+                    <div class="col">@lang('sales::invoice.customer_id.0'):</div>
                     <div class="col h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
@@ -135,7 +135,7 @@
                                     @foreach ($resource->invoices as $invoice)
                                         <tr>
                                             <td class="align-middle">
-                                                <a href="{{ route('backend.invoices.show', $invoice) }}"
+                                                <a href="{{ route('backend.sales.invoices.show', $invoice) }}"
                                                     class="text-dark text-decoration-none font-weight-bold">{{ $invoice->document_number }}<small class="ml-2">{{ $invoice->transacted_at_pretty }}</small></a>
                                             <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->total, currency($invoice->currency_id)->decimals) }}</b></td>
                                             <td class="align-middle text-right">{{ currency($invoice->currency_id)->code }} <b>{{ number($invoice->receipmentInvoice->imputed_amount, currency($invoice->currency_id)->decimals) }}</b></td>
@@ -221,7 +221,7 @@
         </div>
 
         @include('backend::components.document-actions', [
-            'route'     => 'backend.receipments.process',
+            'route'     => 'backend.sales.receipments.process',
             'resource'  => $resource,
         ])
 

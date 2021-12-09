@@ -1,19 +1,12 @@
 @include('backend::components.errors')
 
-<x-backend-form-boolean name="is_purchase"
-    :resource="$resource ?? null"
-
-    label="sales::invoice.is_purchase.0"
-    placeholder="sales::invoice.is_purchase._"
-    {{-- helper="sales::invoice.is_purchase.?" --}} />
-
 <x-backend-form-foreign name="stamping_id" required
     :values="$stampings" :resource="$resource ?? null"
 
     foreign="stampings" foreign-add-label="sales::stampings.add"
     show="document_number" data-show-subtext="true"
     subtext="valid_from_pretty - valid_until_pretty"
-    append="next:next_document_number"
+    {{-- append="next:next_document_number" --}}
 
     label="sales::invoice.stamping_id.0"
     placeholder="sales::invoice.stamping_id._"
@@ -22,7 +15,7 @@
 <x-backend-form-text name="document_number" required
     :resource="$resource ?? null"
 
-    data-stamping="[name=stamping_id]"
+    {{-- data-stamping="[name=stamping_id]" --}}
 
     label="sales::invoice.document_number.0"
     placeholder="sales::invoice.document_number._"
@@ -39,7 +32,7 @@
     :values="$branches" :resource="$resource ?? null"
     :default="backend()->branch()->id"
 
-    foreign="branches" foreign-add-label="sales::branches.add"
+    foreign="branches" foreign-add-label="backend::branches.add"
 
     label="sales::invoice.branch_id.0"
     placeholder="sales::invoice.branch_id._"
@@ -48,32 +41,13 @@
 <x-backend-form-foreign name="employee_id" required
     :values="$employees" :resource="$resource ?? null" show="full_name"
 
-    foreign="employees" foreign-add-label="sales::employees.add"
+    foreign="employees" foreign-add-label="customers::employees.add"
 
     label="sales::invoice.employee_id.0"
     placeholder="sales::invoice.employee_id._"
     {{-- helper="sales::invoice.employee_id.?" --}} />
 
-<x-backend-form-foreign name="partnerable_id" required
-    :values="$customers" :resource="$resource ?? null" show="business_name"
-
-    foreign="customers" foreign-add-label="sales::customers.add"
-
-    label="sales::invoice.partnerable_id.0"
-    placeholder="sales::invoice.partnerable_id._"
-    {{-- helper="sales::invoice.partnerable_id.?" --}} />
-
-{{-- TODO: Customer.addresses --}} {{--
-<x-backend-form-foreign name="address_id" required
-    :values="$customers->pluck('addresses')->flatten()" :resource="$resource ?? null"
-
-    foreign="addresses" foreign-add-label="sales::addresses.add"
-    filtered-by="[name=partnerable_id]" filtered-using="customer"
-    append="customer:customer_id"
-
-    label="sales::invoice.address_id.0"
-    placeholder="sales::invoice.address_id._"
-    helper="sales::invoice.address_id.?" /> --}}
+@yield('partnerable')
 
 <x-backend-form-boolean name="is_credit"
     :resource="$resource ?? null"
@@ -92,9 +66,20 @@
     placeholder="sales::invoice.currency_id._"
     {{-- helper="sales::invoice.currency_id.?" --}} />
 
+<x-backend-form-foreign name="price_list_id" :resource="$resource ?? null" required
+    :values="$price_lists" default="{{ $price_lists->firstWhere('is_default')?->id }}"
+
+    foreign="price_lists" foreign-add-label="products-catalog::price_lists.add"
+    filtered-by="[name='currency_id']" filtered-using="currency" append="currency:currency_id"
+
+    label="sales::order.price_list_id.0"
+    placeholder="sales::order.price_list_id._"
+    {{-- helper="sales::order.branch_id.?" --}} />
+
 <x-backend-form-multiple name="orders"
     :values="$orders" :selecteds="[]"
-    contents-view="sales::invoices.form.orders" row-class="mb-1"
+    main-col-class="col-11 col-md-8 col-lg-6 col-xl-4"
+    contents-size="xxl" contents-view="sales::invoices.form.orders" row-class="mb-1"
 
     label="sales::invoice.orders.0" />
 
@@ -135,9 +120,4 @@
 
 </x-backend-form-multiple>
 
-<x-backend-form-controls
-    submit="sales::invoices.save"
-    cancel="sales::invoices.cancel"
-        cancel-route="{{ isset($resource)
-            ? 'backend.invoices.show:'.$resource->id
-            : 'backend.invoices' }}" />
+@yield('buttons')

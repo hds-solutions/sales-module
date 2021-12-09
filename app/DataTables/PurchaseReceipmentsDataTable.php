@@ -9,7 +9,7 @@ use HDSSolutions\Laravel\Traits\DatatableAsDocument;
 use Illuminate\Database\Eloquent\Builder;
 use Yajra\DataTables\Html\Column;
 
-class ReceipmentDataTable extends Base\DataTable {
+class PurchaseReceipmentsDataTable extends Base\DataTable {
     use DatatableWithPartnerable;
     use DatatableWithCurrency;
     use DatatableAsDocument;
@@ -34,7 +34,7 @@ class ReceipmentDataTable extends Base\DataTable {
     public function __construct() {
         parent::__construct(
             Resource::class,
-            route('backend.receipments'),
+            route('backend.purchases.receipments'),
         );
     }
 
@@ -73,8 +73,9 @@ class ReceipmentDataTable extends Base\DataTable {
     }
 
     protected function joins(Builder $query):Builder {
+        // load Purchase Receipments only
         // add custom JOIN to customers + people for Partnerable
-        return $query
+        return $query->isPurchase()
             // join to partnerable
             ->leftJoin('customers', 'customers.id', 'receipments.partnerable_id')
             // join to people

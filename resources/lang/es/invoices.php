@@ -1,15 +1,30 @@
 <?php return [
 
-    'nav'           => 'Facturas',
+    'purchases' => [
+        'nav'           => 'Facturas de Compra',
 
-    'title'         => 'Facturas',
-    'description'   => '',
+        'title'         => 'Facturas de Compra',
+        'description'   => '',
 
-    'index'         => 'Listado de Facturas',
-    'create'        => 'Crear nueva Factura',
-    'add'           => 'Agregar nueva Factura ...',
-    'show'          => 'Detalles de la Factura',
-    'edit'          => 'Editar Factura',
+        'index'         => 'Listado de Facturas de Compra',
+        'create'        => 'Crear nueva Factura de Compra',
+        'add'           => 'Agregar nueva Factura de Compra ...',
+        'show'          => 'Detalles de la Factura de Compra',
+        'edit'          => 'Editar Factura de Compra',
+    ],
+
+    'sales'     => [
+        'nav'           => 'Facturas de Venta',
+
+        'title'         => 'Facturas de Venta',
+        'description'   => '',
+
+        'index'         => 'Listado de Facturas de Venta',
+        'create'        => 'Crear nueva Factura de Venta',
+        'add'           => 'Agregar nueva Factura de Venta ...',
+        'show'          => 'Detalles de la Factura de Venta',
+        'edit'          => 'Editar Factura de Venta',
+    ],
 
     'save'          => 'Guardar',
     'cancel'        => 'Cancelar',

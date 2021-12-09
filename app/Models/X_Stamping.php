@@ -19,10 +19,6 @@ abstract class X_Stamping extends Base\Model {
         'document_number',
         'valid_from',
         'valid_until',
-        'length',
-        'start',
-        'end',
-        'current',
     ];
 
     protected $casts = [

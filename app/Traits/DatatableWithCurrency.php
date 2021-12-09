@@ -11,7 +11,7 @@ trait DatatableWithCurrency {
         return $query->orderBy('currencies.name', $order);
     }
 
-    protected function filterCurrency(Builder $query, $currency_id):Builder {
+    protected function filterCurrency(Builder $query, int $currency_id):Builder {
         // filter only from partnerable
         return $query->where('currency_id', $currency_id);
     }

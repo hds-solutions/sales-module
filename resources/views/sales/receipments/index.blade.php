@@ -1,7 +1,7 @@
 @extends('sales::layouts.master')
 
-@section('page-name', __('sales::receipments.title'))
-@section('description', __('sales::receipments.description'))
+@section('page-name', __('sales::receipments.sales.title'))
+@section('description', __('sales::receipments.sales.description'))
 
 @section('content')
 
@@ -10,11 +10,11 @@
             <div class="row">
                 <div class="col-6 d-flex align-items-center">
                     <i class="fas fa-table mr-2"></i>
-                    @lang('sales::receipments.index')
+                    @lang('sales::receipments.sales.index')
                 </div>
                 <div class="col-6 d-flex justify-content-end">
-                    <a href="{{ route('backend.receipments.create') }}"
-                       class="btn btn-sm btn-primary">@lang('sales::receipments.create')</a>
+                    {{-- <a href="{{ route('backend.sales.receipments.create') }}"
+                       class="btn btn-sm btn-primary">@lang('sales::receipments.sales.create')</a> --}}
                 </div>
             </div>
         </div>
@@ -32,12 +32,12 @@
                 <div class="text-center m-t-30 m-b-30 p-b-10">
                     <h2><i class="fas fa-table text-custom"></i></h2>
                     <h3>@lang('backend.empty.title')</h3>
-                    <p class="text-muted">
+                    {{-- <p class="text-muted">
                         @lang('backend.empty.description')
-                        <a href="{{ route('backend.receipments.create') }}" class="text-custom">
-                            <ins>@lang('sales::receipments.create')</ins>
+                        <a href="{{ route('backend.sales.receipments.create') }}" class="text-custom">
+                            <ins>@lang('sales::receipments.sales.create')</ins>
                         </a>
-                    </p>
+                    </p> --}}
                 </div>
             @endif
         </div>

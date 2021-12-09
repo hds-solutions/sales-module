@@ -24,6 +24,7 @@ class CreateInvoicesTable extends Migration {
             $table->foreignTo('Branch');
             $table->foreignTo('Warehouse')->nullable();
             $table->foreignTo('Currency');
+            $table->foreignTo('PriceList');
             $table->foreignTo('Employee');
             $table->morphable('partner');
             $table->unsignedInteger('address_id')->nullable(); // TODO: Link to Partner.address

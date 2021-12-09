@@ -3,11 +3,10 @@
 namespace HDSSolutions\Laravel\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use HDSSolutions\Laravel\DataTables\InvoiceDataTable as DataTable;
+use HDSSolutions\Laravel\DataTables\Base\DataTableContract;
 use HDSSolutions\Laravel\Http\Request;
 use HDSSolutions\Laravel\Models\Invoice as Resource;
 use HDSSolutions\Laravel\Models\Currency;
-use HDSSolutions\Laravel\Models\Customer;
 use HDSSolutions\Laravel\Models\Employee;
 use HDSSolutions\Laravel\Models\InvoiceLine;
 use HDSSolutions\Laravel\Models\Order;
@@ -16,9 +15,10 @@ use HDSSolutions\Laravel\Models\Stamping;
 use HDSSolutions\Laravel\Models\Variant;
 use HDSSolutions\Laravel\Traits\CanProcessDocument;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
-class InvoiceController extends Controller {
+abstract class InvoiceController extends Controller {
     use CanProcessDocument;
 
     public function __construct() {
@@ -31,76 +31,26 @@ class InvoiceController extends Controller {
         return Resource::class;
     }
 
-    protected function redirectTo():string {
+    protected final function redirectTo():string {
         // go to resource view
-        return 'backend.invoices.show';
+        return 'backend.'.$this->prefix().'.invoices.show';
     }
 
-    public function index(Request $request, DataTable $dataTable) {
-        // check only-form flag
-        if ($request->has('only-form'))
-            // redirect to popup callback
-            return view('backend::components.popup-callback', [ 'resource' => new Resource ]);
+    protected abstract function documentType():string;
 
-        // load resources
-        if ($request->ajax()) return $dataTable->ajax();
+    protected final function isPurchaseDocument():bool { return $this->documentType() === 'purchase'; }
+    protected final function isSaleDocument():bool { return $this->documentType() === 'sale'; }
+    protected final function prefix():string { return Str::plural($this->documentType()); }
 
-        // return view with dataTable
-        return $dataTable->render('sales::invoices.index', [
-            'count'                 => Resource::count(),
-            'show_company_selector' => !backend()->companyScoped(),
-        ]);
-    }
+    // public abstract function index(Request $request, DataTableContract $dataTable);
 
-    public function create(Request $request) {
-        // force company selection
-        if (!backend()->companyScoped()) return view('backend::layouts.master', [ 'force_company_selector' => true ]);
+    protected abstract function getPartnerable($partnerable);
 
-        // load customers
-        $customers = Customer::with([
-            // 'addresses', // TODO: Customer.addresses
-        ])->get();
-        // load current company branches with warehouses
-        $branches = backend()->company()->branches()->with([
-            'warehouses',
-        ])->get();
-        // load employees
-        $employees = Employee::all();
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
-        ])->get()->transform(fn($product) =>
-            // set Variant.product relation manually to avoid more queries
-            $product->setRelation('variants', $product->variants->transform(fn($variant) =>
-                $variant->setRelation('product', $product)
-            ))
-        );
-        // load valid stampings
-        $stampings = Stamping::ordered()->valid()->with([
-            'invoices' => fn($invoice) => $invoice,
-        ])->get();
-
-        // get completed orders that aren't invoiced
-        $orders = Order::with([
-            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
-        ])->completed()->invoiced(false)->get();
-
-        // show create form
-        return view('sales::invoices.create', compact(
-            'customers',
-            'branches',
-            'employees',
-            'products',
-            'stampings',
-            'orders',
-        ));
-    }
-
-    public function store(Request $request) {
+    public final function store(Request $request) {
         // cast values to boolean
-        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
         if ($request->has('is_credit'))     $request->merge([ 'is_credit' => $request->is_credit == 'true' ]);
+        // set is_purchase flag
+        $request->merge([ 'is_purchase' => $this->isPurchaseDocument() ]);
 
         // start a transaction
         DB::beginTransaction();
@@ -109,7 +59,7 @@ class InvoiceController extends Controller {
         $resource = new Resource( $request->input() );
 
         // associate Partner
-        $resource->partnerable()->associate( Customer::findOrFail($request->partnerable_id) );
+        $resource->partnerable()->associate( $this->getPartnerable($request->partnerable_id) );
 
         // save resource
         if (!$resource->save())
@@ -135,10 +85,10 @@ class InvoiceController extends Controller {
             // redirect to popup callback
             view('backend::components.popup-callback', compact('resource')) :
             // redirect to resource details
-            redirect()->route('backend.invoices.show', $resource);
+            redirect()->route('backend.'.$this->prefix().'.invoices.show', $resource);
     }
 
-    public function show(Request $request, Resource $resource) {
+    public final function show(Request $request, Resource $resource) {
         // load inventory data
         $resource->load([
             'branch',
@@ -164,77 +114,20 @@ class InvoiceController extends Controller {
         ]);
 
         // redirect to list
-        return view('sales::invoices.show', compact('resource'));
+        return view('sales::'.$this->prefix().'.invoices.show', compact('resource'));
     }
 
-    public function edit(Request $request, Resource $resource) {
-        // check if document is already approved or processed
-        if ($resource->isApproved() || $resource->isProcessed())
-            // redirect to show route
-            return redirect()->route('backend.invoices.show', $resource);
-
-        // load resource relations
-        $resource->load([
-            'lines' => fn($line) => $line->with([
-                'product',
-                'orderLines' => fn($orderLine) => $orderLine
-                    ->with([
-                        'order',
-                    ]),
-            ]),
-        ]);
-
-        // load customers
-        $customers = Customer::with([
-            // 'addresses', // TODO: Customer.addresses
-        ])->get();
-        // load current company branches with warehouses
-        $branches = backend()->company()->branches()->with([
-            'warehouses',
-        ])->get();
-        // load employees
-        $employees = Employee::all();
-        // load products
-        $products = Product::with([
-            'images',
-            'variants',
-        ])->get()->transform(fn($product) =>
-            // set Variant.product relation manually to avoid more queries
-            $product->setRelation('variants', $product->variants->transform(fn($variant) =>
-                $variant->setRelation('product', $product)
-            ))
-        );
-        // load valid stampings
-        $stampings = Stamping::ordered()->valid()->with([
-            'invoices' => fn($invoice) => $invoice,
-        ])->get();
-
-        // get completed orders
-        $orders = Order::with([
-            'partnerable' => fn($partnerable) => $partnerable->with([ 'identity' ]),
-        ])->completed()->invoiced(false)->get();
-
-        // show edit form
-        return view('sales::invoices.edit', compact('resource',
-            'customers',
-            'branches',
-            'employees',
-            'products',
-            'stampings',
-            'orders',
-        ));
-    }
-
-    public function update(Request $request, Resource $resource) {
+    public final function update(Request $request, Resource $resource) {
         // cast values to boolean
-        if ($request->has('is_purchase'))   $request->merge([ 'is_purchase' => $request->is_purchase == 'true' ]);
         if ($request->has('is_credit'))     $request->merge([ 'is_credit' => $request->is_credit == 'true' ]);
+        // set is_purchase flag
+        $request->merge([ 'is_purchase' => $this->isPurchaseDocument() ]);
 
         // start a transaction
         DB::beginTransaction();
 
         // associate Partner
-        $resource->partnerable()->associate( Customer::findOrFail($request->get('partnerable_id')) );
+        $resource->partnerable()->associate( $this->getPartnerable($request->partnerable_id) );
 
         // save resource
         if (!$resource->update( $request->input() ))
@@ -256,10 +149,10 @@ class InvoiceController extends Controller {
         DB::commit();
 
         // redirect to resource details
-        return redirect()->route('backend.invoices.show', $resource);
+        return redirect()->route('backend.'.$this->prefix().'.invoices.show', $resource);
     }
 
-    public function destroy(Request $request, Resource $resource) {
+    public final function destroy(Request $request, Resource $resource) {
         // delete resource
         if (!$resource->delete())
             // redirect with errors
@@ -267,11 +160,11 @@ class InvoiceController extends Controller {
                 ->withErrors($resource->errors()->any() ? $resource->errors() : [ $resource->getDocumentError() ]);
 
         // redirect to list
-        return redirect()->route('backend.invoices');
+        return redirect()->route('backend.'.$this->prefix().'.invoices');
     }
 
-    public function printIt(Request $request, Resource $resource) {
-        return view('sales::printables.invoice', compact('resource'));
+    public final function printIt(Request $request, Resource $resource) {
+        return view('sales::printables.'.$this->prefix().'.invoice', compact('resource'));
         // set global options
         PDF::setOptions([ 'dpi' => 150 ]);
 
@@ -322,7 +215,7 @@ class InvoiceController extends Controller {
 
             // update line values
             $orderLine->fill([
-                'price_reference'   => $variant?->price( $orderLine->currency )?->pivot->price ?? $product->price( $orderLine->currency )?->pivot->price ?? $line['price'],
+                'price_reference'   => $variant?->price( $resource->priceList )?->pivot->price ?? $product->price( $resource->priceList )?->pivot->price ?? $line['price'],
                 'price_invoiced'    => $line['price'],
                 'quantity_invoiced' => $line['quantity'],
                 // 'total'             => $line['total'],

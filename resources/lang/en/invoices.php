@@ -1,15 +1,30 @@
 <?php return [
 
-    'nav'           => 'Invoices',
+    'purchases' => [
+        'nav'           => 'Purchase Invoices',
 
-    'title'         => 'Invoices',
-    'description'   => '',
+        'title'         => 'Purchase Invoices',
+        'description'   => '',
 
-    'index'         => 'Invoices List',
-    'create'        => 'Create new Invoice',
-    'add'           => 'Add new Invoice ...',
-    'show'          => 'Invoice Details',
-    'edit'          => 'Edit Invoice',
+        'index'         => 'Purchase Invoices List',
+        'create'        => 'Create new Purchase Invoice',
+        'add'           => 'Add new Purchase Invoice ...',
+        'show'          => 'Purchase Invoice Details',
+        'edit'          => 'Edit Purchase Invoice',
+    ],
+
+    'sales'     => [
+        'nav'           => 'Sale Invoices',
+
+        'title'         => 'Sale Invoices',
+        'description'   => '',
+
+        'index'         => 'Sale Invoices List',
+        'create'        => 'Create new Sale Invoice',
+        'add'           => 'Add new Sale Invoice ...',
+        'show'          => 'Sale Invoice Details',
+        'edit'          => 'Edit Sale Invoice',
+    ],
 
     'save'          => 'Save',
     'cancel'        => 'Cancel',

@@ -1,7 +1,7 @@
 @extends('sales::layouts.master')
 
-@section('page-name', __('sales::orders.title'))
-@section('description', __('sales::orders.description'))
+@section('page-name', __('sales::orders.purchases.title'))
+@section('description', __('sales::orders.purchases.description'))
 
 @section('content')
 
@@ -10,15 +10,15 @@
         <div class="row">
             <div class="col-6 d-flex align-items-center">
                 <i class="fas fa-user-plus mr-2"></i>
-                @lang('sales::orders.show')
+                @lang('sales::orders.purchases.show')
             </div>
             <div class="col-6 d-flex justify-content-end">
-                @if (!$resource->wasCompleted())
-                <a href="{{ route('backend.orders.edit', $resource) }}"
-                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::orders.edit')</a>
+                @if (!$resource->wasProcessed())
+                <a href="{{ route('backend.purchases.orders.edit', $resource) }}"
+                    class="btn btn-sm ml-2 btn-outline-info">@lang('sales::orders.purchases.edit')</a>
                 @endif
-                <a href="{{ route('backend.orders.create') }}"
-                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::orders.create')</a>
+                <a href="{{ route('backend.purchases.orders.create') }}"
+                    class="btn btn-sm ml-2 btn-outline-primary">@lang('sales::orders.purchases.create')</a>
             </div>
         </div>
     </div>
@@ -36,38 +36,43 @@
             <div class="col-12 col-xl-6">
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.document_number.0'):</div>
-                    <div class="col h4 font-weight-bold">{{ $resource->document_number }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.document_number.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->document_number }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.warehouse_id.0'):</div>
-                    <div class="col h4">{{ $resource->warehouse->name }} <small class="font-weight-light">[{{ $resource->branch->name }}]</small></div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.warehouse_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->warehouse->name }} <small class="font-weight-light">[{{ $resource->branch->name }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.partnerable_id.0'):</div>
-                    <div class="col h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.provider_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4 font-weight-bold">{{ $resource->partnerable->fullname }} <small class="font-weight-light">[{{ $resource->partnerable->ftid }}]</small></div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.employee_id.0'):</div>
-                    <div class="col h4">{{ $resource->employee->fullname }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.employee_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->employee->fullname }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.currency_id.0'):</div>
-                    <div class="col h4">{{ $resource->currency->name }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.currency_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->currency->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.transacted_at.0'):</div>
-                    <div class="col h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.price_list_id.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ $resource->priceList->name }}</div>
                 </div>
 
                 <div class="row">
-                    <div class="col">@lang('sales::order.document_status.0'):</div>
-                    <div class="col h4 mb-0">{{ Document::__($resource->document_status) }}</div>
+                    <div class="col-4 col-lg-4">@lang('sales::order.transacted_at.0'):</div>
+                    <div class="col-8 col-lg-6 h4">{{ pretty_date($resource->transacted_at, true) }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 col-lg-4">@lang('sales::order.document_status.0'):</div>
+                    <div class="col-8 col-lg-6 h4 mb-0">{{ Document::__($resource->document_status) }}</div>
                 </div>
 
             </div>
@@ -143,7 +148,7 @@
                                 <tr class="collapse line-{{ $line->id }}-details">
                                     <td class="py-0"></td>
                                     <td class="py-0 pl-3" colspan="3">
-                                        <a href="{{ route('backend.invoices.show', $invoiceLine->invoice) }}"
+                                        <a href="{{ route('backend.purchases.invoices.show', $invoiceLine->invoice) }}"
                                             class="text-dark font-weight-bold text-decoration-none">{{ $invoiceLine->invoice->document_number }}</a> <small class="ml-1">{{ $invoiceLine->invoice->transacted_at_pretty }}</small>
                                     </td>
                                     <td class="py-0"></td>
@@ -167,7 +172,7 @@
         </div>
 
         @include('backend::components.document-actions', [
-            'route'     => 'backend.orders.process',
+            'route'     => 'backend.purchases.orders.process',
             'resource'  => $resource,
         ])
 

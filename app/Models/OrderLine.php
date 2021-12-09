@@ -12,19 +12,23 @@ class OrderLine extends X_OrderLine {
     }
 
     public function currency() {
-        return $this->belongsTo(Currency::class);
+        return $this->belongsTo(Currency::class)
+            ->withTrashed();
     }
 
     public function employee() {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class)
+            ->withTrashed();
     }
 
     public function product() {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class)
+            ->withTrashed();
     }
 
     public function variant() {
-        return $this->belongsTo(Variant::class);
+        return $this->belongsTo(Variant::class)
+            ->withTrashed();
     }
 
     public function invoiceLines() {
@@ -58,14 +62,16 @@ class OrderLine extends X_OrderLine {
                     'branch'    => $this->order->branch,
                 ]));
 
-            // check available stock of Variant|Product
-            if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
-                // reject line with error
-                return $validator->errors()->add('product_id', __('sales::order_line.beforeSave.no-enough-stock', [
-                    'product'   => $this->product->name,
-                    'variant'   => $this->variant?->sku,
-                    'available' => $available,
-                ]));
+            //
+            if ($this->order->is_sale)
+                // check available stock of Variant|Product
+                if ($this->quantity_ordered > ($available = Storage::getQtyAvailable( $this->product, $this->variant, $this->order->branch )))
+                    // reject line with error
+                    return $validator->errors()->add('product_id', __('sales::order_line.beforeSave.no-enough-stock', [
+                        'product'   => $this->product->name,
+                        'variant'   => $this->variant?->sku,
+                        'available' => $available,
+                    ]));
         }
 
         // copy currency from head if not set
@@ -76,9 +82,9 @@ class OrderLine extends X_OrderLine {
         // set original price from product|variant
         if (!$this->exists) $this->price_reference =
             // set variant price if variant is set
-            $this->variant?->price($this->currency)?->pivot?->price ??
+            $this->variant?->price( $this->order->priceList )?->price?->price ??
             // otherwise, set product price without variant
-            $this->product?->price($this->currency)?->pivot?->price ?? 0;
+            $this->product?->price( $this->order->priceList )?->price?->price ?? 0;
 
         // calculate line total amount
         $this->total = $this->price_ordered * $this->quantity_ordered;
