@@ -34,12 +34,16 @@ class SalesController extends Controller {
         $variant = $request->has('variant') ? Variant::findOrFail($request->variant) : null;
         $priceList = $request->has('priceList') ? PriceList::findOrFail($request->priceList) : null;
 
+        // get price
+        $price = $priceList ? (
+            $variant?->price( $priceList )?->price?->price ??
+            $product?->price( $priceList )?->price?->price
+        ) : null;
+
         // return price for requested variant/product
         return response()->json([
-            'price' => $priceList ? (
-                $variant?->price( $priceList )?->price?->price ??
-                $product?->price( $priceList )?->price?->price
-            ) : null,
+            'price'     => $price,
+            'formatted' => $price ? number($price, currency($priceList->currency_id)->decimals) : null,
         ]);
     }
 

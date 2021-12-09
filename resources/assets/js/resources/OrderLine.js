@@ -61,7 +61,7 @@ export default class OrderLine extends DocumentLine {
             this.#finder.setAttribute('disabled', true);
 
             // find product
-            $.ajax({
+            Application.$.ajax({
                 method: 'POST',
                 url: '/sales/product',
                 data: {
@@ -119,7 +119,7 @@ export default class OrderLine extends DocumentLine {
         this.#finder.remove();
 
         // request current price quantity
-        $.ajax({
+        Application.$.ajax({
             method: 'POST',
             url: '/sales/price',
             data: data,
