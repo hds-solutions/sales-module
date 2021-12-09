@@ -42,7 +42,7 @@
                     {{-- helper="sales::invoice.customer_id.?" --}} />
 
                 <x-backend-form-date name="filters[transacted_at]" range="true"
-                    value="{{ now()->subDays(29) }} - {{ now() }}"
+                    value="{{ now()->subDays(6) }} - {{ now() }}"
 
                     label="sales::invoice.transacted_at.0"
                     placeholder="sales::invoice.transacted_at._" />
