@@ -220,7 +220,7 @@ class Invoice extends X_Invoice implements Document {
         if (!$this->exists && $this->employee === null) $this->employee()->associate( auth()->user() );
 
         // validations when document isCredit
-        if ($this->is_credit && ($error = $this->creditValidations()) !== null)
+        if ($this->is_credit && $this->is_sale && ($error = $this->creditValidations()) !== null)
             // reject invoice with error
             return $validator->errors()->add('partnerable_id', __($error, [
                 'partner'   => $this->partnerable->full_name,
