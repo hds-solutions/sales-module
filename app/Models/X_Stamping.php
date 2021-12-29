@@ -38,10 +38,6 @@ abstract class X_Stamping extends Base\Model {
         'document_number'   => [ 'required' ],
         'valid_from'        => [ 'required_if:is_purchase,false', 'nullable', 'date', 'before:valid_until' ],
         'valid_until'       => [ 'required_if:is_purchase,false', 'nullable', 'date', 'after:valid_from' ],
-        'length'            => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'min:1' ],
-        'start'             => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'lt:end' ],
-        'end'               => [ 'required_if:is_purchase,false', 'nullable', 'numeric', 'gt:start' ],
-        'current'           => [ 'sometimes', 'nullable', 'numeric', 'gte:start', 'lte:end' ],
     ];
 
     public function getValidFromPrettyAttribute():string {
